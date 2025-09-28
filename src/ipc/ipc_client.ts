@@ -65,6 +65,8 @@ import type {
   UpdatePromptParamsDto,
   McpServerUpdate,
   CreateMcpServer,
+  SetupLocalSupabaseParams,
+  LocalSupabaseStatus,
 } from "./ipc_types";
 import type { Template } from "../shared/templates";
 import type {
@@ -958,6 +960,18 @@ export class IpcClient {
       "supabase:fake-connect-and-set-project",
       params,
     );
+  }
+
+  public async setupLocalSupabase(params: SetupLocalSupabaseParams): Promise<void> {
+    await this.ipcRenderer.invoke("supabase:setup-local", params);
+  }
+
+  public async getLocalSupabaseStatus(): Promise<LocalSupabaseStatus> {
+    return this.ipcRenderer.invoke("supabase:get-local-status");
+  }
+
+  public async stopLocalSupabase(): Promise<void> {
+    await this.ipcRenderer.invoke("supabase:stop-local");
   }
 
   // --- End Supabase Management ---

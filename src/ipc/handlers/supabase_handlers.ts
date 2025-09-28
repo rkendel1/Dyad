@@ -9,10 +9,83 @@ import {
 } from "./safe_handle";
 import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
 import { safeSend } from "../utils/safe_sender";
+import { SetupLocalSupabaseParams, LocalSupabaseStatus } from "../ipc_types";
+import { execSync } from "child_process";
+import { existsSync } from "fs";
+import path from "path";
+import { updatePostgresUrlEnvVar } from "../utils/app_env_var_utils";
 
 const logger = log.scope("supabase_handlers");
 const handle = createLoggedHandler(logger);
 const testOnlyHandle = createTestOnlyLoggedHandler(logger);
+
+// Local Supabase configuration
+const LOCAL_SUPABASE_CONFIG = {
+  url: 'http://localhost:8000',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+  serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
+  dashboardUrl: 'http://localhost:3001',
+  postgresUrl: 'postgresql://postgres:your-super-secret-and-long-postgres-password@localhost:5432/postgres'
+};
+
+function checkDockerInstalled(): boolean {
+  try {
+    execSync('docker --version', { stdio: 'ignore' });
+    execSync('docker-compose --version', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isLocalSupabaseRunning(): boolean {
+  try {
+    const result = execSync('docker-compose -f docker-compose.supabase.yml ps --services --filter "status=running"', 
+      { encoding: 'utf8', stdio: 'pipe' }
+    );
+    return result.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function startLocalSupabase(): Promise<void> {
+  const dockerComposeFile = path.resolve(process.cwd(), 'docker-compose.supabase.yml');
+  
+  if (!existsSync(dockerComposeFile)) {
+    throw new Error('docker-compose.supabase.yml not found. Make sure the local Supabase configuration files are present.');
+  }
+
+  if (!checkDockerInstalled()) {
+    throw new Error('Docker is not installed or not running. Please install Docker to use local Supabase.');
+  }
+
+  try {
+    logger.info('Starting local Supabase...');
+    execSync('docker-compose -f docker-compose.supabase.yml up -d', { 
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+    logger.info('Local Supabase started successfully');
+  } catch (error) {
+    logger.error('Failed to start local Supabase:', error);
+    throw new Error(`Failed to start local Supabase: ${error}`);
+  }
+}
+
+async function stopLocalSupabase(): Promise<void> {
+  try {
+    logger.info('Stopping local Supabase...');
+    execSync('docker-compose -f docker-compose.supabase.yml down', { 
+      stdio: 'inherit',
+      cwd: process.cwd()
+    });
+    logger.info('Local Supabase stopped successfully');
+  } catch (error) {
+    logger.error('Failed to stop local Supabase:', error);
+    throw new Error(`Failed to stop local Supabase: ${error}`);
+  }
+}
 
 export function registerSupabaseHandlers() {
   handle("supabase:list-projects", async () => {
@@ -80,4 +153,65 @@ export function registerSupabaseHandlers() {
       );
     },
   );
+
+  // Setup local Supabase
+  handle(
+    "supabase:setup-local",
+    async (_, { appId }: SetupLocalSupabaseParams) => {
+      logger.info(`Setting up local Supabase for app ${appId}`);
+      
+      // Start local Supabase if not running
+      if (!isLocalSupabaseRunning()) {
+        await startLocalSupabase();
+        
+        // Wait a bit for services to be ready
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+      
+      // Get the app to find its path
+      const app = await db.select().from(apps).where(eq(apps.id, appId)).get();
+      if (!app) {
+        throw new Error(`App with ID ${appId} not found`);
+      }
+      
+      // Update the app to use local Supabase
+      await db
+        .update(apps)
+        .set({
+          supabaseProjectId: "local-supabase"
+        })
+        .where(eq(apps.id, appId));
+      
+      // Update the app's environment variables
+      await updatePostgresUrlEnvVar({
+        appPath: app.path,
+        connectionUri: LOCAL_SUPABASE_CONFIG.postgresUrl
+      });
+      
+      logger.info(`Successfully set up local Supabase for app ${appId}`);
+    }
+  );
+
+  // Get local Supabase status
+  handle("supabase:get-local-status", async (): Promise<LocalSupabaseStatus> => {
+    const isRunning = checkDockerInstalled() && isLocalSupabaseRunning();
+    
+    if (isRunning) {
+      return {
+        isRunning: true,
+        url: LOCAL_SUPABASE_CONFIG.url,
+        dashboardUrl: LOCAL_SUPABASE_CONFIG.dashboardUrl,
+        anonKey: LOCAL_SUPABASE_CONFIG.anonKey,
+        serviceRoleKey: LOCAL_SUPABASE_CONFIG.serviceRoleKey
+      };
+    }
+    
+    return { isRunning: false };
+  });
+
+  // Stop local Supabase
+  handle("supabase:stop-local", async () => {
+    await stopLocalSupabase();
+    logger.info("Local Supabase stopped");
+  });
 }

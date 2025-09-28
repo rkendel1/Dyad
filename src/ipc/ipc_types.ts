@@ -484,3 +484,16 @@ export interface McpToolConsent {
   consent: McpToolConsentType;
   updatedAt: number;
 }
+
+// --- Local Supabase Setup Types ---
+export interface SetupLocalSupabaseParams {
+  appId: number;
+}
+
+export interface LocalSupabaseStatus {
+  isRunning: boolean;
+  url?: string;
+  dashboardUrl?: string;
+  anonKey?: string;
+  serviceRoleKey?: string;
+}
