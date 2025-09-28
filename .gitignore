@@ -9,6 +9,9 @@ lerna-debug.log*
 # dist
 dist/
 
+# tmp files (from production promotion scripts)
+tmp/
+
 # playwright
 playwright-report/
 test-results/

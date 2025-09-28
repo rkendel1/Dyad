@@ -497,3 +497,21 @@ export interface LocalSupabaseStatus {
   anonKey?: string;
   serviceRoleKey?: string;
 }
+
+export interface ProductionPromotionParams {
+  appId: number;
+  productionProjectRef: string;
+  supabaseUrl: string;
+  anonKey: string;
+  serviceRoleKey: string;
+  dbPassword: string;
+}
+
+export interface ProductionPromotionStatus {
+  success: boolean;
+  message: string;
+  productionProjectRef?: string;
+  schemaExported?: boolean;
+  envFilesUpdated?: boolean;
+  error?: string;
+}

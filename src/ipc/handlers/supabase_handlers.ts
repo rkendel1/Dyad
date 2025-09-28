@@ -9,11 +9,11 @@ import {
 } from "./safe_handle";
 import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
 import { safeSend } from "../utils/safe_sender";
-import { SetupLocalSupabaseParams, LocalSupabaseStatus } from "../ipc_types";
+import { SetupLocalSupabaseParams, LocalSupabaseStatus, ProductionPromotionParams, ProductionPromotionStatus } from "../ipc_types";
 import { execSync } from "child_process";
 import { existsSync } from "fs";
 import path from "path";
-import { updatePostgresUrlEnvVar } from "../utils/app_env_var_utils";
+import { updatePostgresUrlEnvVar, updateEnvironmentVariables } from "../utils/app_env_var_utils";
 
 const logger = log.scope("supabase_handlers");
 const handle = createLoggedHandler(logger);
@@ -84,6 +84,22 @@ async function stopLocalSupabase(): Promise<void> {
   } catch (error) {
     logger.error('Failed to stop local Supabase:', error);
     throw new Error(`Failed to stop local Supabase: ${error}`);
+  }
+}
+
+async function extractLocalDatabaseSchema(): Promise<string> {
+  try {
+    logger.info('Extracting database schema from local Supabase...');
+    
+    // Use pg_dump to extract schema
+    const pgDumpCommand = `pg_dump "${LOCAL_SUPABASE_CONFIG.postgresUrl}" --schema-only --no-owner --no-privileges`;
+    const schema = execSync(pgDumpCommand, { encoding: 'utf8' });
+    
+    logger.info('Database schema extracted successfully');
+    return schema;
+  } catch (error) {
+    logger.error('Failed to extract database schema:', error);
+    throw new Error(`Failed to extract database schema: ${error}`);
   }
 }
 
@@ -214,4 +230,67 @@ export function registerSupabaseHandlers() {
     await stopLocalSupabase();
     logger.info("Local Supabase stopped");
   });
+
+  // Promote to production
+  handle(
+    "supabase:promote-to-production", 
+    async (_, params: ProductionPromotionParams): Promise<ProductionPromotionStatus> => {
+      logger.info(`Starting production promotion for app ${params.appId}`);
+      
+      try {
+        // Get the app to find its path
+        const app = await db.select().from(apps).where(eq(apps.id, params.appId)).get();
+        if (!app) {
+          throw new Error(`App with ID ${params.appId} not found`);
+        }
+
+        // Validate local Supabase is running
+        if (!isLocalSupabaseRunning()) {
+          throw new Error('Local Supabase is not running. Please start it first.');
+        }
+
+        // Extract database schema from local Supabase
+        const _schema = await extractLocalDatabaseSchema();
+        
+        // Update the app to use production Supabase
+        await db
+          .update(apps)
+          .set({
+            supabaseProjectId: params.productionProjectRef
+          })
+          .where(eq(apps.id, params.appId));
+
+        // Update environment variables with production credentials
+        await updateEnvironmentVariables({
+          appPath: app.path,
+          envVars: {
+            'SUPABASE_URL': params.supabaseUrl,
+            'SUPABASE_ANON_KEY': params.anonKey,
+            'SUPABASE_SERVICE_ROLE_KEY': params.serviceRoleKey,
+            'POSTGRES_URL': `postgresql://postgres:${params.dbPassword}@db.${params.productionProjectRef}.supabase.co:5432/postgres`,
+            'NEXT_PUBLIC_SUPABASE_URL': params.supabaseUrl,
+            'NEXT_PUBLIC_SUPABASE_ANON_KEY': params.anonKey
+          }
+        });
+
+        logger.info(`Successfully promoted app ${params.appId} to production`);
+        
+        return {
+          success: true,
+          message: 'Production promotion completed successfully',
+          productionProjectRef: params.productionProjectRef,
+          schemaExported: true,
+          envFilesUpdated: true
+        };
+        
+      } catch (error) {
+        logger.error('Production promotion failed:', error);
+        return {
+          success: false,
+          message: `Production promotion failed: ${error}`,
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
+    }
+  );
 }

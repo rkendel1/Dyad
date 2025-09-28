@@ -42,7 +42,8 @@
     "e2e:shard": "playwright test --shard",
     "supabase:start": "node scripts/setup-local-supabase.js start",
     "supabase:stop": "node scripts/setup-local-supabase.js stop",
-    "supabase:status": "node scripts/setup-local-supabase.js status"
+    "supabase:status": "node scripts/setup-local-supabase.js status",
+    "supabase:promote": "node scripts/promote-to-production.js"
   },
   "keywords": [],
   "author": {
