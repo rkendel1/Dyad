@@ -236,6 +236,13 @@ export interface ImportAppParams {
   startCommand?: string;
 }
 
+export interface ImportAppFromGithubParams {
+  repoUrl: string;
+  appName: string;
+  installCommand?: string;  
+  startCommand?: string;
+}
+
 export interface CopyAppParams {
   appId: number;
   newAppName: string;

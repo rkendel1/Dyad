@@ -32,6 +32,7 @@ import type {
   ApproveProposalResult,
   ImportAppResult,
   ImportAppParams,
+  ImportAppFromGithubParams,
   RenameBranchParams,
   UserBudgetInfo,
   CopyAppParams,
@@ -1179,6 +1180,10 @@ export class IpcClient {
 
   public async importApp(params: ImportAppParams): Promise<ImportAppResult> {
     return this.ipcRenderer.invoke("import-app", params);
+  }
+
+  public async importAppFromGithub(params: ImportAppFromGithubParams): Promise<ImportAppResult> {
+    return this.ipcRenderer.invoke("import-app-from-github", params);
   }
 
   async checkAppName(params: {

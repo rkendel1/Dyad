@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { IpcClient } from "@/ipc/ipc_client";
 import { useMutation } from "@tanstack/react-query";
 import { showError, showSuccess } from "@/lib/toast";
-import { Folder, X, Loader2, Info } from "lucide-react";
+import { Folder, X, Loader2, Info, Github } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -47,6 +47,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
   const [isCheckingName, setIsCheckingName] = useState<boolean>(false);
   const [installCommand, setInstallCommand] = useState("pnpm install");
   const [startCommand, setStartCommand] = useState("pnpm dev");
+  const [importMode, setImportMode] = useState<"folder" | "github">("folder");
+  const [githubUrl, setGithubUrl] = useState<string>("");
   const navigate = useNavigate();
   const { streamMessage } = useStreamChat({ hasChatId: false });
   const { refreshApps } = useLoadApps();
@@ -91,6 +93,36 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     },
   });
 
+  const importFromGithubMutation = useMutation({
+    mutationFn: async () => {
+      if (!githubUrl.trim()) throw new Error("GitHub URL is required");
+      return IpcClient.getInstance().importAppFromGithub({
+        repoUrl: githubUrl.trim(),
+        appName: customAppName,
+        installCommand: installCommand || undefined,
+        startCommand: startCommand || undefined,
+      });
+    },
+    onSuccess: async (result) => {
+      showSuccess(
+        "App imported successfully from GitHub! Dependencies have been automatically installed if applicable.",
+      );
+      onClose();
+
+      navigate({ to: "/chat", search: { id: result.chatId } });
+      // Always generate AI_RULES for GitHub imports since we don't pre-check
+      streamMessage({
+        prompt:
+          "Generate an AI_RULES.md file for this app. Analyze the codebase structure and describe the tech stack in 5-10 bullet points and describe clear rules about what libraries to use for what.",
+        chatId: result.chatId,
+      });
+      setSelectedAppId(result.appId);
+      await refreshApps();
+    },
+    onError: (error: Error) => {
+      showError(error.message);
+    },
+  });
   const importAppMutation = useMutation({
     mutationFn: async () => {
       if (!selectedPath) throw new Error("No folder selected");
@@ -130,7 +162,11 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
   };
 
   const handleImport = () => {
-    importAppMutation.mutate();
+    if (importMode === "github") {
+      importFromGithubMutation.mutate();
+    } else {
+      importAppMutation.mutate();
+    }
   };
 
   const handleClear = () => {
@@ -140,6 +176,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     setNameExists(false);
     setInstallCommand("pnpm install");
     setStartCommand("pnpm dev");
+    setGithubUrl("");
+    setGithubUrlError("");
   };
 
   const handleAppNameChange = async (
@@ -149,6 +187,53 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     setCustomAppName(newName);
     if (newName.trim()) {
       await checkAppName(newName);
+    }
+  };
+
+  const [githubUrlError, setGithubUrlError] = useState<string>("");
+
+  const validateGithubUrl = (url: string): boolean => {
+    if (!url.trim()) {
+      setGithubUrlError("");
+      return false;
+    }
+    
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname !== "github.com") {
+        setGithubUrlError("URL must be from github.com");
+        return false;
+      }
+      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      if (pathParts.length < 2) {
+        setGithubUrlError("Invalid GitHub repository URL format");
+        return false;
+      }
+      setGithubUrlError("");
+      return true;
+    } catch {
+      setGithubUrlError("Invalid URL format");
+      return false;
+    }
+  };
+
+  const handleGithubUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setGithubUrl(url);
+    
+    if (validateGithubUrl(url)) {
+      // Auto-extract app name from GitHub URL
+      try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+        if (pathParts.length >= 2) {
+          const repoName = pathParts[1].replace(/\.git$/, "");
+          setCustomAppName(repoName);
+          checkAppName(repoName);
+        }
+      } catch {
+        // Invalid URL, ignore
+      }
     }
   };
 
@@ -162,7 +247,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
         <DialogHeader>
           <DialogTitle>Import App</DialogTitle>
           <DialogDescription>
-            Select an existing app folder to import into Dyad.
+            Import an existing app from a local folder or GitHub repository.
           </DialogDescription>
         </DialogHeader>
 
@@ -174,45 +259,93 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
           </AlertDescription>
         </Alert>
 
+        {/* Import Mode Selection */}
+        <div className="flex rounded-md border border-gray-200 dark:border-gray-700">
+          <Button
+            type="button"
+            variant={importMode === "folder" ? "default" : "ghost"}
+            className="flex-1 rounded-none rounded-l-md border-0"
+            onClick={() => setImportMode("folder")}>
+            <Folder className="mr-2 h-4 w-4" />
+            Local Folder
+          </Button>
+          <Button
+            type="button"
+            variant={importMode === "github" ? "default" : "ghost"}
+            className="flex-1 rounded-none rounded-r-md border-0"
+            onClick={() => setImportMode("github")}>
+            <Github className="mr-2 h-4 w-4" />
+            GitHub Repository
+          </Button>
+        </div>
+
         <div className="py-4">
-          {!selectedPath ? (
-            <Button
-              onClick={handleSelectFolder}
-              disabled={selectFolderMutation.isPending}
-              className="w-full"
-            >
-              {selectFolderMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Folder className="mr-2 h-4 w-4" />
-              )}
-              {selectFolderMutation.isPending
-                ? "Selecting folder..."
-                : "Select Folder"}
-            </Button>
-          ) : (
-            <div className="space-y-4">
-              <div className="rounded-md border p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">Selected folder:</p>
-                    <p className="text-sm text-muted-foreground break-all">
-                      {selectedPath}
-                    </p>
+          {importMode === "folder" ? (
+            // Local folder import UI
+            !selectedPath ? (
+              <Button
+                onClick={handleSelectFolder}
+                disabled={selectFolderMutation.isPending}
+                className="w-full"
+              >
+                {selectFolderMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Folder className="mr-2 h-4 w-4" />
+                )}
+                {selectFolderMutation.isPending
+                  ? "Selecting folder..."
+                  : "Select Folder"}
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">Selected folder:</p>
+                      <p className="text-sm text-muted-foreground break-all">
+                        {selectedPath}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClear}
+                      className="h-8 w-8 p-0 flex-shrink-0"
+                      disabled={importAppMutation.isPending}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Clear selection</span>
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClear}
-                    className="h-8 w-8 p-0 flex-shrink-0"
-                    disabled={importAppMutation.isPending}
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Clear selection</span>
-                  </Button>
                 </div>
               </div>
+            )
+          ) : (
+            // GitHub repository import UI
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm ml-2 mb-2">GitHub Repository URL</Label>
+                <Input
+                  value={githubUrl}
+                  onChange={handleGithubUrlChange}
+                  placeholder="https://github.com/username/repository"
+                  className="w-full"
+                  disabled={importFromGithubMutation.isPending}
+                />
+                {githubUrlError && (
+                  <p className="text-xs text-red-500 ml-2">{githubUrlError}</p>
+                )}
+                <p className="text-xs text-muted-foreground ml-2">
+                  Enter a GitHub repository URL to clone and import
+                </p>
+              </div>
+            </div>
+          )}
 
+          {/* Common UI - App Name and Advanced Options */}
+          {(selectedPath || (importMode === "github" && githubUrl.trim())) && (
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 {nameExists && (
                   <p className="text-sm text-yellow-500">
@@ -227,7 +360,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                     onChange={handleAppNameChange}
                     placeholder="Enter new app name"
                     className="w-full pr-8"
-                    disabled={importAppMutation.isPending}
+                    disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
                   />
                   {isCheckingName && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -251,7 +384,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                         value={installCommand}
                         onChange={(e) => setInstallCommand(e.target.value)}
                         placeholder="pnpm install"
-                        disabled={importAppMutation.isPending}
+                        disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -260,7 +393,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                         value={startCommand}
                         onChange={(e) => setStartCommand(e.target.value)}
                         placeholder="pnpm dev"
-                        disabled={importAppMutation.isPending}
+                        disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
                       />
                     </div>
                     {!commandsValid && (
@@ -294,10 +427,14 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                 </Alert>
               )}
 
-              {importAppMutation.isPending && (
+              {(importAppMutation.isPending || importFromGithubMutation.isPending) && (
                 <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Importing app...</span>
+                  <span>
+                    {importMode === "github" 
+                      ? "Cloning and importing from GitHub..." 
+                      : "Importing app..."}
+                  </span>
                 </div>
               )}
             </div>
@@ -308,21 +445,28 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
           <Button
             variant="outline"
             onClick={onClose}
-            disabled={importAppMutation.isPending}
+            disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
           >
             Cancel
           </Button>
           <Button
             onClick={handleImport}
             disabled={
-              !selectedPath ||
+              (importMode === "folder" && !selectedPath) ||
+              (importMode === "github" && (!githubUrl.trim() || githubUrlError)) ||
               importAppMutation.isPending ||
+              importFromGithubMutation.isPending ||
               nameExists ||
-              !commandsValid
+              !commandsValid ||
+              !customAppName.trim()
             }
             className="min-w-[80px]"
           >
-            {importAppMutation.isPending ? <>Importing...</> : "Import"}
+            {(importAppMutation.isPending || importFromGithubMutation.isPending) ? (
+              <>Importing...</>
+            ) : (
+              "Import"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
