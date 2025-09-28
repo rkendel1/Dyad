@@ -9,6 +9,8 @@ import {
   Loader2,
   Settings,
   GlobeIcon,
+  Database,
+  Server,
 } from "lucide-react";
 import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
 
@@ -319,6 +321,74 @@ export function SetupBanner() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem
+            value="database-setup"
+            className="bg-blue-50 dark:bg-blue-900/30"
+          >
+            <AccordionTrigger className="px-4 py-3 transition-colors w-full hover:no-underline">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3">
+                  <Database className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                  <span className="font-medium text-sm">
+                    3. Database Setup (Optional)
+                  </span>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pt-2 pb-4 bg-white dark:bg-zinc-900 border-t border-inherit">
+              <p className="text-sm mb-3">
+                Add a database to your apps for data storage and authentication.
+              </p>
+              
+              <SetupProviderCard
+                variant="local"
+                onClick={() => {
+                  posthog.capture("setup-flow:database-setup:local-supabase:click");
+                  // Navigate to an app creation or show instructions
+                  IpcClient.getInstance().openExternalUrl(
+                    "https://www.dyad.sh/docs/integrations/local-supabase"
+                  );
+                }}
+                tabIndex={isNodeSetupComplete && isAnyProviderSetup() ? 0 : -1}
+                leadingIcon={
+                  <Server className="w-4 h-4 text-green-600 dark:text-green-400" />
+                }
+                title="Setup Local Supabase"
+                subtitle={
+                  <>
+                    <Database className="w-3 h-3" />
+                    Run Supabase locally with Docker
+                  </>
+                }
+              />
+
+              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gray-100 dark:bg-gray-700 p-1.5 rounded-full">
+                      <GlobeIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-800 dark:text-gray-300">
+                        Cloud databases available too
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        Connect to Supabase, Neon, or other cloud providers from any app
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </div>
+              </div>
+
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 border rounded-lg text-sm">
+                <p className="text-blue-800 dark:text-blue-200">
+                  💡 <strong>Tip:</strong> You can add databases to your apps at any time from the app's integrations page.
+                </p>
               </div>
             </AccordionContent>
           </AccordionItem>
