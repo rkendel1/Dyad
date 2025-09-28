@@ -129,6 +129,10 @@ export async function getSupabaseProjectName(
     return "Fake Supabase Project";
   }
 
+  if (projectId === "local-supabase") {
+    return "Local Supabase";
+  }
+
   const supabase = await getSupabaseClient();
   const projects = await supabase.getProjects();
   const project = projects?.find((p) => p.id === projectId);
