@@ -42,6 +42,49 @@ export async function updatePostgresUrlEnvVar({
   await fs.promises.writeFile(getEnvFilePath({ appPath }), envFileContents);
 }
 
+export async function updateEnvironmentVariables({
+  appPath,
+  envVars,
+}: {
+  appPath: string;
+  envVars: Record<string, string>;
+}) {
+  try {
+    // Try to read existing env file
+    let existingEnvVars: EnvVar[];
+    try {
+      const content = await readEnvFile({ appPath });
+      existingEnvVars = parseEnvFile(content);
+    } catch {
+      // If file doesn't exist, start with empty array
+      existingEnvVars = [];
+    }
+
+    // Update or add new environment variables
+    for (const [key, value] of Object.entries(envVars)) {
+      const existingVar = existingEnvVars.find((envVar) => envVar.key === key);
+      if (existingVar) {
+        existingVar.value = value;
+      } else {
+        existingEnvVars.push({ key, value });
+      }
+    }
+
+    const envFileContents = serializeEnvFile(existingEnvVars);
+    await fs.promises.writeFile(getEnvFilePath({ appPath }), envFileContents);
+    
+    // Also create .env.production file
+    const productionEnvPath = path.join(getDyadAppPath(appPath), ".env.production");
+    await fs.promises.writeFile(productionEnvPath, envFileContents);
+    
+  } catch (error) {
+    logger.error(
+      `Failed to update environment variables for app ${appPath}: ${error}`,
+    );
+    throw error;
+  }
+}
+
 export async function updateDbPushEnvVar({
   appPath,
   disabled,

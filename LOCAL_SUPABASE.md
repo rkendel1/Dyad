@@ -167,6 +167,44 @@ You can easily switch between local and cloud Supabase:
 
 Each app can use a different Supabase instance, so you can have some apps using local and others using cloud.
 
+## Production Promotion
+
+When you're ready to move from local development to production, Dyad provides tools to help:
+
+### Using the CLI Tool (Recommended)
+
+```bash
+# Start the production promotion process
+npm run supabase:promote
+```
+
+This interactive tool will guide you through:
+- Creating or configuring a production Supabase project
+- Migrating your database schema
+- Updating environment files
+- Deploying functions
+- Providing guidance for data migration
+
+### Using the Dyad UI
+
+1. In your app's Supabase settings, click "Promote to Production"
+2. Follow the guided process
+3. Enter production project credentials
+4. Review and confirm the promotion
+
+### Manual Process
+
+See [PRODUCTION_PROMOTION.md](./PRODUCTION_PROMOTION.md) for detailed manual instructions.
+
+## Production Promotion Features
+
+- **Schema Migration**: Automatically extracts and provides your local database schema for production
+- **Environment Configuration**: Updates `.env.local` and creates `.env.production` with production credentials
+- **Function Migration**: Guides you through deploying Supabase functions to production
+- **Data Migration Guidance**: Provides safe strategies for migrating data if needed
+- **Validation Checklist**: Ensures all components are properly configured in production
+- **Security Best Practices**: Includes guidance for securing your production environment
+
 ## Files Structure
 
 ```

@@ -66,7 +66,8 @@ import type {
   McpServerUpdate,
   CreateMcpServer,
   SetupLocalSupabaseParams,
-  LocalSupabaseStatus,
+  ProductionPromotionParams,
+  ProductionPromotionStatus,
 } from "./ipc_types";
 import type { Template } from "../shared/templates";
 import type {
@@ -972,6 +973,10 @@ export class IpcClient {
 
   public async stopLocalSupabase(): Promise<void> {
     await this.ipcRenderer.invoke("supabase:stop-local");
+  }
+
+  public async promoteToProduction(params: ProductionPromotionParams): Promise<ProductionPromotionStatus> {
+    return this.ipcRenderer.invoke("supabase:promote-to-production", params);
   }
 
   // --- End Supabase Management ---

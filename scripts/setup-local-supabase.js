@@ -100,9 +100,20 @@ Commands:
   config    Show connection configuration
   help      Show this help message
 
+Production Promotion:
+  To promote your local development to production, use:
+  npm run supabase:promote
+  
+  This will guide you through:
+  - Creating or configuring production project
+  - Migrating database schema
+  - Updating environment files
+  - Deploying functions to production
+
 Examples:
   node scripts/setup-local-supabase.js start
   node scripts/setup-local-supabase.js status
+  npm run supabase:promote
   `);
 }
 
