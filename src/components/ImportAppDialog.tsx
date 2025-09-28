@@ -105,20 +105,17 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     },
     onSuccess: async (result) => {
       showSuccess(
-        !hasAiRules
-          ? "App imported successfully from GitHub. Dyad will automatically generate an AI_RULES.md now."
-          : "App imported successfully from GitHub",
+        "App imported successfully from GitHub! Dependencies have been automatically installed if applicable.",
       );
       onClose();
 
       navigate({ to: "/chat", search: { id: result.chatId } });
-      if (!hasAiRules) {
-        streamMessage({
-          prompt:
-            "Generate an AI_RULES.md file for this app. Describe the tech stack in 5-10 bullet points and describe clear rules about what libraries to use for what.",
-          chatId: result.chatId,
-        });
-      }
+      // Always generate AI_RULES for GitHub imports since we don't pre-check
+      streamMessage({
+        prompt:
+          "Generate an AI_RULES.md file for this app. Analyze the codebase structure and describe the tech stack in 5-10 bullet points and describe clear rules about what libraries to use for what.",
+        chatId: result.chatId,
+      });
       setSelectedAppId(result.appId);
       await refreshApps();
     },
@@ -180,6 +177,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     setInstallCommand("pnpm install");
     setStartCommand("pnpm dev");
     setGithubUrl("");
+    setGithubUrlError("");
   };
 
   const handleAppNameChange = async (
@@ -192,21 +190,46 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     }
   };
 
+  const [githubUrlError, setGithubUrlError] = useState<string>("");
+
+  const validateGithubUrl = (url: string): boolean => {
+    if (!url.trim()) {
+      setGithubUrlError("");
+      return false;
+    }
+    
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname !== "github.com") {
+        setGithubUrlError("URL must be from github.com");
+        return false;
+      }
+      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      if (pathParts.length < 2) {
+        setGithubUrlError("Invalid GitHub repository URL format");
+        return false;
+      }
+      setGithubUrlError("");
+      return true;
+    } catch {
+      setGithubUrlError("Invalid URL format");
+      return false;
+    }
+  };
+
   const handleGithubUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setGithubUrl(url);
     
-    // Auto-extract app name from GitHub URL
-    if (url.trim()) {
+    if (validateGithubUrl(url)) {
+      // Auto-extract app name from GitHub URL
       try {
         const urlObj = new URL(url);
-        if (urlObj.hostname === "github.com") {
-          const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
-          if (pathParts.length >= 2) {
-            const repoName = pathParts[1].replace(/\.git$/, "");
-            setCustomAppName(repoName);
-            checkAppName(repoName);
-          }
+        const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+        if (pathParts.length >= 2) {
+          const repoName = pathParts[1].replace(/\.git$/, "");
+          setCustomAppName(repoName);
+          checkAppName(repoName);
         }
       } catch {
         // Invalid URL, ignore
@@ -310,6 +333,9 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                   className="w-full"
                   disabled={importFromGithubMutation.isPending}
                 />
+                {githubUrlError && (
+                  <p className="text-xs text-red-500 ml-2">{githubUrlError}</p>
+                )}
                 <p className="text-xs text-muted-foreground ml-2">
                   Enter a GitHub repository URL to clone and import
                 </p>
@@ -427,7 +453,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             onClick={handleImport}
             disabled={
               (importMode === "folder" && !selectedPath) ||
-              (importMode === "github" && !githubUrl.trim()) ||
+              (importMode === "github" && (!githubUrl.trim() || githubUrlError)) ||
               importAppMutation.isPending ||
               importFromGithubMutation.isPending ||
               nameExists ||

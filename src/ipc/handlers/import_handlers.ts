@@ -10,13 +10,39 @@ import { chats } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 import { ImportAppParams, ImportAppResult, ImportAppFromGithubParams } from "../ipc_types";
 import { copyDirectoryRecursive } from "../utils/file_utils";
 import { gitCommit } from "../utils/git_utils";
 
+const execAsync = promisify(exec);
+
 const logger = log.scope("import-handlers");
 const handle = createLoggedHandler(logger);
+
+// Helper function to detect package manager from repository
+async function detectPackageManager(repoPath: string): Promise<{
+  hasPackageJson: boolean;
+  hasYarnLock: boolean;
+  hasPnpmLock: boolean;
+  hasNodeModules: boolean;
+}> {
+  const checks = await Promise.allSettled([
+    fs.access(path.join(repoPath, "package.json")),
+    fs.access(path.join(repoPath, "yarn.lock")),
+    fs.access(path.join(repoPath, "pnpm-lock.yaml")),
+    fs.access(path.join(repoPath, "node_modules")),
+  ]);
+
+  return {
+    hasPackageJson: checks[0].status === "fulfilled",
+    hasYarnLock: checks[1].status === "fulfilled", 
+    hasPnpmLock: checks[2].status === "fulfilled",
+    hasNodeModules: checks[3].status === "fulfilled",
+  };
+}
 
 export function registerImportHandlers() {
   // Handler for selecting an app folder
@@ -292,14 +318,47 @@ export function registerImportHandlers() {
         message: `Import from GitHub: ${orgName}/${repoName}`,
       });
 
+      // Detect project characteristics for better setup
+      const packageInfo = await detectPackageManager(destPath);
+      
+      // Automatically set install/start commands if not provided and package.json exists
+      let finalInstallCommand = installCommand;
+      let finalStartCommand = startCommand;
+      
+      if (packageInfo.hasPackageJson && !finalInstallCommand) {
+        if (packageInfo.hasPnpmLock) {
+          finalInstallCommand = "pnpm install";
+          if (!finalStartCommand) finalStartCommand = "pnpm dev";
+        } else if (packageInfo.hasYarnLock) {
+          finalInstallCommand = "yarn install";
+          if (!finalStartCommand) finalStartCommand = "yarn dev";
+        } else {
+          finalInstallCommand = "npm install";
+          if (!finalStartCommand) finalStartCommand = "npm run dev";
+        }
+        logger.info(`Auto-detected package manager and set commands: install="${finalInstallCommand}", start="${finalStartCommand}"`);
+      }
+
+      // Run post-import setup if install command is provided or detected
+      if (finalInstallCommand && packageInfo.hasPackageJson) {
+        logger.info(`Running post-import setup command: ${finalInstallCommand}`);
+        try {
+          await execAsync(finalInstallCommand, { cwd: destPath, timeout: 300000 }); // 5 minute timeout
+          logger.info(`Successfully completed post-import setup`);
+        } catch (error: any) {
+          logger.warn(`Post-import setup failed (continuing anyway): ${error.message}`);
+          // Don't throw error here - the app import is still successful even if setup fails
+        }
+      }
+
       // Create a new app
       const [app] = await db
         .insert(apps)
         .values({
           name: appName,
           path: appName,
-          installCommand: installCommand ?? null,
-          startCommand: startCommand ?? null,
+          installCommand: finalInstallCommand ?? null,
+          startCommand: finalStartCommand ?? null,
         })
         .returning();
 
