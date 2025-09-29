@@ -485,6 +485,11 @@ export class IpcClient {
     await this.ipcRenderer.invoke("open-external-url", url);
   }
 
+  // Open the preview in an external window with enhanced features
+  public async openExternalPreview(url: string): Promise<void> {
+    await this.ipcRenderer.invoke("open-external-preview", url);
+  }
+
   public async showItemInFolder(fullPath: string): Promise<void> {
     await this.ipcRenderer.invoke("show-item-in-folder", fullPath);
   }

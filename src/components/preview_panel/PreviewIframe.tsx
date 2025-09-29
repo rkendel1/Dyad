@@ -22,6 +22,7 @@ import {
   Code,
   Copy,
   MessageSquare,
+  Square,
 } from "lucide-react";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
@@ -655,6 +656,29 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
             <Power size={16} />
             <span>Restart</span>
           </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  data-testid="preview-open-external-window-button"
+                  onClick={() => {
+                    if (originalUrl) {
+                      IpcClient.getInstance().openExternalPreview(originalUrl);
+                    }
+                  }}
+                  className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300"
+                  disabled={!originalUrl}
+                  title="Open preview in external window"
+                >
+                  <Square size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open preview in external window</p>
+                <p>Includes component and CSS selectors</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <button
             data-testid="preview-open-browser-button"
             onClick={() => {
