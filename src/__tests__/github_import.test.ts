@@ -54,7 +54,7 @@ describe("GitHub URL validation", () => {
       
       const urlObj = new URL(cleanUrl);
       const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
-      const repoName = pathParts[1].replace(/\.git$/, "");
+      const _repoName = pathParts[1].replace(/\.git$/, "");
       
       expect(urlObj.href.replace(/\.git$/, "")).toBe(expected);
       expect(pathParts.length).toBe(2);
