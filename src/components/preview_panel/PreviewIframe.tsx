@@ -421,6 +421,21 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     iframeRef,
   );
 
+  // Open external preview using a shortcut
+  const handleOpenExternalPreview = () => {
+    if (originalUrl) {
+      IpcClient.getInstance().openExternalPreview(originalUrl);
+    }
+  };
+
+  useShortcut(
+    "e",
+    { shift: true, ctrl: !isMac, meta: isMac },
+    handleOpenExternalPreview,
+    isComponentSelectorInitialized, // Use component selector initialization as a proxy for app readiness
+    iframeRef,
+  );
+
   // Function to navigate back
   const handleNavigateBack = () => {
     if (canGoBack && iframeRef.current?.contentWindow) {
@@ -676,6 +691,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
               <TooltipContent>
                 <p>Open preview in external window</p>
                 <p>Includes component and CSS selectors</p>
+                <p>{isMac ? "⌘ + ⇧ + E" : "Ctrl + ⇧ + E"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

@@ -41,3 +41,17 @@ testSkipIfWindows("external preview window button positioning", async ({ po }) =
   const toolbar = po.page.locator('.flex.space-x-1').last();
   await expect(toolbar.locator('button')).toHaveCount(3); // Restart, External Preview, External Link
 });
+
+testSkipIfWindows("external preview keyboard shortcut tooltip", async ({ po }) => {
+  await po.setUp();
+  await po.sendPrompt("tc=basic");
+  await po.clickTogglePreviewPanel();
+  
+  // Check that the tooltip shows the keyboard shortcut
+  const externalPreviewButton = po.page.getByTestId("preview-open-external-window-button");
+  await externalPreviewButton.hover();
+  
+  const isMac = process.platform === "darwin";
+  const expectedShortcut = isMac ? "⌘ + ⇧ + E" : "Ctrl + ⇧ + E";
+  await expect(po.page.locator(`text=${expectedShortcut}`)).toBeVisible();
+});
