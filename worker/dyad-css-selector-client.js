@@ -282,7 +282,6 @@
     if (state.type === "inactive") {
       window.addEventListener("mousemove", onMouseMove, true);
       window.addEventListener("click", onClick, true);
-      window.addEventListener("keydown", onKeyDown, true);
     }
     state = { type: "inspecting", element: null };
     if (overlay) {
@@ -295,7 +294,6 @@
 
     window.removeEventListener("mousemove", onMouseMove, true);
     window.removeEventListener("click", onClick, true);
-    window.removeEventListener("keydown", onKeyDown, true);
     if (overlay) {
       overlay.remove();
       overlay = null;
@@ -310,6 +308,9 @@
     if (e.data.type === "activate-dyad-css-selector") activate();
     if (e.data.type === "deactivate-dyad-css-selector") deactivate();
   });
+
+  // Always listen for keyboard shortcuts (like component selector)
+  window.addEventListener("keydown", onKeyDown, true);
 
   function initializeCSSSelector() {
     window.parent.postMessage(
