@@ -38,6 +38,7 @@ let rememberedOrigin = null; // e.g. "http://localhost:5173"
 let stacktraceJsContent = null;
 let dyadShimContent = null;
 let dyadComponentSelectorClientContent = null;
+let dyadCssSelectorClientContent = null;
 try {
   const stackTraceLibPath = path.join(
     __dirname,
@@ -83,6 +84,24 @@ try {
   );
 }
 
+try {
+  const dyadCssSelectorClientPath = path.join(
+    __dirname,
+    "dyad-css-selector-client.js",
+  );
+  dyadCssSelectorClientContent = fs.readFileSync(
+    dyadCssSelectorClientPath,
+    "utf-8",
+  );
+  parentPort?.postMessage(
+    "[proxy-worker] dyad-css-selector-client.js loaded.",
+  );
+} catch (error) {
+  parentPort?.postMessage(
+    `[proxy-worker] Failed to read dyad-css-selector-client.js: ${error.message}`,
+  );
+}
+
 /* ---------------------- helper: need to inject? ------------------------ */
 function needsInjection(pathname) {
   return pathname.endsWith("index.html") || pathname === "/";
@@ -120,6 +139,14 @@ function injectHTML(buf) {
   } else {
     scripts.push(
       '<script>console.warn("[proxy-worker] dyad component selector client was not injected.");</script>',
+    );
+  }
+  
+  if (dyadCssSelectorClientContent) {
+    scripts.push(`<script>${dyadCssSelectorClientContent}</script>`);
+  } else {
+    scripts.push(
+      '<script>console.warn("[proxy-worker] dyad css selector client was not injected.");</script>',
     );
   }
   const allScripts = scripts.join("\n");

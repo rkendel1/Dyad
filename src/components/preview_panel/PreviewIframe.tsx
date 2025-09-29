@@ -19,6 +19,9 @@ import {
   ChevronRight,
   MousePointerClick,
   Power,
+  Code,
+  Copy,
+  MessageSquare,
 } from "lucide-react";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
@@ -41,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useRunApp } from "@/hooks/useRunApp";
 import { useShortcut } from "@/hooks/useShortcut";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface ErrorBannerProps {
   error: string | undefined;
@@ -140,6 +144,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   // Navigation state
   const [isComponentSelectorInitialized, setIsComponentSelectorInitialized] =
     useState(false);
+  const [isCssSelectorInitialized, setIsCssSelectorInitialized] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
@@ -149,6 +154,8 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isPicking, setIsPicking] = useState(false);
+  const [isPickingCssSelector, setIsPickingCssSelector] = useState(false);
+  const [capturedCssSelector, setCapturedCssSelector] = useState<string | null>(null);
 
   //detect if the user is using Mac
   const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
@@ -166,6 +173,18 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     }
   }, [selectedComponentPreview]);
 
+  // Deactivate CSS selector when it's not being used
+  useEffect(() => {
+    if (!isPickingCssSelector && !capturedCssSelector) {
+      if (iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          { type: "deactivate-dyad-css-selector" },
+          "*",
+        );
+      }
+    }
+  }, [isPickingCssSelector, capturedCssSelector]);
+
   // Add message listener for iframe errors and navigation events
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -179,10 +198,29 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
         return;
       }
 
+      if (event.data?.type === "dyad-css-selector-initialized") {
+        setIsCssSelectorInitialized(true);
+        return;
+      }
+
       if (event.data?.type === "dyad-component-selected") {
         console.log("Component picked:", event.data);
         setSelectedComponentPreview(parseComponentSelection(event.data));
         setIsPicking(false);
+        return;
+      }
+
+      if (event.data?.type === "dyad-css-selector-selected") {
+        console.log("CSS selector captured:", event.data);
+        setCapturedCssSelector(event.data.selector);
+        setIsPickingCssSelector(false);
+        return;
+      }
+
+      if (event.data?.type === "dyad-css-selector-cancelled") {
+        console.log("CSS selector cancelled");
+        setIsPickingCssSelector(false);
+        setCapturedCssSelector(null);
         return;
       }
 
@@ -294,6 +332,14 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     if (iframeRef.current?.contentWindow) {
       const newIsPicking = !isPicking;
       setIsPicking(newIsPicking);
+      // Deactivate CSS selector if it's active
+      if (isPickingCssSelector) {
+        setIsPickingCssSelector(false);
+        iframeRef.current.contentWindow.postMessage(
+          { type: "deactivate-dyad-css-selector" },
+          "*",
+        );
+      }
       iframeRef.current.contentWindow.postMessage(
         {
           type: newIsPicking
@@ -305,12 +351,72 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     }
   };
 
+  // Function to activate CSS selector in the iframe
+  const handleActivateCssSelector = () => {
+    if (iframeRef.current?.contentWindow) {
+      const newIsPickingCss = !isPickingCssSelector;
+      setIsPickingCssSelector(newIsPickingCss);
+      setCapturedCssSelector(null);
+      // Deactivate component selector if it's active
+      if (isPicking) {
+        setIsPicking(false);
+        iframeRef.current.contentWindow.postMessage(
+          { type: "deactivate-dyad-component-selector" },
+          "*",
+        );
+      }
+      iframeRef.current.contentWindow.postMessage(
+        {
+          type: newIsPickingCss
+            ? "activate-dyad-css-selector"
+            : "deactivate-dyad-css-selector",
+        },
+        "*",
+      );
+    }
+  };
+
+  // Function to copy CSS selector to clipboard
+  const copyCssSelectorToClipboard = async () => {
+    if (capturedCssSelector) {
+      try {
+        await navigator.clipboard.writeText(capturedCssSelector);
+        console.log("CSS selector copied to clipboard:", capturedCssSelector);
+        showSuccess("CSS selector copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy CSS selector to clipboard:", err);
+        showError("Failed to copy CSS selector to clipboard");
+      }
+    }
+  };
+
+  // Function to insert CSS selector into chat
+  const insertCssSelectorToChat = () => {
+    if (capturedCssSelector && selectedChatId) {
+      streamMessage({
+        prompt: `Use this CSS selector: \`${capturedCssSelector}\``,
+        chatId: selectedChatId,
+      });
+      setCapturedCssSelector(null);
+      showSuccess("CSS selector inserted into chat!");
+    }
+  };
+
   // Activate component selector using a shortcut
   useShortcut(
     "c",
     { shift: true, ctrl: !isMac, meta: isMac },
     handleActivateComponentSelector,
     isComponentSelectorInitialized,
+    iframeRef,
+  );
+
+  // Activate CSS selector using a shortcut
+  useShortcut(
+    "s",
+    { shift: true, ctrl: !isMac, meta: isMac },
+    handleActivateCssSelector,
+    isCssSelectorInitialized,
     iframeRef,
   );
 
@@ -450,6 +556,34 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>  
+                <button
+                  onClick={handleActivateCssSelector}
+                  className={`p-1 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isPickingCssSelector
+                      ? "bg-green-500 text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+                      : " text-green-700 hover:bg-green-200  dark:text-green-300 dark:hover:bg-green-900"
+                  }`}
+                  disabled={
+                    loading || !selectedAppId || !isCssSelectorInitialized
+                  }
+                  data-testid="preview-css-selector-button"
+                >
+                  <Code size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {isPickingCssSelector
+                    ? "Deactivate CSS selector"
+                    : "Select CSS selector"}
+                </p>
+                <p>{isMac ? "⌘ + ⇧ + S" : "Ctrl + ⇧ + S"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <button
             className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300"
             disabled={!canGoBack || loading || !selectedAppId}
@@ -548,6 +682,66 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
             }
           }}
         />
+
+        {/* CSS Selector Display Panel */}
+        {capturedCssSelector && (
+          <div className="absolute top-2 left-2 right-2 z-20 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md shadow-sm p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <Code size={16} className="text-green-600 dark:text-green-400" />
+                  <span className="font-medium text-green-800 dark:text-green-200 text-sm">
+                    CSS Selector Captured
+                  </span>
+                </div>
+                <div className="bg-gray-100 dark:bg-gray-800 rounded p-2 font-mono text-sm text-gray-800 dark:text-gray-200 break-all">
+                  {capturedCssSelector}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={copyCssSelectorToClipboard}
+                        className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 rounded text-green-700 dark:text-green-300 transition-colors"
+                        data-testid="copy-css-selector-button"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy to clipboard</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={insertCssSelectorToChat}
+                        disabled={!selectedChatId}
+                        className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 rounded text-green-700 dark:text-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        data-testid="insert-css-selector-button"
+                      >
+                        <MessageSquare size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Insert to chat</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <button
+                  onClick={() => setCapturedCssSelector(null)}
+                  className="p-1 hover:bg-green-200 dark:hover:bg-green-800 rounded text-green-500 dark:text-green-400"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {!appUrl ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-gray-50 dark:bg-gray-950">
