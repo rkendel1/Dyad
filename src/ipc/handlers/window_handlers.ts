@@ -142,7 +142,7 @@ const createPreviewHtml = (url: string): Promise<string> => {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .url-display {
+        .url-input {
             flex: 1;
             padding: 8px 16px;
             background: rgba(255,255,255,0.1);
@@ -151,9 +151,16 @@ const createPreviewHtml = (url: string): Promise<string> => {
             color: white;
             font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
             font-size: 12px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .url-input:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+        }
+        .url-input::placeholder {
+            color: rgba(255,255,255,0.6);
         }
         .iframe-container {
             flex: 1;
@@ -313,7 +320,14 @@ const createPreviewHtml = (url: string): Promise<string> => {
             <button id="cssSelector" class="toolbar-button" title="Select CSS Element (⌘/Ctrl + Shift + S)">
                 🎯 <span>CSS</span>
             </button>
-            <div class="url-display" title="${url}">${url}</div>
+            <input 
+                id="urlInput" 
+                class="url-input" 
+                type="url" 
+                value="${url}"
+                placeholder="Enter URL (e.g., http://localhost:3000)"
+                title="Edit URL and press Enter to navigate"
+            />
             <button id="refreshBtn" class="toolbar-button" title="Refresh Preview">
                 🔄 <span>Refresh</span>
             </button>
@@ -353,6 +367,7 @@ const createPreviewHtml = (url: string): Promise<string> => {
             const componentBtn = document.getElementById('componentSelector');
             const cssBtn = document.getElementById('cssSelector');
             const refreshBtn = document.getElementById('refreshBtn');
+            const urlInput = document.getElementById('urlInput');
             const selectorPanel = document.getElementById('selectorPanel');
             const copyBtn = document.getElementById('copySelector');
             const closeBtn = document.getElementById('closeSelector');
@@ -365,6 +380,9 @@ const createPreviewHtml = (url: string): Promise<string> => {
             // Handle iframe load
             iframe.addEventListener('load', function() {
                 hideLoading();
+                // Update URL input with actual loaded URL
+                const urlInput = document.getElementById('urlInput');
+                urlInput.value = iframe.src;
                 setTimeout(() => {
                     injectSelectors();
                     showStatus('Preview loaded');
@@ -389,9 +407,25 @@ const createPreviewHtml = (url: string): Promise<string> => {
             
             refreshBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                showLoading();
-                hideSelectorPanel();
-                iframe.src = iframe.src;
+                refreshPreview();
+            });
+            
+            // URL input handlers
+            urlInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    navigateToUrl(urlInput.value.trim());
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    // Revert to current iframe URL
+                    urlInput.value = iframe.src;
+                    urlInput.blur();
+                }
+            });
+            
+            urlInput.addEventListener('blur', function() {
+                // Sync with current iframe URL when losing focus
+                urlInput.value = iframe.src;
             });
             
             // Selector panel handlers
@@ -418,6 +452,12 @@ const createPreviewHtml = (url: string): Promise<string> => {
             
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
+                // Don't trigger shortcuts when URL input is focused
+                const urlInput = document.getElementById('urlInput');
+                if (document.activeElement === urlInput) {
+                    return;
+                }
+                
                 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
                 const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
                 
@@ -455,6 +495,43 @@ const createPreviewHtml = (url: string): Promise<string> => {
                 showStatus('Ready - Click a selector button to start');
             }, 1000);
         });
+        
+        function navigateToUrl(url) {
+            if (!url) {
+                showStatus('Please enter a valid URL', 'error');
+                return;
+            }
+            
+            // Basic URL validation
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showStatus('URL must start with http:// or https://', 'error');
+                return;
+            }
+            
+            try {
+                new URL(url); // Validate URL format
+                showLoading();
+                hideSelectorPanel();
+                toggleSelector(null);
+                
+                const iframe = document.getElementById('previewFrame');
+                iframe.src = url;
+                showStatus('Navigating to ' + url);
+            } catch (error) {
+                showStatus('Invalid URL format', 'error');
+                const urlInput = document.getElementById('urlInput');
+                urlInput.focus();
+            }
+        }
+        
+        function refreshPreview() {
+            const iframe = document.getElementById('previewFrame');
+            showLoading();
+            hideSelectorPanel();
+            toggleSelector(null);
+            iframe.src = iframe.src;
+            showStatus('Refreshing preview');
+        }
         
         function showLoading() {
             const loadingIndicator = document.getElementById('loadingIndicator');
