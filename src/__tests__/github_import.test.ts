@@ -22,40 +22,53 @@ describe("GitHub URL validation", () => {
       "https://github.com/user/repo.git",
     ];
 
-    validUrls.forEach(url => {
+    validUrls.forEach((url) => {
       expect(() => new URL(url)).not.toThrow();
       const urlObj = new URL(url);
       expect(urlObj.hostname).toBe("github.com");
       expect(urlObj.protocol).toBe("https:");
-      
-      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+
+      const pathParts = urlObj.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
       expect(pathParts.length).toBe(2);
     });
   });
 
   it("should handle various GitHub URL formats", () => {
     const urlVariations = [
-      { input: "https://github.com/user/repo", expected: "https://github.com/user/repo" },
-      { input: "github.com/user/repo", expected: "https://github.com/user/repo" },
-      { input: "https://github.com/user/repo.git", expected: "https://github.com/user/repo" },
+      {
+        input: "https://github.com/user/repo",
+        expected: "https://github.com/user/repo",
+      },
+      {
+        input: "github.com/user/repo",
+        expected: "https://github.com/user/repo",
+      },
+      {
+        input: "https://github.com/user/repo.git",
+        expected: "https://github.com/user/repo",
+      },
     ];
 
     urlVariations.forEach(({ input, expected }) => {
       // Simulate the URL cleaning logic from our enhanced import handler
       let cleanUrl = input.trim();
-      
-      if (cleanUrl.startsWith('github.com/')) {
-        cleanUrl = 'https://' + cleanUrl;
+
+      if (cleanUrl.startsWith("github.com/")) {
+        cleanUrl = "https://" + cleanUrl;
       }
-      
-      if (cleanUrl.startsWith('git@github.com:')) {
-        cleanUrl = cleanUrl.replace('git@github.com:', 'https://github.com/');
+
+      if (cleanUrl.startsWith("git@github.com:")) {
+        cleanUrl = cleanUrl.replace("git@github.com:", "https://github.com/");
       }
-      
+
       const urlObj = new URL(cleanUrl);
-      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      const pathParts = urlObj.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
       const _repoName = pathParts[1].replace(/\.git$/, "");
-      
+
       expect(urlObj.href.replace(/\.git$/, "")).toBe(expected);
       expect(pathParts.length).toBe(2);
     });
@@ -70,16 +83,18 @@ describe("GitHub URL validation", () => {
       "invalid-url", // Not a URL at all
     ];
 
-    invalidUrls.forEach(url => {
+    invalidUrls.forEach((url) => {
       try {
         let cleanUrl = url.trim();
-        if (cleanUrl.startsWith('github.com/')) {
-          cleanUrl = 'https://' + cleanUrl;
+        if (cleanUrl.startsWith("github.com/")) {
+          cleanUrl = "https://" + cleanUrl;
         }
-        
+
         const urlObj = new URL(cleanUrl);
         if (urlObj.hostname === "github.com" && urlObj.protocol === "https:") {
-          const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+          const pathParts = urlObj.pathname
+            .split("/")
+            .filter((part) => part.length > 0);
           expect(pathParts.length).toBe(2); // This should fail for invalid GitHub URLs
         }
       } catch {
@@ -93,12 +108,17 @@ describe("GitHub URL validation", () => {
     const testCases = [
       { url: "https://github.com/facebook/react", expected: "react" },
       { url: "https://github.com/microsoft/vscode.git", expected: "vscode" },
-      { url: "https://github.com/user/my-awesome-project", expected: "my-awesome-project" },
+      {
+        url: "https://github.com/user/my-awesome-project",
+        expected: "my-awesome-project",
+      },
     ];
 
     testCases.forEach(({ url, expected }) => {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      const pathParts = urlObj.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
       const repoName = pathParts[1].replace(/\.git$/, "");
       expect(repoName).toBe(expected);
     });
@@ -132,7 +152,7 @@ describe("GitHub Authentication validation", () => {
       "GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes in Settings.",
     ];
 
-    errorMessages.forEach(message => {
+    errorMessages.forEach((message) => {
       expect(message).toContain("GitHub");
       expect(message).toContain("Settings");
     });

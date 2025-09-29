@@ -45,7 +45,8 @@ export const localTemplatesData: Template[] = [
   {
     id: PORTAL_MINI_STORE_ID,
     title: "Portal: Mini Store Template",
-    description: "Uses Neon DB, Payload CMS, Next.js",
+    description:
+      "Uses Neon DB, Payload CMS, and Next.js for content-driven e-commerce.",
     imageUrl:
       "https://github.com/user-attachments/assets/ed86f322-40bf-4fd5-81dc-3b1d8a16e12b",
     githubUrl: "https://github.com/dyad-sh/portal-mini-store-template",
@@ -57,7 +58,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "stripe-ecommerce",
     title: "Stripe E-commerce Template",
-    description: "Next.js e-commerce store with Stripe payments, product catalog, shopping cart, and checkout flow.",
+    description:
+      "Next.js e-commerce store with Stripe payments, product catalog, shopping cart, and checkout flow.",
     imageUrl:
       "https://github.com/user-attachments/assets/5b700eab-b28c-498e-96de-8649b14c16d9",
     githubUrl: "https://github.com/Skolaczk/next-starter",
@@ -66,7 +68,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "saas-starter",
     title: "SaaS Starter Template",
-    description: "Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.",
+    description:
+      "Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.",
     imageUrl:
       "https://github.com/user-attachments/assets/96258e4f-abce-4910-a62a-a9dff77965f2",
     githubUrl: "https://github.com/ixartz/SaaS-Boilerplate",
@@ -75,7 +78,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "blog-mdx",
     title: "MDX Blog Template",
-    description: "Modern blog template with MDX content, syntax highlighting, SEO optimization, and content management system.",
+    description:
+      "Modern blog template with MDX content, syntax highlighting, SEO optimization, and content management system.",
     imageUrl:
       "https://github.com/user-attachments/assets/ed86f322-40bf-4fd5-81dc-3b1d8a16e12b",
     githubUrl: "https://github.com/ChangoMan/nextjs-mdx-blog",
@@ -84,7 +88,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "auth-clerk",
     title: "Authentication Template",
-    description: "Complete authentication solution with Clerk, user profiles, role-based access, and protected routes.",
+    description:
+      "Complete authentication solution with Clerk, user profiles, role-based access, and protected routes.",
     imageUrl:
       "https://github.com/user-attachments/assets/5b700eab-b28c-498e-96de-8649b14c16d9",
     githubUrl: "https://github.com/adrianhajdin/saas-template",
@@ -93,7 +98,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "dashboard-admin",
     title: "Admin Dashboard Template",
-    description: "Feature-rich admin dashboard with data visualization, charts, tables, user management, and analytics.",
+    description:
+      "Feature-rich admin dashboard with data visualization, charts, tables, user management, and analytics.",
     imageUrl:
       "https://github.com/user-attachments/assets/96258e4f-abce-4910-a62a-a9dff77965f2",
     githubUrl: "https://github.com/matt765/spireflow",
@@ -102,7 +108,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "contentful-blog",
     title: "Contentful Blog Template",
-    description: "Blog template with Contentful CMS, GraphQL, responsive design, and SEO optimization.",
+    description:
+      "Blog template with Contentful CMS, GraphQL, responsive design, and SEO optimization.",
     imageUrl:
       "https://github.com/user-attachments/assets/ed86f322-40bf-4fd5-81dc-3b1d8a16e12b",
     githubUrl: "https://github.com/contentful/template-blog-webapp-nextjs",
@@ -111,7 +118,8 @@ export const localTemplatesData: Template[] = [
   {
     id: "medusa-ecommerce",
     title: "Medusa E-commerce Template",
-    description: "Headless commerce template with Medusa backend, cart functionality, and modern storefront.",
+    description:
+      "Headless commerce template with Medusa backend, cart functionality, and modern storefront.",
     imageUrl:
       "https://github.com/user-attachments/assets/5b700eab-b28c-498e-96de-8649b14c16d9",
     githubUrl: "https://github.com/medusajs/nextjs-starter-medusa",

@@ -7,16 +7,19 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 ### Core Templates
 
 #### React.js Template (Default)
+
 - **ID**: `react`
 - **Description**: Uses React.js, Vite, Shadcn, Tailwind and TypeScript.
 - **Best for**: General web applications, component libraries, and frontend projects.
 
 #### Next.js Template
+
 - **ID**: `next`
 - **Description**: Uses Next.js, React.js, Shadcn, Tailwind and TypeScript.
 - **Best for**: Full-stack applications, static sites, and server-side rendered apps.
 
 #### Portal: Mini Store Template
+
 - **ID**: `portal-mini-store`
 - **Description**: Uses Neon DB, Payload CMS, Next.js
 - **Best for**: Content-driven e-commerce sites with headless CMS.
@@ -25,12 +28,14 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 ### E-commerce Templates
 
 #### Stripe E-commerce Template
+
 - **ID**: `stripe-ecommerce`
 - **Description**: Next.js e-commerce store with Stripe payments, product catalog, shopping cart, and checkout flow.
 - **Best for**: Online stores, marketplaces, and payment-integrated applications.
 - **Integrations**: Stripe, React, TypeScript, Tailwind CSS
 
 #### Medusa E-commerce Template
+
 - **ID**: `medusa-ecommerce`
 - **Description**: Headless commerce template with Medusa backend, cart functionality, and modern storefront.
 - **Best for**: Advanced e-commerce with custom backend requirements.
@@ -39,12 +44,14 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 ### SaaS & Authentication Templates
 
 #### SaaS Starter Template
+
 - **ID**: `saas-starter`
 - **Description**: Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.
 - **Best for**: Software-as-a-Service applications, B2B platforms.
 - **Integrations**: Authentication, billing, multi-tenant architecture
 
 #### Authentication Template
+
 - **ID**: `auth-clerk`
 - **Description**: Complete authentication solution with Clerk, user profiles, role-based access, and protected routes.
 - **Best for**: Applications requiring robust user management.
@@ -53,12 +60,14 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 ### Content & Blog Templates
 
 #### MDX Blog Template
+
 - **ID**: `blog-mdx`
 - **Description**: Modern blog template with MDX content, syntax highlighting, SEO optimization, and content management system.
 - **Best for**: Developer blogs, documentation sites, content-focused websites.
 - **Integrations**: MDX, Contentlayer, syntax highlighting
 
 #### Contentful Blog Template
+
 - **ID**: `contentful-blog`
 - **Description**: Blog template with Contentful CMS, GraphQL, responsive design, and SEO optimization.
 - **Best for**: Content-managed blogs, news sites, editorial platforms.
@@ -67,6 +76,7 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 ### Dashboard & Admin Templates
 
 #### Admin Dashboard Template
+
 - **ID**: `dashboard-admin`
 - **Description**: Feature-rich admin dashboard with data visualization, charts, tables, user management, and analytics.
 - **Best for**: Admin panels, analytics dashboards, business intelligence apps.

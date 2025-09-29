@@ -9,11 +9,19 @@ import {
 } from "./safe_handle";
 import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_handler";
 import { safeSend } from "../utils/safe_sender";
-import { SetupLocalSupabaseParams, LocalSupabaseStatus, ProductionPromotionParams, ProductionPromotionStatus } from "../ipc_types";
+import {
+  SetupLocalSupabaseParams,
+  LocalSupabaseStatus,
+  ProductionPromotionParams,
+  ProductionPromotionStatus,
+} from "../ipc_types";
 import { execSync } from "child_process";
 import { existsSync } from "fs";
 import path from "path";
-import { updatePostgresUrlEnvVar, updateEnvironmentVariables } from "../utils/app_env_var_utils";
+import {
+  updatePostgresUrlEnvVar,
+  updateEnvironmentVariables,
+} from "../utils/app_env_var_utils";
 import fetch from "node-fetch";
 
 const logger = log.scope("supabase_handlers");
@@ -22,17 +30,20 @@ const testOnlyHandle = createTestOnlyLoggedHandler(logger);
 
 // Local Supabase configuration
 const LOCAL_SUPABASE_CONFIG = {
-  url: 'http://localhost:8000',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
-  serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
-  dashboardUrl: 'http://localhost:3001',
-  postgresUrl: 'postgresql://postgres:your-super-secret-and-long-postgres-password@localhost:5432/postgres'
+  url: "http://localhost:8000",
+  anonKey:
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+  serviceRoleKey:
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU",
+  dashboardUrl: "http://localhost:3001",
+  postgresUrl:
+    "postgresql://postgres:your-super-secret-and-long-postgres-password@localhost:5432/postgres",
 };
 
 function checkDockerInstalled(): boolean {
   try {
-    execSync('docker --version', { stdio: 'ignore' });
-    execSync('docker-compose --version', { stdio: 'ignore' });
+    execSync("docker --version", { stdio: "ignore" });
+    execSync("docker-compose --version", { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -41,8 +52,9 @@ function checkDockerInstalled(): boolean {
 
 function isLocalSupabaseRunning(): boolean {
   try {
-    const result = execSync('docker-compose -f docker-compose.supabase.yml ps --services --filter "status=running"', 
-      { encoding: 'utf8', stdio: 'pipe' }
+    const result = execSync(
+      'docker-compose -f docker-compose.supabase.yml ps --services --filter "status=running"',
+      { encoding: "utf8", stdio: "pipe" },
     );
     return result.trim().length > 0;
   } catch {
@@ -52,8 +64,9 @@ function isLocalSupabaseRunning(): boolean {
 
 function getSupabaseContainerStatus(): string {
   try {
-    const result = execSync('docker-compose -f docker-compose.supabase.yml ps', 
-      { encoding: 'utf8', stdio: 'pipe' }
+    const result = execSync(
+      "docker-compose -f docker-compose.supabase.yml ps",
+      { encoding: "utf8", stdio: "pipe" },
     );
     return result;
   } catch (error) {
@@ -62,40 +75,56 @@ function getSupabaseContainerStatus(): string {
 }
 
 async function startLocalSupabase(): Promise<void> {
-  const dockerComposeFile = path.resolve(process.cwd(), 'docker-compose.supabase.yml');
-  
+  const dockerComposeFile = path.resolve(
+    process.cwd(),
+    "docker-compose.supabase.yml",
+  );
+
   if (!existsSync(dockerComposeFile)) {
-    throw new Error('docker-compose.supabase.yml not found. Make sure the local Supabase configuration files are present.');
+    throw new Error(
+      "docker-compose.supabase.yml not found. Make sure the local Supabase configuration files are present.",
+    );
   }
 
   if (!checkDockerInstalled()) {
-    throw new Error('Docker is not installed or not running. Please install Docker Desktop and ensure it\'s running.');
+    throw new Error(
+      "Docker is not installed or not running. Please install Docker Desktop and ensure it's running.",
+    );
   }
 
   try {
-    logger.info('Starting local Supabase containers...');
-    execSync('docker-compose -f docker-compose.supabase.yml up -d', { 
-      stdio: 'inherit',
-      cwd: process.cwd()
+    logger.info("Starting local Supabase containers...");
+    execSync("docker-compose -f docker-compose.supabase.yml up -d", {
+      stdio: "inherit",
+      cwd: process.cwd(),
     });
-    logger.info('Local Supabase containers started, waiting for services to be ready...');
-    
+    logger.info(
+      "Local Supabase containers started, waiting for services to be ready...",
+    );
+
     // Wait for services to be ready with better validation
     await waitForSupabaseReady();
-    
-    logger.info('Local Supabase started successfully and is ready');
+
+    logger.info("Local Supabase started successfully and is ready");
   } catch (error) {
-    logger.error('Failed to start local Supabase:', error);
-    
+    logger.error("Failed to start local Supabase:", error);
+
     // Get container status for debugging
     const containerStatus = getSupabaseContainerStatus();
-    logger.error('Container status:', containerStatus);
-    
+    logger.error("Container status:", containerStatus);
+
     // Provide more specific error messages
-    if (String(error).includes('timeout') || String(error).includes('ready')) {
-      throw new Error(`Local Supabase startup timed out. This could be due to:\n- Docker containers taking longer than expected to start\n- Port conflicts (ports 5432, 8000, 3001 may be in use)\n- Insufficient system resources\n\nTry stopping any existing containers and retry.`);
-    } else if (String(error).includes('permission') || String(error).includes('denied')) {
-      throw new Error(`Permission denied starting Docker containers. Please ensure:\n- Docker Desktop is running\n- You have permission to run Docker commands\n- No other processes are using the required ports`);
+    if (String(error).includes("timeout") || String(error).includes("ready")) {
+      throw new Error(
+        `Local Supabase startup timed out. This could be due to:\n- Docker containers taking longer than expected to start\n- Port conflicts (ports 5432, 8000, 3001 may be in use)\n- Insufficient system resources\n\nTry stopping any existing containers and retry.`,
+      );
+    } else if (
+      String(error).includes("permission") ||
+      String(error).includes("denied")
+    ) {
+      throw new Error(
+        `Permission denied starting Docker containers. Please ensure:\n- Docker Desktop is running\n- You have permission to run Docker commands\n- No other processes are using the required ports`,
+      );
     } else {
       throw new Error(`Failed to start local Supabase: ${error}`);
     }
@@ -105,107 +134,116 @@ async function startLocalSupabase(): Promise<void> {
 async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
   const startTime = Date.now();
   const checkInterval = 2000; // Check every 2 seconds
-  let lastStatus = '';
-  
-  logger.info(`Waiting for Supabase services to be ready (max ${maxWaitTime/1000}s)...`);
-  
+  let lastStatus = "";
+
+  logger.info(
+    `Waiting for Supabase services to be ready (max ${maxWaitTime / 1000}s)...`,
+  );
+
   while (Date.now() - startTime < maxWaitTime) {
     try {
       // Check if containers are running
       if (!isLocalSupabaseRunning()) {
-        const currentStatus = 'Waiting for Supabase containers to start...';
+        const currentStatus = "Waiting for Supabase containers to start...";
         if (currentStatus !== lastStatus) {
           logger.info(currentStatus);
           lastStatus = currentStatus;
         }
-        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
         continue;
       }
-      
+
       // Check if Kong API Gateway is responding
       try {
         const response = await fetch(`${LOCAL_SUPABASE_CONFIG.url}/health`, {
-          method: 'GET',
-          signal: AbortSignal.timeout(5000)
+          method: "GET",
+          signal: AbortSignal.timeout(5000),
         });
-        
+
         if (response.ok) {
-          logger.info('Supabase API Gateway is responding');
-          
+          logger.info("Supabase API Gateway is responding");
+
           // Additional check for Studio dashboard
           try {
-            const studioResponse = await fetch(`${LOCAL_SUPABASE_CONFIG.dashboardUrl}`, {
-              method: 'GET', 
-              signal: AbortSignal.timeout(3000)
-            });
-            
+            const studioResponse = await fetch(
+              `${LOCAL_SUPABASE_CONFIG.dashboardUrl}`,
+              {
+                method: "GET",
+                signal: AbortSignal.timeout(3000),
+              },
+            );
+
             if (studioResponse.ok || studioResponse.status === 200) {
-              logger.info('Supabase Studio dashboard is ready');
+              logger.info("Supabase Studio dashboard is ready");
               // Brief final wait to ensure everything is stable
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              await new Promise((resolve) => setTimeout(resolve, 2000));
               return;
             }
           } catch (studioError) {
-            logger.debug('Studio not ready yet, continuing to wait...', studioError);
+            logger.debug(
+              "Studio not ready yet, continuing to wait...",
+              studioError,
+            );
           }
-          
+
           // API is ready but studio might need more time
-          const currentStatus = 'API ready, waiting for dashboard...';
+          const currentStatus = "API ready, waiting for dashboard...";
           if (currentStatus !== lastStatus) {
             logger.info(currentStatus);
             lastStatus = currentStatus;
           }
         } else {
-          const currentStatus = 'Waiting for Supabase API to be ready...';
+          const currentStatus = "Waiting for Supabase API to be ready...";
           if (currentStatus !== lastStatus) {
             logger.info(currentStatus);
             lastStatus = currentStatus;
           }
         }
       } catch (fetchError) {
-        const currentStatus = 'Waiting for Supabase services to initialize...';
+        const currentStatus = "Waiting for Supabase services to initialize...";
         if (currentStatus !== lastStatus) {
           logger.debug(currentStatus, fetchError);
           lastStatus = currentStatus;
         }
       }
-      
     } catch (error) {
-      logger.debug('Still waiting for Supabase to be ready:', error);
+      logger.debug("Still waiting for Supabase to be ready:", error);
     }
-    
-    await new Promise(resolve => setTimeout(resolve, checkInterval));
+
+    await new Promise((resolve) => setTimeout(resolve, checkInterval));
   }
-  
-  throw new Error(`Timeout waiting for local Supabase to be ready (waited ${maxWaitTime/1000}s). Services may have failed to start properly. Check Docker logs for more details.`);
+
+  throw new Error(
+    `Timeout waiting for local Supabase to be ready (waited ${maxWaitTime / 1000}s). Services may have failed to start properly. Check Docker logs for more details.`,
+  );
 }
 
 async function stopLocalSupabase(): Promise<void> {
   try {
-    logger.info('Stopping local Supabase...');
-    execSync('docker-compose -f docker-compose.supabase.yml down', { 
-      stdio: 'inherit',
-      cwd: process.cwd()
+    logger.info("Stopping local Supabase...");
+    execSync("docker-compose -f docker-compose.supabase.yml down", {
+      stdio: "inherit",
+      cwd: process.cwd(),
     });
-    logger.info('Local Supabase stopped successfully');
+    logger.info("Local Supabase stopped successfully");
   } catch (error) {
-    logger.error('Failed to stop local Supabase:', error);
+    logger.error("Failed to stop local Supabase:", error);
     throw new Error(`Failed to stop local Supabase: ${error}`);
   }
 }
 
 async function extractLocalDatabaseSchema(): Promise<string> {
   try {
-    logger.info('Extracting database schema from local Supabase...');
-    
+    logger.info("Extracting database schema from local Supabase...");
+
     // Use pg_dump to extract schema
     const pgDumpCommand = `pg_dump "${LOCAL_SUPABASE_CONFIG.postgresUrl}" --schema-only --no-owner --no-privileges`;
-    const schema = execSync(pgDumpCommand, { encoding: 'utf8' });
-    
-    logger.info('Database schema extracted successfully');
+    const schema = execSync(pgDumpCommand, { encoding: "utf8" });
+
+    logger.info("Database schema extracted successfully");
     return schema;
   } catch (error) {
-    logger.error('Failed to extract database schema:', error);
+    logger.error("Failed to extract database schema:", error);
     throw new Error(`Failed to extract database schema: ${error}`);
   }
 }
@@ -282,56 +320,59 @@ export function registerSupabaseHandlers() {
     "supabase:setup-local",
     async (_, { appId }: SetupLocalSupabaseParams) => {
       logger.info(`Setting up local Supabase for app ${appId}`);
-      
+
       // Start local Supabase if not running
       if (!isLocalSupabaseRunning()) {
         await startLocalSupabase();
       } else {
         // Even if running, wait a bit to ensure it's fully ready
-        logger.info('Local Supabase is already running, checking readiness...');
+        logger.info("Local Supabase is already running, checking readiness...");
         await waitForSupabaseReady(10000); // Shorter wait if already running
       }
-      
+
       // Get the app to find its path
       const app = await db.select().from(apps).where(eq(apps.id, appId)).get();
       if (!app) {
         throw new Error(`App with ID ${appId} not found`);
       }
-      
+
       // Update the app to use local Supabase
       await db
         .update(apps)
         .set({
-          supabaseProjectId: "local-supabase"
+          supabaseProjectId: "local-supabase",
         })
         .where(eq(apps.id, appId));
-      
+
       // Update the app's environment variables
       await updatePostgresUrlEnvVar({
         appPath: app.path,
-        connectionUri: LOCAL_SUPABASE_CONFIG.postgresUrl
+        connectionUri: LOCAL_SUPABASE_CONFIG.postgresUrl,
       });
-      
+
       logger.info(`Successfully set up local Supabase for app ${appId}`);
-    }
+    },
   );
 
   // Get local Supabase status
-  handle("supabase:get-local-status", async (): Promise<LocalSupabaseStatus> => {
-    const isRunning = checkDockerInstalled() && isLocalSupabaseRunning();
-    
-    if (isRunning) {
-      return {
-        isRunning: true,
-        url: LOCAL_SUPABASE_CONFIG.url,
-        dashboardUrl: LOCAL_SUPABASE_CONFIG.dashboardUrl,
-        anonKey: LOCAL_SUPABASE_CONFIG.anonKey,
-        serviceRoleKey: LOCAL_SUPABASE_CONFIG.serviceRoleKey
-      };
-    }
-    
-    return { isRunning: false };
-  });
+  handle(
+    "supabase:get-local-status",
+    async (): Promise<LocalSupabaseStatus> => {
+      const isRunning = checkDockerInstalled() && isLocalSupabaseRunning();
+
+      if (isRunning) {
+        return {
+          isRunning: true,
+          url: LOCAL_SUPABASE_CONFIG.url,
+          dashboardUrl: LOCAL_SUPABASE_CONFIG.dashboardUrl,
+          anonKey: LOCAL_SUPABASE_CONFIG.anonKey,
+          serviceRoleKey: LOCAL_SUPABASE_CONFIG.serviceRoleKey,
+        };
+      }
+
+      return { isRunning: false };
+    },
+  );
 
   // Stop local Supabase
   handle("supabase:stop-local", async () => {
@@ -341,30 +382,39 @@ export function registerSupabaseHandlers() {
 
   // Promote to production
   handle(
-    "supabase:promote-to-production", 
-    async (_, params: ProductionPromotionParams): Promise<ProductionPromotionStatus> => {
+    "supabase:promote-to-production",
+    async (
+      _,
+      params: ProductionPromotionParams,
+    ): Promise<ProductionPromotionStatus> => {
       logger.info(`Starting production promotion for app ${params.appId}`);
-      
+
       try {
         // Get the app to find its path
-        const app = await db.select().from(apps).where(eq(apps.id, params.appId)).get();
+        const app = await db
+          .select()
+          .from(apps)
+          .where(eq(apps.id, params.appId))
+          .get();
         if (!app) {
           throw new Error(`App with ID ${params.appId} not found`);
         }
 
         // Validate local Supabase is running
         if (!isLocalSupabaseRunning()) {
-          throw new Error('Local Supabase is not running. Please start it first.');
+          throw new Error(
+            "Local Supabase is not running. Please start it first.",
+          );
         }
 
         // Extract database schema from local Supabase
         const _schema = await extractLocalDatabaseSchema();
-        
+
         // Update the app to use production Supabase
         await db
           .update(apps)
           .set({
-            supabaseProjectId: params.productionProjectRef
+            supabaseProjectId: params.productionProjectRef,
           })
           .where(eq(apps.id, params.appId));
 
@@ -372,33 +422,32 @@ export function registerSupabaseHandlers() {
         await updateEnvironmentVariables({
           appPath: app.path,
           envVars: {
-            'SUPABASE_URL': params.supabaseUrl,
-            'SUPABASE_ANON_KEY': params.anonKey,
-            'SUPABASE_SERVICE_ROLE_KEY': params.serviceRoleKey,
-            'POSTGRES_URL': `postgresql://postgres:${params.dbPassword}@db.${params.productionProjectRef}.supabase.co:5432/postgres`,
-            'NEXT_PUBLIC_SUPABASE_URL': params.supabaseUrl,
-            'NEXT_PUBLIC_SUPABASE_ANON_KEY': params.anonKey
-          }
+            SUPABASE_URL: params.supabaseUrl,
+            SUPABASE_ANON_KEY: params.anonKey,
+            SUPABASE_SERVICE_ROLE_KEY: params.serviceRoleKey,
+            POSTGRES_URL: `postgresql://postgres:${params.dbPassword}@db.${params.productionProjectRef}.supabase.co:5432/postgres`,
+            NEXT_PUBLIC_SUPABASE_URL: params.supabaseUrl,
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: params.anonKey,
+          },
         });
 
         logger.info(`Successfully promoted app ${params.appId} to production`);
-        
+
         return {
           success: true,
-          message: 'Production promotion completed successfully',
+          message: "Production promotion completed successfully",
           productionProjectRef: params.productionProjectRef,
           schemaExported: true,
-          envFilesUpdated: true
+          envFilesUpdated: true,
         };
-        
       } catch (error) {
-        logger.error('Production promotion failed:', error);
+        logger.error("Production promotion failed:", error);
         return {
           success: false,
           message: `Production promotion failed: ${error}`,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         };
       }
-    }
+    },
   );
 }

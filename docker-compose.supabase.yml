@@ -1,6 +1,6 @@
 # Local Supabase Docker Compose Configuration
 # This file sets up a local Supabase environment for development
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database
@@ -19,7 +19,7 @@ services:
       POSTGRES_DB: postgres
       PGUSER: supabase_admin
       POSTGRES_USER: supabase_admin
-      POSTGRES_INITDB_ARGS: '--auth-host=scram-sha-256 --auth-local=scram-sha-256'
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
       # - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
@@ -64,10 +64,10 @@ services:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
       API_EXTERNAL_URL: http://localhost:8000
-      
+
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:your-super-secret-and-long-postgres-password@db:5432/postgres?search_path=auth
-      
+
       GOTRUE_SITE_URL: http://localhost:3000
       GOTRUE_URI_ALLOW_LIST: ""
       GOTRUE_DISABLE_SIGNUP: false
@@ -76,7 +76,7 @@ services:
       GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
       GOTRUE_JWT_EXP: 3600
       GOTRUE_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
-      
+
       GOTRUE_EXTERNAL_EMAIL_ENABLED: true
       GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: false
       GOTRUE_MAILER_AUTOCONFIRM: true
@@ -86,7 +86,7 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: "http://localhost:3000/auth/v1/verify"
       GOTRUE_MAILER_URLPATHS_RECOVERY: "http://localhost:3000/auth/v1/verify"
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "http://localhost:3000/auth/v1/verify"
-      
+
       GOTRUE_EXTERNAL_PHONE_ENABLED: true
       GOTRUE_SMS_AUTOCONFIRM: true
 
@@ -120,7 +120,7 @@ services:
       DB_USER: supabase_admin
       DB_PASSWORD: your-super-secret-and-long-postgres-password
       DB_NAME: postgres
-      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
       DB_ENC_KEY: supabaserealtime
       API_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
       FLY_ALLOC_ID: fly123
@@ -162,7 +162,7 @@ services:
   imgproxy:
     image: darthsim/imgproxy:v3.8.0
     healthcheck:
-      test: [ "CMD", "imgproxy", "health" ]
+      test: ["CMD", "imgproxy", "health"]
       timeout: 5s
       interval: 5s
       retries: 3
@@ -197,10 +197,10 @@ services:
     environment:
       STUDIO_PG_META_URL: http://meta:8080
       POSTGRES_PASSWORD: your-super-secret-and-long-postgres-password
-      
+
       DEFAULT_ORGANIZATION_NAME: Default Organization
       DEFAULT_PROJECT_NAME: Default Project
-      
+
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: http://localhost:8000
       SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0

@@ -964,7 +964,9 @@ export class IpcClient {
     );
   }
 
-  public async setupLocalSupabase(params: SetupLocalSupabaseParams): Promise<void> {
+  public async setupLocalSupabase(
+    params: SetupLocalSupabaseParams,
+  ): Promise<void> {
     await this.ipcRenderer.invoke("supabase:setup-local", params);
   }
 
@@ -976,7 +978,9 @@ export class IpcClient {
     await this.ipcRenderer.invoke("supabase:stop-local");
   }
 
-  public async promoteToProduction(params: ProductionPromotionParams): Promise<ProductionPromotionStatus> {
+  public async promoteToProduction(
+    params: ProductionPromotionParams,
+  ): Promise<ProductionPromotionStatus> {
     return this.ipcRenderer.invoke("supabase:promote-to-production", params);
   }
 
@@ -1182,7 +1186,9 @@ export class IpcClient {
     return this.ipcRenderer.invoke("import-app", params);
   }
 
-  public async importAppFromGithub(params: ImportAppFromGithubParams): Promise<ImportAppResult> {
+  public async importAppFromGithub(
+    params: ImportAppFromGithubParams,
+  ): Promise<ImportAppResult> {
     return this.ipcRenderer.invoke("import-app-from-github", params);
   }
 

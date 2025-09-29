@@ -343,14 +343,16 @@ export function SetupBanner() {
               <p className="text-sm mb-3">
                 Add a database to your apps for data storage and authentication.
               </p>
-              
+
               <SetupProviderCard
                 variant="local"
                 onClick={() => {
-                  posthog.capture("setup-flow:database-setup:local-supabase:click");
+                  posthog.capture(
+                    "setup-flow:database-setup:local-supabase:click",
+                  );
                   // Navigate to an app creation or show instructions
                   IpcClient.getInstance().openExternalUrl(
-                    "https://www.dyad.sh/docs/integrations/local-supabase"
+                    "https://www.dyad.sh/docs/integrations/local-supabase",
                   );
                 }}
                 tabIndex={isNodeSetupComplete && isAnyProviderSetup() ? 0 : -1}
@@ -377,7 +379,8 @@ export function SetupBanner() {
                         Cloud databases available too
                       </h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Connect to Supabase, Neon, or other cloud providers from any app
+                        Connect to Supabase, Neon, or other cloud providers from
+                        any app
                       </p>
                     </div>
                   </div>
@@ -387,7 +390,8 @@ export function SetupBanner() {
 
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 border rounded-lg text-sm">
                 <p className="text-blue-800 dark:text-blue-200">
-                  💡 <strong>Tip:</strong> You can add databases to your apps at any time from the app's integrations page.
+                  💡 <strong>Tip:</strong> You can add databases to your apps at
+                  any time from the app's integrations page.
                 </p>
               </div>
             </AccordionContent>

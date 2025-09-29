@@ -42,7 +42,10 @@ export function SupabaseConnector({ appId }: { appId: number }) {
   const { app, refreshApp } = useLoadApp(appId);
   const { lastDeepLink } = useDeepLink();
   const { isDarkMode } = useTheme();
-  const [localStatus, setLocalStatus] = useState<{ isRunning: boolean; dashboardUrl?: string } | null>(null);
+  const [localStatus, setLocalStatus] = useState<{
+    isRunning: boolean;
+    dashboardUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
     const handleDeepLink = async () => {
@@ -65,7 +68,7 @@ export function SupabaseConnector({ appId }: { appId: number }) {
         setLocalStatus({ isRunning: false });
       }
     };
-    
+
     checkLocalStatus();
     // Check status every 30 seconds
     const interval = setInterval(checkLocalStatus, 30000);
@@ -110,19 +113,25 @@ export function SupabaseConnector({ appId }: { appId: number }) {
     }
   };
 
-  if (settings?.supabase?.accessToken || currentProjectId === "local-supabase") {
+  if (
+    settings?.supabase?.accessToken ||
+    currentProjectId === "local-supabase"
+  ) {
     if (app?.supabaseProjectName) {
       return (
         <Card className="mt-1">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {currentProjectId === "local-supabase" ? "Local Supabase" : "Supabase Project"}{" "}
+              {currentProjectId === "local-supabase"
+                ? "Local Supabase"
+                : "Supabase Project"}{" "}
               <Button
                 variant="outline"
                 onClick={() => {
-                  const url = currentProjectId === "local-supabase" 
-                    ? localStatus?.dashboardUrl || "http://localhost:3001"
-                    : `https://supabase.com/dashboard/project/${app.supabaseProjectId}`;
+                  const url =
+                    currentProjectId === "local-supabase"
+                      ? localStatus?.dashboardUrl || "http://localhost:3001"
+                      : `https://supabase.com/dashboard/project/${app.supabaseProjectId}`;
                   IpcClient.getInstance().openExternalUrl(url);
                 }}
                 className="ml-2 px-2 py-1"
@@ -144,33 +153,33 @@ export function SupabaseConnector({ appId }: { appId: number }) {
               </Button>
             </CardTitle>
             <CardDescription>
-              {currentProjectId === "local-supabase" 
+              {currentProjectId === "local-supabase"
                 ? `This app is connected to local Supabase${localStatus?.isRunning ? " (running)" : " (not running)"}`
-                : `This app is connected to project: ${app.supabaseProjectName}`
-              }
+                : `This app is connected to project: ${app.supabaseProjectName}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="destructive" onClick={handleUnsetProject}>
               Disconnect Project
             </Button>
-            {currentProjectId === "local-supabase" && localStatus?.isRunning && (
-              <Button 
-                variant="outline" 
-                className="ml-2"
-                onClick={async () => {
-                  try {
-                    await IpcClient.getInstance().stopLocalSupabase();
-                    toast.success("Local Supabase stopped");
-                    setLocalStatus({ isRunning: false });
-                  } catch (error) {
-                    toast.error("Failed to stop local Supabase: " + error);
-                  }
-                }}
-              >
-                Stop Local Supabase
-              </Button>
-            )}
+            {currentProjectId === "local-supabase" &&
+              localStatus?.isRunning && (
+                <Button
+                  variant="outline"
+                  className="ml-2"
+                  onClick={async () => {
+                    try {
+                      await IpcClient.getInstance().stopLocalSupabase();
+                      toast.success("Local Supabase stopped");
+                      setLocalStatus({ isRunning: false });
+                    } catch (error) {
+                      toast.error("Failed to stop local Supabase: " + error);
+                    }
+                  }}
+                >
+                  Stop Local Supabase
+                </Button>
+              )}
           </CardContent>
         </Card>
       );
@@ -247,49 +256,59 @@ export function SupabaseConnector({ appId }: { appId: number }) {
     <div className="flex flex-col space-y-4 p-4 border rounded-md">
       <div className="flex flex-col md:flex-row items-center justify-between">
         <h2 className="text-lg font-medium">Integrations</h2>
-        
+
         <div className="flex flex-col space-y-2 w-full md:w-auto">
           {/* Local Supabase Option */}
           <Button
             onClick={async () => {
               try {
                 toast.info("Starting local Supabase setup...", {
-                  description: "Checking Docker and starting services"
+                  description: "Checking Docker and starting services",
                 });
-                
+
                 // Show progress updates
-                const progressToast = toast.loading("Setting up local Supabase...", {
-                  description: "This may take a few moments for first-time setup"
-                });
-                
+                const progressToast = toast.loading(
+                  "Setting up local Supabase...",
+                  {
+                    description:
+                      "This may take a few moments for first-time setup",
+                  },
+                );
+
                 await IpcClient.getInstance().setupLocalSupabase({ appId });
-                
+
                 toast.dismiss(progressToast);
                 toast.success("Local Supabase setup completed!", {
-                  description: "Your app is now connected to local Supabase"
+                  description: "Your app is now connected to local Supabase",
                 });
-                
+
                 await refreshApp();
-                
+
                 // Refresh local status
-                const status = await IpcClient.getInstance().getLocalSupabaseStatus();
+                const status =
+                  await IpcClient.getInstance().getLocalSupabaseStatus();
                 setLocalStatus(status);
               } catch (error) {
-                const errorMessage = String(error).replace('Error: ', '');
+                const errorMessage = String(error).replace("Error: ", "");
                 toast.error("Failed to setup local Supabase", {
-                  description: errorMessage
+                  description: errorMessage,
                 });
-                
+
                 // Provide additional guidance based on error type
-                if (errorMessage.includes('Docker')) {
+                if (errorMessage.includes("Docker")) {
                   toast.info("Docker Required", {
-                    description: "Please install Docker Desktop and ensure it's running",
-                    duration: 5000
+                    description:
+                      "Please install Docker Desktop and ensure it's running",
+                    duration: 5000,
                   });
-                } else if (errorMessage.includes('timeout') || errorMessage.includes('ready')) {
+                } else if (
+                  errorMessage.includes("timeout") ||
+                  errorMessage.includes("ready")
+                ) {
                   toast.info("Startup Issue", {
-                    description: "Try stopping any existing containers and retry",
-                    duration: 5000
+                    description:
+                      "Try stopping any existing containers and retry",
+                    duration: 5000,
                   });
                 }
               }
@@ -301,7 +320,7 @@ export function SupabaseConnector({ appId }: { appId: number }) {
             <Server className="h-4 w-4" />
             Use Local Supabase
           </Button>
-          
+
           {/* Cloud Supabase Option */}
           <img
             onClick={async () => {
@@ -321,7 +340,7 @@ export function SupabaseConnector({ appId }: { appId: number }) {
             className="w-full h-10 min-h-8 min-w-20 cursor-pointer"
             data-testid="connect-supabase-button"
           />
-          
+
           <p className="text-xs text-gray-500 text-center">
             Choose local development or cloud Supabase
           </p>
