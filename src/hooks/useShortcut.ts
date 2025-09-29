@@ -4,7 +4,7 @@ export function useShortcut(
   key: string,
   modifiers: { ctrl?: boolean; shift?: boolean; meta?: boolean },
   callback: () => void,
-  isComponentSelectorInitialized: boolean,
+  isSelectorInitialized: boolean,
   iframeRef?: React.RefObject<HTMLIFrameElement | null>,
 ): void {
   useEffect(() => {
@@ -36,7 +36,7 @@ export function useShortcut(
         ctrlMatches &&
         shiftMatches &&
         metaMatches &&
-        isComponentSelectorInitialized
+        isSelectorInitialized
       ) {
         callback();
         return true;
@@ -62,8 +62,10 @@ export function useShortcut(
         return;
       }
 
-      if (event.data?.type === "dyad-select-component-shortcut") {
-        if (isComponentSelectorInitialized) {
+      // Handle both component and CSS selector shortcuts from iframe
+      if (event.data?.type === "dyad-select-component-shortcut" || 
+          event.data?.type === "dyad-css-selector-shortcut") {
+        if (isSelectorInitialized) {
           callback();
         }
       }
@@ -76,5 +78,5 @@ export function useShortcut(
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("message", handleMessageEvent);
     };
-  }, [key, modifiers, callback, isComponentSelectorInitialized, iframeRef]);
+  }, [key, modifiers, callback, isSelectorInitialized, iframeRef]);
 }
