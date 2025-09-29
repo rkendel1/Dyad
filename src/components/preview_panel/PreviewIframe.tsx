@@ -23,6 +23,8 @@ import {
   Copy,
   MessageSquare,
   Square,
+  Edit3,
+  Check,
 } from "lucide-react";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
@@ -157,6 +159,10 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   const [isPicking, setIsPicking] = useState(false);
   const [isPickingCssSelector, setIsPickingCssSelector] = useState(false);
   const [capturedCssSelector, setCapturedCssSelector] = useState<string | null>(null);
+
+  // URL editing state
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
+  const [editedUrl, setEditedUrl] = useState("");
 
   //detect if the user is using Mac
   const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
@@ -507,6 +513,90 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     }
   };
 
+  // Function to start URL editing
+  const handleStartUrlEdit = () => {
+    const currentUrl = navigationHistory[currentHistoryPosition] || appUrl || "";
+    setEditedUrl(currentUrl);
+    setIsEditingUrl(true);
+  };
+
+  // Function to cancel URL editing
+  const handleCancelUrlEdit = () => {
+    setIsEditingUrl(false);
+    setEditedUrl("");
+  };
+
+  // Function to navigate to edited URL
+  const handleNavigateToUrl = () => {
+    if (!editedUrl.trim()) {
+      setIsEditingUrl(false);
+      return;
+    }
+
+    let urlToNavigate = editedUrl.trim();
+    
+    // Basic URL validation and normalization
+    try {
+      // If it doesn't start with http(s), try to determine if it's a relative path or needs a protocol
+      if (!urlToNavigate.startsWith('http://') && !urlToNavigate.startsWith('https://')) {
+        if (urlToNavigate.startsWith('/')) {
+          // It's a relative path - combine with current origin
+          if (appUrl) {
+            const baseUrl = new URL(appUrl).origin;
+            urlToNavigate = `${baseUrl}${urlToNavigate}`;
+          } else {
+            // Can't navigate to relative path without a base URL
+            throw new Error("Cannot navigate to relative path without a base URL");
+          }
+        } else if (urlToNavigate.includes('.') && !urlToNavigate.includes(' ')) {
+          // Looks like a domain - add https://
+          urlToNavigate = `https://${urlToNavigate}`;
+        } else {
+          // Treat as a path relative to current origin
+          if (appUrl) {
+            const baseUrl = new URL(appUrl).origin;
+            urlToNavigate = `${baseUrl}/${urlToNavigate}`;
+          } else {
+            throw new Error("Invalid URL format");
+          }
+        }
+      }
+
+      // Validate the URL
+      new URL(urlToNavigate);
+
+      // Navigate to the URL
+      if (iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.location.href = urlToNavigate;
+
+        // Update navigation history
+        const newHistory = [
+          ...navigationHistory.slice(0, currentHistoryPosition + 1),
+          urlToNavigate,
+        ];
+        setNavigationHistory(newHistory);
+        setCurrentHistoryPosition(newHistory.length - 1);
+        setCanGoBack(true);
+        setCanGoForward(false);
+      }
+
+      setIsEditingUrl(false);
+      setEditedUrl("");
+    } catch (error) {
+      // Show error message for invalid URL
+      setErrorMessage(`Invalid URL: ${urlToNavigate}. ${error instanceof Error ? error.message : 'Please enter a valid URL.'}`);
+    }
+  };
+
+  // Function to handle URL input key press
+  const handleUrlKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleNavigateToUrl();
+    } else if (e.key === 'Escape') {
+      handleCancelUrlEdit();
+    }
+  };
+
   // Display loading state
   if (loading) {
     return (
@@ -626,39 +716,89 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
           </button>
         </div>
 
-        {/* Address Bar with Routes Dropdown - using shadcn/ui dropdown-menu */}
+        {/* Address Bar with URL Display and Editing */}
         <div className="relative flex-grow min-w-20">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center justify-between px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-200 cursor-pointer w-full min-w-0">
-                <span className="truncate flex-1 mr-2 min-w-0">
-                  {navigationHistory[currentHistoryPosition]
-                    ? new URL(navigationHistory[currentHistoryPosition])
-                        .pathname
-                    : "/"}
+          {isEditingUrl ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                value={editedUrl}
+                onChange={(e) => setEditedUrl(e.target.value)}
+                onKeyDown={handleUrlKeyPress}
+                className="flex-1 px-3 py-1 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                placeholder="Enter URL..."
+                autoFocus
+                data-testid="preview-url-input"
+              />
+              <button
+                onClick={handleNavigateToUrl}
+                className="p-1 rounded hover:bg-green-200 dark:hover:bg-green-900 text-green-600 dark:text-green-400"
+                title="Navigate to URL"
+                data-testid="preview-url-submit"
+              >
+                <Check size={16} />
+              </button>
+              <button
+                onClick={handleCancelUrlEdit}
+                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                title="Cancel"
+                data-testid="preview-url-cancel"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <div 
+                className="flex-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-200 cursor-pointer min-w-0"
+                title={navigationHistory[currentHistoryPosition] || appUrl || ""}
+                data-testid="preview-url-display"
+              >
+                <span className="truncate block">
+                  {navigationHistory[currentHistoryPosition] || appUrl || "Loading..."}
                 </span>
-                <ChevronDown size={14} className="flex-shrink-0" />
               </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
-              {availableRoutes.length > 0 ? (
-                availableRoutes.map((route) => (
-                  <DropdownMenuItem
-                    key={route.path}
-                    onClick={() => navigateToRoute(route.path)}
-                    className="flex justify-between"
+              <button
+                onClick={handleStartUrlEdit}
+                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                title="Edit URL"
+                disabled={loading || !selectedAppId}
+                data-testid="preview-url-edit"
+              >
+                <Edit3 size={16} />
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                    title="Quick navigate to routes"
+                    disabled={loading || !selectedAppId || availableRoutes.length === 0}
+                    data-testid="preview-routes-dropdown"
                   >
-                    <span>{route.label}</span>
-                    <span className="text-gray-500 dark:text-gray-400 text-xs">
-                      {route.path}
-                    </span>
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <DropdownMenuItem disabled>Loading routes...</DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    <ChevronDown size={16} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  {availableRoutes.length > 0 ? (
+                    availableRoutes.map((route) => (
+                      <DropdownMenuItem
+                        key={route.path}
+                        onClick={() => navigateToRoute(route.path)}
+                        className="flex justify-between"
+                      >
+                        <span>{route.label}</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">
+                          {route.path}
+                        </span>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <DropdownMenuItem disabled>Loading routes...</DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
