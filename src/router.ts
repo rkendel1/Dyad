@@ -7,6 +7,7 @@ import { providerSettingsRoute } from "./routes/settings/providers/$provider";
 import { appDetailsRoute } from "./routes/app-details";
 import { hubRoute } from "./routes/hub";
 import { libraryRoute } from "./routes/library";
+import { addGitHubRepoRoute } from "./routes/add-github-repo";
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
@@ -14,6 +15,7 @@ const routeTree = rootRoute.addChildren([
   libraryRoute,
   chatRoute,
   appDetailsRoute,
+  addGitHubRepoRoute,
   settingsRoute.addChildren([providerSettingsRoute]),
 ]);
 

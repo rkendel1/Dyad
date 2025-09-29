@@ -25,6 +25,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { ImportAppButton } from "@/components/ImportAppButton";
+import { AddGitHubRepoButton } from "@/components/AddGitHubRepoButton";
 import { showError } from "@/lib/toast";
 import { invalidateAppQuery } from "@/hooks/useLoadApp";
 import { useQueryClient } from "@tanstack/react-query";
@@ -187,6 +188,7 @@ export default function HomePage() {
 
       <div className="w-full">
         <ImportAppButton />
+        <AddGitHubRepoButton />
         <HomeChatInput onSubmit={handleSubmit} />
 
         <div className="flex flex-col gap-4 mt-2">

@@ -243,6 +243,61 @@ export interface ImportAppFromGithubParams {
   startCommand?: string;
 }
 
+export interface AnalyzeGithubRepoParams {
+  repoUrl: string;
+  targetAppId: number;
+}
+
+export interface AnalyzeGithubRepoResult {
+  repository: {
+    name: string;
+    full_name: string;
+    description: string;
+    language: string;
+    topics: string[];
+    stars: number;
+    forks: number;
+  };
+  analysis: {
+    mainTechnology: string;
+    framework: string;
+    dependencies: string[];
+    complexity: 'simple' | 'moderate' | 'complex';
+    integrationApproaches: {
+      recreate: {
+        feasible: boolean;
+        effort: 'low' | 'medium' | 'high';
+        description: string;
+      };
+      integrate: {
+        feasible: boolean;
+        effort: 'low' | 'medium' | 'high';
+        description: string;
+      };
+      tailor: {
+        feasible: boolean;
+        effort: 'low' | 'medium' | 'high';
+        description: string;
+      };
+    };
+    recommendation: 'recreate' | 'integrate' | 'tailor';
+    reasoning: string;
+  };
+}
+
+export interface IntegrateGithubRepoParams {
+  repoUrl: string;
+  targetAppId: number;
+  approach: 'recreate' | 'integrate' | 'tailor';
+  analysisResult: AnalyzeGithubRepoResult;
+}
+
+export interface IntegrateGithubRepoResult {
+  success: boolean;
+  message: string;
+  changedFiles?: string[];
+}
+
 export interface CopyAppParams {
   appId: number;
   newAppName: string;
