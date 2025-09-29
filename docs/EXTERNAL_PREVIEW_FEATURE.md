@@ -25,13 +25,23 @@ The external preview window includes:
 #### Toolbar
 - **Component Selector Button** (📦): Activate Dyad component selection mode
 - **CSS Selector Button** (🎯): Activate CSS element selection mode  
-- **URL Display**: Shows the current preview URL
-- **Refresh Button** (🔄): Reload the preview
+- **URL Input**: Editable URL field - type a new URL and press Enter to navigate, or press Escape to revert changes
+- **Refresh Button** (🔄): Reload the current preview
 
 #### Keyboard Shortcuts
 - `Ctrl + Shift + C` / `⌘ + Shift + C`: Toggle component selector
 - `Ctrl + Shift + S` / `⌘ + Shift + S`: Toggle CSS selector
-- `Escape`: Deactivate current selector and close selector panel
+- `Enter` (when URL input is focused): Navigate to the entered URL
+- `Escape` (when URL input is focused): Revert URL input to current page URL
+- `Escape` (general): Deactivate current selector and close selector panel
+
+#### URL Navigation
+The external preview window allows you to navigate to different URLs beyond the default localhost:
+- **Edit URL**: Click on the URL input field in the toolbar to edit the current URL
+- **Navigate**: Type a new URL and press `Enter` to navigate to it
+- **URL Validation**: Only HTTP and HTTPS URLs are accepted for security
+- **Revert Changes**: Press `Escape` while editing to cancel changes and revert to the current page URL
+- **Auto-sync**: The URL input automatically updates when the page loads or changes
 
 #### Selector Panel
 When an element is selected, a floating panel appears with:
