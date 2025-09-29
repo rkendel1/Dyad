@@ -197,14 +197,16 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
       setGithubUrlError("");
       return false;
     }
-    
+
     try {
       const urlObj = new URL(url);
       if (urlObj.hostname !== "github.com") {
         setGithubUrlError("URL must be from github.com");
         return false;
       }
-      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      const pathParts = urlObj.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
       if (pathParts.length < 2) {
         setGithubUrlError("Invalid GitHub repository URL format");
         return false;
@@ -220,12 +222,14 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
   const handleGithubUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setGithubUrl(url);
-    
+
     if (validateGithubUrl(url)) {
       // Auto-extract app name from GitHub URL
       try {
         const urlObj = new URL(url);
-        const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+        const pathParts = urlObj.pathname
+          .split("/")
+          .filter((part) => part.length > 0);
         if (pathParts.length >= 2) {
           const repoName = pathParts[1].replace(/\.git$/, "");
           setCustomAppName(repoName);
@@ -265,7 +269,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             type="button"
             variant={importMode === "folder" ? "default" : "ghost"}
             className="flex-1 rounded-none rounded-l-md border-0"
-            onClick={() => setImportMode("folder")}>
+            onClick={() => setImportMode("folder")}
+          >
             <Folder className="mr-2 h-4 w-4" />
             Local Folder
           </Button>
@@ -273,7 +278,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             type="button"
             variant={importMode === "github" ? "default" : "ghost"}
             className="flex-1 rounded-none rounded-r-md border-0"
-            onClick={() => setImportMode("github")}>
+            onClick={() => setImportMode("github")}
+          >
             <Github className="mr-2 h-4 w-4" />
             GitHub Repository
           </Button>
@@ -325,7 +331,9 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             // GitHub repository import UI
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm ml-2 mb-2">GitHub Repository URL</Label>
+                <Label className="text-sm ml-2 mb-2">
+                  GitHub Repository URL
+                </Label>
                 <Input
                   value={githubUrl}
                   onChange={handleGithubUrlChange}
@@ -360,7 +368,10 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                     onChange={handleAppNameChange}
                     placeholder="Enter new app name"
                     className="w-full pr-8"
-                    disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
+                    disabled={
+                      importAppMutation.isPending ||
+                      importFromGithubMutation.isPending
+                    }
                   />
                   {isCheckingName && (
                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -384,7 +395,10 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                         value={installCommand}
                         onChange={(e) => setInstallCommand(e.target.value)}
                         placeholder="pnpm install"
-                        disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
+                        disabled={
+                          importAppMutation.isPending ||
+                          importFromGithubMutation.isPending
+                        }
                       />
                     </div>
                     <div className="grid gap-2">
@@ -393,7 +407,10 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                         value={startCommand}
                         onChange={(e) => setStartCommand(e.target.value)}
                         placeholder="pnpm dev"
-                        disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
+                        disabled={
+                          importAppMutation.isPending ||
+                          importFromGithubMutation.isPending
+                        }
                       />
                     </div>
                     {!commandsValid && (
@@ -427,12 +444,13 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                 </Alert>
               )}
 
-              {(importAppMutation.isPending || importFromGithubMutation.isPending) && (
+              {(importAppMutation.isPending ||
+                importFromGithubMutation.isPending) && (
                 <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground animate-pulse">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>
-                    {importMode === "github" 
-                      ? "Cloning and importing from GitHub..." 
+                    {importMode === "github"
+                      ? "Cloning and importing from GitHub..."
                       : "Importing app..."}
                   </span>
                 </div>
@@ -445,7 +463,9 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
           <Button
             variant="outline"
             onClick={onClose}
-            disabled={importAppMutation.isPending || importFromGithubMutation.isPending}
+            disabled={
+              importAppMutation.isPending || importFromGithubMutation.isPending
+            }
           >
             Cancel
           </Button>
@@ -453,7 +473,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             onClick={handleImport}
             disabled={
               (importMode === "folder" && !selectedPath) ||
-              (importMode === "github" && (!githubUrl.trim() || githubUrlError)) ||
+              (importMode === "github" &&
+                (!githubUrl.trim() || githubUrlError)) ||
               importAppMutation.isPending ||
               importFromGithubMutation.isPending ||
               nameExists ||
@@ -462,7 +483,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
             }
             className="min-w-[80px]"
           >
-            {(importAppMutation.isPending || importFromGithubMutation.isPending) ? (
+            {importAppMutation.isPending ||
+            importFromGithubMutation.isPending ? (
               <>Importing...</>
             ) : (
               "Import"

@@ -78,9 +78,7 @@ Once connected, use Supabase in your app as normal:
 import { supabase } from "@/integrations/supabase/client";
 
 // Use Supabase normally - it will connect to your local instance
-const { data, error } = await supabase
-  .from('your_table')
-  .select('*');
+const { data, error } = await supabase.from("your_table").select("*");
 ```
 
 ## Managing Your Database
@@ -136,7 +134,8 @@ sudo kill -9 <PID>
 ### Connection Issues
 
 **Problem**: Can't connect to local Supabase
-**Solution**: 
+**Solution**:
+
 1. Check if services are running: `npm run supabase:status`
 2. Restart services: `npm run supabase:stop && npm run supabase:start`
 3. Wait a few seconds for services to initialize
@@ -179,6 +178,7 @@ npm run supabase:promote
 ```
 
 This interactive tool will guide you through:
+
 - Creating or configuring a production Supabase project
 - Migrating your database schema
 - Updating environment files

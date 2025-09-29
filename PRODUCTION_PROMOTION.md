@@ -18,6 +18,7 @@ This guide explains how to promote your local Supabase development environment t
 Before starting the production promotion process, ensure you have:
 
 ### Required
+
 - **Local Supabase running**: Your local development environment must be active
 - **Supabase account**: An active Supabase account with project creation permissions
 - **PostgreSQL tools**: `pg_dump` and `psql` installed on your system
@@ -25,6 +26,7 @@ Before starting the production promotion process, ensure you have:
 - **Environment backups**: Backup any important data or configurations
 
 ### Recommended
+
 - **Organization setup**: A Supabase organization for your production projects
 - **Database password**: A strong password for your production database
 - **Monitoring setup**: Plan for logging and monitoring in production
@@ -60,31 +62,37 @@ The CLI tool (`scripts/promote-to-production.js`) provides an interactive wizard
 ### Step-by-Step Process
 
 1. **Prerequisites Check**
+
    - Verifies local Supabase is running
    - Validates required tools are available
    - Confirms working directory
 
 2. **Project Configuration**
+
    - Choose to create new or use existing project
    - Provide production project details
    - Configure database credentials
 
 3. **Schema Migration**
+
    - Automatically extracts local database schema
    - Provides SQL file for production deployment
    - Guides manual schema application
 
 4. **Function Migration**
+
    - Identifies Supabase functions to migrate
    - Provides guidance for manual function deployment
    - Validates function deployment
 
 5. **Environment Configuration**
+
    - Updates `.env.local` with production values
    - Creates `.env.production` file
    - Configures all necessary environment variables
 
 6. **Optional Data Migration**
+
    - Provides guidance for data migration
    - Recommends safe migration strategies
    - Validates data migration completion
@@ -120,6 +128,7 @@ The Dyad application provides a user-friendly interface for production promotion
 ### UI-Guided Process
 
 The UI will guide you through:
+
 - Project selection or creation
 - Credential input with validation
 - Progress tracking for each step
@@ -170,6 +179,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ### 5. Deploy Functions (if applicable)
 
 For each function in `supabase/functions/`:
+
 1. Go to Supabase Dashboard → Functions
 2. Create new function with same name
 3. Copy function code
@@ -192,6 +202,7 @@ psql "postgresql://postgres:YOUR_PRODUCTION_PASSWORD@db.YOUR_PROJECT_REF.supabas
 ### Common Issues and Solutions
 
 #### Local Supabase Not Running
+
 ```bash
 Error: Local Supabase is not running
 Solution: Start local Supabase first
@@ -199,6 +210,7 @@ npm run supabase:start
 ```
 
 #### PostgreSQL Tools Not Found
+
 ```bash
 Error: pg_dump command not found
 Solution: Install PostgreSQL client tools
@@ -208,6 +220,7 @@ Solution: Install PostgreSQL client tools
 ```
 
 #### Schema Migration Fails
+
 ```bash
 Error: Schema migration failed
 Solutions:
@@ -218,6 +231,7 @@ Solutions:
 ```
 
 #### Environment File Issues
+
 ```bash
 Error: Unable to update environment files
 Solutions:
@@ -227,6 +241,7 @@ Solutions:
 ```
 
 #### Function Deployment Issues
+
 ```bash
 Error: Function deployment failed
 Solutions:
@@ -297,21 +312,25 @@ If you encounter issues:
 ### Critical Security Steps
 
 1. **Service Role Key Protection**
+
    - Never expose service role key in client-side code
    - Store securely in server-side environment variables only
    - Rotate keys periodically
 
 2. **Row Level Security (RLS)**
+
    - Enable RLS on all tables with sensitive data
    - Configure appropriate policies for your use case
    - Test policies thoroughly
 
 3. **API Key Management**
+
    - Use anon key for client-side operations only
    - Implement proper authentication before database operations
    - Monitor API usage for suspicious activity
 
 4. **Database Security**
+
    - Use strong database passwords
    - Enable SSL connections
    - Configure network restrictions if needed
@@ -416,16 +435,19 @@ CREATE POLICY "Users can view own profile" ON users
 ## Support and Resources
 
 ### Documentation Links
+
 - [Supabase Official Documentation](https://supabase.com/docs)
 - [Supabase CLI Reference](https://supabase.com/docs/guides/cli)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 
 ### Community Resources
+
 - [Supabase Discord](https://discord.supabase.com)
 - [Supabase GitHub](https://github.com/supabase/supabase)
 - [Dyad GitHub Issues](https://github.com/rkendel1/Dyad/issues)
 
 ### Getting Help
+
 1. Check this documentation first
 2. Search existing issues in the Dyad repository
 3. Create a new issue with detailed information:

@@ -72,11 +72,13 @@ export async function updateEnvironmentVariables({
 
     const envFileContents = serializeEnvFile(existingEnvVars);
     await fs.promises.writeFile(getEnvFilePath({ appPath }), envFileContents);
-    
+
     // Also create .env.production file
-    const productionEnvPath = path.join(getDyadAppPath(appPath), ".env.production");
+    const productionEnvPath = path.join(
+      getDyadAppPath(appPath),
+      ".env.production",
+    );
     await fs.promises.writeFile(productionEnvPath, envFileContents);
-    
   } catch (error) {
     logger.error(
       `Failed to update environment variables for app ${appPath}: ${error}`,

@@ -239,7 +239,7 @@ export interface ImportAppParams {
 export interface ImportAppFromGithubParams {
   repoUrl: string;
   appName: string;
-  installCommand?: string;  
+  installCommand?: string;
   startCommand?: string;
 }
 
