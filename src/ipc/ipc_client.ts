@@ -33,6 +33,10 @@ import type {
   ImportAppResult,
   ImportAppParams,
   ImportAppFromGithubParams,
+  AnalyzeGithubRepoParams,
+  AnalyzeGithubRepoResult,
+  IntegrateGithubRepoParams,
+  IntegrateGithubRepoResult,
   RenameBranchParams,
   UserBudgetInfo,
   CopyAppParams,
@@ -1190,6 +1194,18 @@ export class IpcClient {
     params: ImportAppFromGithubParams,
   ): Promise<ImportAppResult> {
     return this.ipcRenderer.invoke("import-app-from-github", params);
+  }
+
+  public async analyzeGithubRepo(
+    params: AnalyzeGithubRepoParams,
+  ): Promise<AnalyzeGithubRepoResult> {
+    return this.ipcRenderer.invoke("analyze-github-repo", params);
+  }
+
+  public async integrateGithubRepo(
+    params: IntegrateGithubRepoParams,
+  ): Promise<IntegrateGithubRepoResult> {
+    return this.ipcRenderer.invoke("integrate-github-repo", params);
   }
 
   async checkAppName(params: {
