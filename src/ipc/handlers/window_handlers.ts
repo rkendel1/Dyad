@@ -154,6 +154,55 @@ const createPreviewHtml = (url: string): Promise<string> => {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            cursor: pointer;
+            user-select: all;
+        }
+        .url-display:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .url-input {
+            flex: 1;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            color: #333;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+        .url-input:focus {
+            background: white;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+        }
+        .url-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+        .url-actions button {
+            padding: 6px 8px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .url-actions button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .url-actions button.success {
+            background: rgba(72, 187, 120, 0.8);
+            border-color: rgba(72, 187, 120, 1);
+        }
+        .url-actions button.success:hover {
+            background: rgba(72, 187, 120, 1);
+        }
+        .hidden {
+            display: none;
         }
         .iframe-container {
             flex: 1;
@@ -313,7 +362,12 @@ const createPreviewHtml = (url: string): Promise<string> => {
             <button id="cssSelector" class="toolbar-button" title="Select CSS Element (⌘/Ctrl + Shift + S)">
                 🎯 <span>CSS</span>
             </button>
-            <div class="url-display" title="${url}">${url}</div>
+            <div id="urlDisplay" class="url-display" title="${url}">${url}</div>
+            <input id="urlInput" class="url-input hidden" type="text" value="${url}" />
+            <div id="urlActions" class="url-actions hidden">
+                <button id="urlSubmit" class="success" title="Navigate to URL">Go</button>
+                <button id="urlCancel" title="Cancel">✕</button>
+            </div>
             <button id="refreshBtn" class="toolbar-button" title="Refresh Preview">
                 🔄 <span>Refresh</span>
             </button>
@@ -359,6 +413,13 @@ const createPreviewHtml = (url: string): Promise<string> => {
             const loadingIndicator = document.getElementById('loadingIndicator');
             const statusIndicator = document.getElementById('statusIndicator');
             
+            // URL editing elements
+            const urlDisplay = document.getElementById('urlDisplay');
+            const urlInput = document.getElementById('urlInput');
+            const urlActions = document.getElementById('urlActions');
+            const urlSubmit = document.getElementById('urlSubmit');
+            const urlCancel = document.getElementById('urlCancel');
+            
             // Show loading indicator initially
             showLoading();
             
@@ -392,6 +453,32 @@ const createPreviewHtml = (url: string): Promise<string> => {
                 showLoading();
                 hideSelectorPanel();
                 iframe.src = iframe.src;
+            });
+            
+            // URL editing handlers
+            urlDisplay.addEventListener('click', function(e) {
+                e.preventDefault();
+                startUrlEdit();
+            });
+            
+            urlSubmit.addEventListener('click', function(e) {
+                e.preventDefault();
+                submitUrlEdit();
+            });
+            
+            urlCancel.addEventListener('click', function(e) {
+                e.preventDefault();
+                cancelUrlEdit();
+            });
+            
+            urlInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitUrlEdit();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelUrlEdit();
+                }
             });
             
             // Selector panel handlers
@@ -477,6 +564,67 @@ const createPreviewHtml = (url: string): Promise<string> => {
             setTimeout(() => {
                 statusIndicator.classList.remove('visible');
             }, 3000);
+        }
+        
+        function startUrlEdit() {
+            const urlDisplay = document.getElementById('urlDisplay');
+            const urlInput = document.getElementById('urlInput');
+            const urlActions = document.getElementById('urlActions');
+            
+            urlDisplay.classList.add('hidden');
+            urlInput.classList.remove('hidden');
+            urlActions.classList.remove('hidden');
+            urlInput.focus();
+            urlInput.select();
+        }
+        
+        function cancelUrlEdit() {
+            const urlDisplay = document.getElementById('urlDisplay');
+            const urlInput = document.getElementById('urlInput');
+            const urlActions = document.getElementById('urlActions');
+            
+            urlDisplay.classList.remove('hidden');
+            urlInput.classList.add('hidden');
+            urlActions.classList.add('hidden');
+        }
+        
+        function submitUrlEdit() {
+            const urlInput = document.getElementById('urlInput');
+            const urlDisplay = document.getElementById('urlDisplay');
+            const iframe = document.getElementById('previewFrame');
+            
+            let newUrl = urlInput.value.trim();
+            
+            if (!newUrl) {
+                cancelUrlEdit();
+                return;
+            }
+            
+            // Basic URL validation and normalization
+            try {
+                if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
+                    if (newUrl.includes('.') && !newUrl.includes(' ')) {
+                        newUrl = 'https://' + newUrl;
+                    } else {
+                        throw new Error('Invalid URL format');
+                    }
+                }
+                
+                // Validate URL
+                new URL(newUrl);
+                
+                // Update display and navigate
+                urlDisplay.textContent = newUrl;
+                urlDisplay.title = newUrl;
+                iframe.src = newUrl;
+                
+                cancelUrlEdit();
+                showLoading();
+                showStatus('Navigating to ' + newUrl);
+                
+            } catch (error) {
+                showStatus('Invalid URL: ' + newUrl, 'error');
+            }
         }
         
         function toggleSelector(type) {
