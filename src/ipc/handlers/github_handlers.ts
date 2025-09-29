@@ -64,34 +64,52 @@ async function validateGitHubAuthentication(): Promise<{valid: boolean, error?: 
   if (!accessToken) {
     return { 
       valid: false, 
-      error: "No GitHub authentication found. Please connect your GitHub account in Settings.",
+      error: "No GitHub authentication found. Please connect your GitHub account in Settings to access repositories.",
       requiresAuth: true 
     };
   }
   
   try {
-    const response = await fetch(`${GITHUB_API_BASE}/user`, {
+    // First check if token is valid by getting user info
+    const userResponse = await fetch(`${GITHUB_API_BASE}/user`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     
-    if (response.status === 401) {
+    if (userResponse.status === 401) {
       return { 
         valid: false, 
-        error: "GitHub authentication token is invalid or expired. Please reconnect your GitHub account.",
+        error: "GitHub authentication token is invalid or expired. Please reconnect your GitHub account in Settings.",
         requiresAuth: true 
       };
-    } else if (response.status === 403) {
+    } else if (userResponse.status === 403) {
       return { 
         valid: false, 
-        error: "GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes.",
+        error: "GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes in Settings.",
         requiresAuth: true 
       };
-    } else if (!response.ok) {
+    } else if (!userResponse.ok) {
       return { 
         valid: false, 
-        error: `GitHub API error: ${response.statusText}`,
+        error: `GitHub API error: ${userResponse.statusText}`,
         requiresAuth: false 
       };
+    }
+    
+    // Check token scopes to ensure we have required permissions
+    const scopeHeader = userResponse.headers.get('x-oauth-scopes');
+    const requiredScopes = ['repo', 'user'];
+    
+    if (scopeHeader) {
+      const tokenScopes = scopeHeader.split(',').map(s => s.trim());
+      const missingScopes = requiredScopes.filter(scope => !tokenScopes.includes(scope));
+      
+      if (missingScopes.length > 0) {
+        return {
+          valid: false,
+          error: `GitHub token is missing required permissions: ${missingScopes.join(', ')}. Please reconnect your GitHub account with full repository access.`,
+          requiresAuth: true
+        };
+      }
     }
     
     return { valid: true };

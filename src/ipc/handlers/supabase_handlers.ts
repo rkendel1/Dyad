@@ -50,6 +50,17 @@ function isLocalSupabaseRunning(): boolean {
   }
 }
 
+function getSupabaseContainerStatus(): string {
+  try {
+    const result = execSync('docker-compose -f docker-compose.supabase.yml ps', 
+      { encoding: 'utf8', stdio: 'pipe' }
+    );
+    return result;
+  } catch (error) {
+    return `Failed to get container status: ${error}`;
+  }
+}
+
 async function startLocalSupabase(): Promise<void> {
   const dockerComposeFile = path.resolve(process.cwd(), 'docker-compose.supabase.yml');
   
@@ -58,11 +69,11 @@ async function startLocalSupabase(): Promise<void> {
   }
 
   if (!checkDockerInstalled()) {
-    throw new Error('Docker is not installed or not running. Please install Docker to use local Supabase.');
+    throw new Error('Docker is not installed or not running. Please install Docker Desktop and ensure it\'s running.');
   }
 
   try {
-    logger.info('Starting local Supabase...');
+    logger.info('Starting local Supabase containers...');
     execSync('docker-compose -f docker-compose.supabase.yml up -d', { 
       stdio: 'inherit',
       cwd: process.cwd()
@@ -75,37 +86,90 @@ async function startLocalSupabase(): Promise<void> {
     logger.info('Local Supabase started successfully and is ready');
   } catch (error) {
     logger.error('Failed to start local Supabase:', error);
-    throw new Error(`Failed to start local Supabase: ${error}`);
+    
+    // Get container status for debugging
+    const containerStatus = getSupabaseContainerStatus();
+    logger.error('Container status:', containerStatus);
+    
+    // Provide more specific error messages
+    if (String(error).includes('timeout') || String(error).includes('ready')) {
+      throw new Error(`Local Supabase startup timed out. This could be due to:\n- Docker containers taking longer than expected to start\n- Port conflicts (ports 5432, 8000, 3001 may be in use)\n- Insufficient system resources\n\nTry stopping any existing containers and retry.`);
+    } else if (String(error).includes('permission') || String(error).includes('denied')) {
+      throw new Error(`Permission denied starting Docker containers. Please ensure:\n- Docker Desktop is running\n- You have permission to run Docker commands\n- No other processes are using the required ports`);
+    } else {
+      throw new Error(`Failed to start local Supabase: ${error}`);
+    }
   }
 }
 
 async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
   const startTime = Date.now();
   const checkInterval = 2000; // Check every 2 seconds
+  let lastStatus = '';
+  
+  logger.info(`Waiting for Supabase services to be ready (max ${maxWaitTime/1000}s)...`);
   
   while (Date.now() - startTime < maxWaitTime) {
     try {
-      // Check if services are running
+      // Check if containers are running
       if (!isLocalSupabaseRunning()) {
-        logger.debug('Waiting for Supabase containers to start...');
+        const currentStatus = 'Waiting for Supabase containers to start...';
+        if (currentStatus !== lastStatus) {
+          logger.info(currentStatus);
+          lastStatus = currentStatus;
+        }
         await new Promise(resolve => setTimeout(resolve, checkInterval));
         continue;
       }
       
-      // Check if API is responding
-      const response = await fetch(`${LOCAL_SUPABASE_CONFIG.url}/health`, {
-        method: 'GET',
-        timeout: 5000
-      }).catch(() => null);
-      
-      if (response && response.ok) {
-        logger.info('Supabase API is responding');
-        // Additional wait to ensure dashboard is ready
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        return;
+      // Check if Kong API Gateway is responding
+      try {
+        const response = await fetch(`${LOCAL_SUPABASE_CONFIG.url}/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000)
+        });
+        
+        if (response.ok) {
+          logger.info('Supabase API Gateway is responding');
+          
+          // Additional check for Studio dashboard
+          try {
+            const studioResponse = await fetch(`${LOCAL_SUPABASE_CONFIG.dashboardUrl}`, {
+              method: 'GET', 
+              signal: AbortSignal.timeout(3000)
+            });
+            
+            if (studioResponse.ok || studioResponse.status === 200) {
+              logger.info('Supabase Studio dashboard is ready');
+              // Brief final wait to ensure everything is stable
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              return;
+            }
+          } catch (studioError) {
+            logger.debug('Studio not ready yet, continuing to wait...', studioError);
+          }
+          
+          // API is ready but studio might need more time
+          const currentStatus = 'API ready, waiting for dashboard...';
+          if (currentStatus !== lastStatus) {
+            logger.info(currentStatus);
+            lastStatus = currentStatus;
+          }
+        } else {
+          const currentStatus = 'Waiting for Supabase API to be ready...';
+          if (currentStatus !== lastStatus) {
+            logger.info(currentStatus);
+            lastStatus = currentStatus;
+          }
+        }
+      } catch (fetchError) {
+        const currentStatus = 'Waiting for Supabase services to initialize...';
+        if (currentStatus !== lastStatus) {
+          logger.debug(currentStatus, fetchError);
+          lastStatus = currentStatus;
+        }
       }
       
-      logger.debug('Waiting for Supabase API to respond...');
     } catch (error) {
       logger.debug('Still waiting for Supabase to be ready:', error);
     }
@@ -113,7 +177,7 @@ async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, checkInterval));
   }
   
-  throw new Error('Timeout waiting for local Supabase to be ready. Services may have failed to start properly.');
+  throw new Error(`Timeout waiting for local Supabase to be ready (waited ${maxWaitTime/1000}s). Services may have failed to start properly. Check Docker logs for more details.`);
 }
 
 async function stopLocalSupabase(): Promise<void> {

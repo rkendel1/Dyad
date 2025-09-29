@@ -194,7 +194,20 @@ export function registerImportHandlers() {
       let repoName: string;
 
       try {
-        const url = new URL(repoUrl);
+        // Handle various GitHub URL formats and clean them up
+        let cleanUrl = repoUrl.trim();
+        
+        // Handle github.com URLs without protocol
+        if (cleanUrl.startsWith('github.com/')) {
+          cleanUrl = 'https://' + cleanUrl;
+        }
+        
+        // Handle SSH URLs by converting to HTTPS
+        if (cleanUrl.startsWith('git@github.com:')) {
+          cleanUrl = cleanUrl.replace('git@github.com:', 'https://github.com/');
+        }
+        
+        const url = new URL(cleanUrl);
         if (url.protocol !== "https:") {
           throw new Error("Repository URL must use HTTPS.");
         }
@@ -219,9 +232,11 @@ export function registerImportHandlers() {
             "Failed to parse organization or repository name from URL.",
           );
         }
+        
+        logger.info(`Parsed GitHub URL: ${orgName}/${repoName} from ${repoUrl}`);
       } catch (error: any) {
         if (error.message.includes("Invalid URL")) {
-          throw new Error("Invalid GitHub repository URL format.");
+          throw new Error(`Invalid GitHub repository URL format. Please use format: https://github.com/owner/repo`);
         }
         throw error;
       }

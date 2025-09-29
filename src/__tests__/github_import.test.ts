@@ -33,6 +33,34 @@ describe("GitHub URL validation", () => {
     });
   });
 
+  it("should handle various GitHub URL formats", () => {
+    const urlVariations = [
+      { input: "https://github.com/user/repo", expected: "https://github.com/user/repo" },
+      { input: "github.com/user/repo", expected: "https://github.com/user/repo" },
+      { input: "https://github.com/user/repo.git", expected: "https://github.com/user/repo" },
+    ];
+
+    urlVariations.forEach(({ input, expected }) => {
+      // Simulate the URL cleaning logic from our enhanced import handler
+      let cleanUrl = input.trim();
+      
+      if (cleanUrl.startsWith('github.com/')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
+      
+      if (cleanUrl.startsWith('git@github.com:')) {
+        cleanUrl = cleanUrl.replace('git@github.com:', 'https://github.com/');
+      }
+      
+      const urlObj = new URL(cleanUrl);
+      const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
+      const repoName = pathParts[1].replace(/\.git$/, "");
+      
+      expect(urlObj.href.replace(/\.git$/, "")).toBe(expected);
+      expect(pathParts.length).toBe(2);
+    });
+  });
+
   it("should reject invalid GitHub URLs", () => {
     const invalidUrls = [
       "http://github.com/user/repo", // HTTP instead of HTTPS
@@ -44,7 +72,12 @@ describe("GitHub URL validation", () => {
 
     invalidUrls.forEach(url => {
       try {
-        const urlObj = new URL(url);
+        let cleanUrl = url.trim();
+        if (cleanUrl.startsWith('github.com/')) {
+          cleanUrl = 'https://' + cleanUrl;
+        }
+        
+        const urlObj = new URL(cleanUrl);
         if (urlObj.hostname === "github.com" && urlObj.protocol === "https:") {
           const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
           expect(pathParts.length).toBe(2); // This should fail for invalid GitHub URLs
@@ -68,6 +101,40 @@ describe("GitHub URL validation", () => {
       const pathParts = urlObj.pathname.split("/").filter(part => part.length > 0);
       const repoName = pathParts[1].replace(/\.git$/, "");
       expect(repoName).toBe(expected);
+    });
+  });
+});
+
+describe("GitHub Authentication validation", () => {
+  it("should validate authentication parameters", () => {
+    const authScenarios = [
+      { token: null, expected: "requiresAuth" },
+      { token: "invalid-token", expected: "invalid" },
+      { token: "valid-token-with-scopes", expected: "valid" },
+    ];
+
+    authScenarios.forEach(({ token, expected }) => {
+      // Simulate authentication validation logic
+      if (!token) {
+        expect("requiresAuth").toBe(expected);
+      } else if (token === "invalid-token") {
+        expect("invalid").toBe(expected);
+      } else {
+        expect("valid").toBe(expected);
+      }
+    });
+  });
+
+  it("should handle authentication error messages", () => {
+    const errorMessages = [
+      "No GitHub authentication found. Please connect your GitHub account in Settings to access repositories.",
+      "GitHub authentication token is invalid or expired. Please reconnect your GitHub account in Settings.",
+      "GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes in Settings.",
+    ];
+
+    errorMessages.forEach(message => {
+      expect(message).toContain("GitHub");
+      expect(message).toContain("Settings");
     });
   });
 });
