@@ -12,6 +12,7 @@ import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { readSettings } from "../../main/settings";
 
 import { ImportAppParams, ImportAppResult, ImportAppFromGithubParams } from "../ipc_types";
 import { copyDirectoryRecursive } from "../utils/file_utils";
@@ -193,7 +194,20 @@ export function registerImportHandlers() {
       let repoName: string;
 
       try {
-        const url = new URL(repoUrl);
+        // Handle various GitHub URL formats and clean them up
+        let cleanUrl = repoUrl.trim();
+        
+        // Handle github.com URLs without protocol
+        if (cleanUrl.startsWith('github.com/')) {
+          cleanUrl = 'https://' + cleanUrl;
+        }
+        
+        // Handle SSH URLs by converting to HTTPS
+        if (cleanUrl.startsWith('git@github.com:')) {
+          cleanUrl = cleanUrl.replace('git@github.com:', 'https://github.com/');
+        }
+        
+        const url = new URL(cleanUrl);
         if (url.protocol !== "https:") {
           throw new Error("Repository URL must use HTTPS.");
         }
@@ -218,38 +232,73 @@ export function registerImportHandlers() {
             "Failed to parse organization or repository name from URL.",
           );
         }
+        
+        logger.info(`Parsed GitHub URL: ${orgName}/${repoName} from ${repoUrl}`);
       } catch (error: any) {
         if (error.message.includes("Invalid URL")) {
-          throw new Error("Invalid GitHub repository URL format.");
+          throw new Error(`Invalid GitHub repository URL format. Please use format: https://github.com/owner/repo`);
         }
         throw error;
       }
 
       logger.info(`Importing GitHub repo: ${orgName}/${repoName} as app: ${appName}`);
 
+      // Check GitHub authentication first
+      const settings = readSettings();
+      const githubToken = settings.githubAccessToken?.value;
+      
       // Check if repository is accessible via GitHub API
       try {
         const apiUrl = `https://api.github.com/repos/${orgName}/${repoName}`;
+        const headers: Record<string, string> = {
+          "User-Agent": "Dyad",
+          "Accept": "application/vnd.github.v3+json",
+        };
+        
+        // Add authentication if available
+        if (githubToken) {
+          headers["Authorization"] = `Bearer ${githubToken}`;
+        }
+        
         const response = await http.request({
           url: apiUrl,
           method: "GET",
-          headers: {
-            "User-Agent": "Dyad",
-            Accept: "application/vnd.github.v3+json",
-          },
+          headers,
         });
 
-        if (response.statusCode === 404) {
+        if (response.statusCode === 401) {
           throw new Error(
-            `Repository ${orgName}/${repoName} not found or is private. Please check the URL and ensure the repository is public.`
+            `GitHub authentication failed. Please connect your GitHub account in Settings to access repositories.`
           );
+        } else if (response.statusCode === 403) {
+          if (!githubToken) {
+            throw new Error(
+              `Repository ${orgName}/${repoName} requires authentication. Please connect your GitHub account in Settings to access private repositories.`
+            );
+          } else {
+            throw new Error(
+              `Access denied to repository ${orgName}/${repoName}. You may not have permission to access this repository.`
+            );
+          }
+        } else if (response.statusCode === 404) {
+          if (!githubToken) {
+            throw new Error(
+              `Repository ${orgName}/${repoName} not found. If this is a private repository, please connect your GitHub account in Settings.`
+            );
+          } else {
+            throw new Error(
+              `Repository ${orgName}/${repoName} not found or you don't have access to it.`
+            );
+          }
         } else if (response.statusCode !== 200) {
           throw new Error(
             `Failed to access repository: ${response.statusCode} ${response.statusMessage}`
           );
         }
+        
+        logger.info(`Repository ${orgName}/${repoName} is accessible`);
       } catch (error: any) {
-        if (error.message.includes("not found or is private")) {
+        if (error.message.includes("authentication") || error.message.includes("access") || error.message.includes("not found")) {
           throw error;
         }
         throw new Error(`Network error: Unable to access GitHub repository. ${error.message}`);
@@ -271,14 +320,23 @@ export function registerImportHandlers() {
       // Clone the repository directly to the destination
       logger.info(`Cloning ${repoUrl} to ${destPath}`);
       try {
-        await git.clone({
+        const cloneOptions: any = {
           fs,
           http,
           dir: destPath,
           url: repoUrl,
           singleBranch: true,
           depth: 1,
-        });
+        };
+        
+        // Add authentication if available
+        if (githubToken) {
+          cloneOptions.headers = {
+            Authorization: `Bearer ${githubToken}`,
+          };
+        }
+        
+        await git.clone(cloneOptions);
         logger.info(`Successfully cloned ${repoUrl} to ${destPath}`);
       } catch (err: any) {
         logger.error(`Failed to clone ${repoUrl} to ${destPath}: `, err);
@@ -288,7 +346,15 @@ export function registerImportHandlers() {
         } catch {
           // Ignore cleanup errors
         }
-        throw new Error(`Failed to clone repository: ${err.message}`);
+        
+        // Provide better error messages
+        if (err.message.includes('authentication') || err.message.includes('401') || err.message.includes('403')) {
+          throw new Error(`Authentication failed while cloning repository. Please ensure your GitHub token has the necessary permissions.`);
+        } else if (err.message.includes('404')) {
+          throw new Error(`Repository not found during cloning. The repository may have been deleted or made private.`);
+        } else {
+          throw new Error(`Failed to clone repository: ${err.message}`);
+        }
       }
 
       // Remove .git directory to avoid conflicts

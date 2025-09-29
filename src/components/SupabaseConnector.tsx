@@ -253,14 +253,45 @@ export function SupabaseConnector({ appId }: { appId: number }) {
           <Button
             onClick={async () => {
               try {
-                toast.success("Setting up local Supabase...", {
+                toast.info("Starting local Supabase setup...", {
+                  description: "Checking Docker and starting services"
+                });
+                
+                // Show progress updates
+                const progressToast = toast.loading("Setting up local Supabase...", {
                   description: "This may take a few moments for first-time setup"
                 });
+                
                 await IpcClient.getInstance().setupLocalSupabase({ appId });
-                toast.success("Local Supabase setup completed!");
+                
+                toast.dismiss(progressToast);
+                toast.success("Local Supabase setup completed!", {
+                  description: "Your app is now connected to local Supabase"
+                });
+                
                 await refreshApp();
+                
+                // Refresh local status
+                const status = await IpcClient.getInstance().getLocalSupabaseStatus();
+                setLocalStatus(status);
               } catch (error) {
-                toast.error("Failed to setup local Supabase: " + error);
+                const errorMessage = String(error).replace('Error: ', '');
+                toast.error("Failed to setup local Supabase", {
+                  description: errorMessage
+                });
+                
+                // Provide additional guidance based on error type
+                if (errorMessage.includes('Docker')) {
+                  toast.info("Docker Required", {
+                    description: "Please install Docker Desktop and ensure it's running",
+                    duration: 5000
+                  });
+                } else if (errorMessage.includes('timeout') || errorMessage.includes('ready')) {
+                  toast.info("Startup Issue", {
+                    description: "Try stopping any existing containers and retry",
+                    duration: 5000
+                  });
+                }
               }
             }}
             variant="outline"
