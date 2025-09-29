@@ -705,6 +705,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
                       <button
                         onClick={copyCssSelectorToClipboard}
                         className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 rounded text-green-700 dark:text-green-300 transition-colors"
+                        data-testid="copy-css-selector-button"
                       >
                         <Copy size={16} />
                       </button>
@@ -721,6 +722,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
                         onClick={insertCssSelectorToChat}
                         disabled={!selectedChatId}
                         className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 rounded text-green-700 dark:text-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        data-testid="insert-css-selector-button"
                       >
                         <MessageSquare size={16} />
                       </button>
