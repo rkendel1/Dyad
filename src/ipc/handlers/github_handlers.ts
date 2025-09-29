@@ -54,6 +54,57 @@ let currentFlowState: DeviceFlowState | null = null;
 // --- Helper Functions ---
 
 /**
+ * Validates GitHub authentication and returns detailed error info
+ * @returns Promise<{valid: boolean, error?: string, requiresAuth?: boolean}>
+ */
+async function validateGitHubAuthentication(): Promise<{valid: boolean, error?: string, requiresAuth?: boolean}> {
+  const settings = readSettings();
+  const accessToken = settings.githubAccessToken?.value;
+  
+  if (!accessToken) {
+    return { 
+      valid: false, 
+      error: "No GitHub authentication found. Please connect your GitHub account in Settings.",
+      requiresAuth: true 
+    };
+  }
+  
+  try {
+    const response = await fetch(`${GITHUB_API_BASE}/user`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    
+    if (response.status === 401) {
+      return { 
+        valid: false, 
+        error: "GitHub authentication token is invalid or expired. Please reconnect your GitHub account.",
+        requiresAuth: true 
+      };
+    } else if (response.status === 403) {
+      return { 
+        valid: false, 
+        error: "GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes.",
+        requiresAuth: true 
+      };
+    } else if (!response.ok) {
+      return { 
+        valid: false, 
+        error: `GitHub API error: ${response.statusText}`,
+        requiresAuth: false 
+      };
+    }
+    
+    return { valid: true };
+  } catch (error) {
+    return { 
+      valid: false, 
+      error: `Network error connecting to GitHub: ${error}`,
+      requiresAuth: false 
+    };
+  }
+}
+
+/**
  * Fetches the GitHub username of the currently authenticated user (using the stored access token).
  * @returns {Promise<string|null>} The GitHub username, or null if not authenticated or on error.
  */
@@ -302,13 +353,19 @@ async function handleListGithubRepos(): Promise<
   { name: string; full_name: string; private: boolean }[]
 > {
   try {
+    // Validate authentication first
+    const authValidation = await validateGitHubAuthentication();
+    if (!authValidation.valid) {
+      throw new Error(authValidation.error || "GitHub authentication failed");
+    }
+    
     // Get access token from settings
     const settings = readSettings();
-    const accessToken = settings.githubAccessToken?.value;
+    const accessToken = settings.githubAccessToken?.value; // We know it exists from validation
     if (!accessToken) {
-      throw new Error("Not authenticated with GitHub.");
+      throw new Error("Authentication token not found despite validation"); // Should not happen
     }
-
+    
     // Fetch user's repositories
     const response = await fetch(
       `${GITHUB_API_BASE}/user/repos?per_page=100&sort=updated`,
@@ -321,10 +378,16 @@ async function handleListGithubRepos(): Promise<
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `GitHub API error: ${errorData.message || response.statusText}`,
-      );
+      if (response.status === 401) {
+        throw new Error("GitHub authentication token is invalid. Please reconnect your GitHub account.");
+      } else if (response.status === 403) {
+        throw new Error("GitHub authentication token doesn't have sufficient permissions. Please reconnect with proper scopes.");
+      } else {
+        const errorData = await response.json();
+        throw new Error(
+          `GitHub API error: ${errorData.message || response.statusText}`,
+        );
+      }
     }
 
     const repos = await response.json();
@@ -387,12 +450,16 @@ async function handleIsRepoAvailable(
   { org, repo }: { org: string; repo: string },
 ): Promise<{ available: boolean; error?: string }> {
   try {
+    // Validate authentication first
+    const authValidation = await validateGitHubAuthentication();
+    if (!authValidation.valid) {
+      return { available: false, error: authValidation.error };
+    }
+    
     // Get access token from settings
     const settings = readSettings();
     const accessToken = settings.githubAccessToken?.value;
-    if (!accessToken) {
-      return { available: false, error: "Not authenticated with GitHub." };
-    }
+    
     // If org is empty, use the authenticated user
     const owner =
       org ||
@@ -401,21 +468,25 @@ async function handleIsRepoAvailable(
       })
         .then((r) => r.json())
         .then((u) => u.login));
+    
     // Check if repo exists
     const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}`;
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+    
     if (res.status === 404) {
       return { available: true };
     } else if (res.ok) {
       return { available: false, error: "Repository already exists." };
+    } else if (res.status === 403) {
+      return { available: false, error: "Access denied. You may not have permission to access this repository." };
     } else {
       const data = await res.json();
       return { available: false, error: data.message || "Unknown error" };
     }
   } catch (err: any) {
-    return { available: false, error: err.message || "Unknown error" };
+    return { available: false, error: err.message || "Network error occurred" };
   }
 }
 

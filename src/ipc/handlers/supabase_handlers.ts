@@ -14,6 +14,7 @@ import { execSync } from "child_process";
 import { existsSync } from "fs";
 import path from "path";
 import { updatePostgresUrlEnvVar, updateEnvironmentVariables } from "../utils/app_env_var_utils";
+import fetch from "node-fetch";
 
 const logger = log.scope("supabase_handlers");
 const handle = createLoggedHandler(logger);
@@ -66,11 +67,53 @@ async function startLocalSupabase(): Promise<void> {
       stdio: 'inherit',
       cwd: process.cwd()
     });
-    logger.info('Local Supabase started successfully');
+    logger.info('Local Supabase containers started, waiting for services to be ready...');
+    
+    // Wait for services to be ready with better validation
+    await waitForSupabaseReady();
+    
+    logger.info('Local Supabase started successfully and is ready');
   } catch (error) {
     logger.error('Failed to start local Supabase:', error);
     throw new Error(`Failed to start local Supabase: ${error}`);
   }
+}
+
+async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
+  const startTime = Date.now();
+  const checkInterval = 2000; // Check every 2 seconds
+  
+  while (Date.now() - startTime < maxWaitTime) {
+    try {
+      // Check if services are running
+      if (!isLocalSupabaseRunning()) {
+        logger.debug('Waiting for Supabase containers to start...');
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        continue;
+      }
+      
+      // Check if API is responding
+      const response = await fetch(`${LOCAL_SUPABASE_CONFIG.url}/health`, {
+        method: 'GET',
+        timeout: 5000
+      }).catch(() => null);
+      
+      if (response && response.ok) {
+        logger.info('Supabase API is responding');
+        // Additional wait to ensure dashboard is ready
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        return;
+      }
+      
+      logger.debug('Waiting for Supabase API to respond...');
+    } catch (error) {
+      logger.debug('Still waiting for Supabase to be ready:', error);
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, checkInterval));
+  }
+  
+  throw new Error('Timeout waiting for local Supabase to be ready. Services may have failed to start properly.');
 }
 
 async function stopLocalSupabase(): Promise<void> {
@@ -179,9 +222,10 @@ export function registerSupabaseHandlers() {
       // Start local Supabase if not running
       if (!isLocalSupabaseRunning()) {
         await startLocalSupabase();
-        
-        // Wait a bit for services to be ready
-        await new Promise(resolve => setTimeout(resolve, 5000));
+      } else {
+        // Even if running, wait a bit to ensure it's fully ready
+        logger.info('Local Supabase is already running, checking readiness...');
+        await waitForSupabaseReady(10000); // Shorter wait if already running
       }
       
       // Get the app to find its path
