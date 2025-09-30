@@ -25,6 +25,7 @@ import { ReleaseChannelSelector } from "@/components/ReleaseChannelSelector";
 import { NeonIntegration } from "@/components/NeonIntegration";
 import { RuntimeModeSelector } from "@/components/RuntimeModeSelector";
 import { ToolsMcpSettings } from "@/components/settings/ToolsMcpSettings";
+import { PortRangeSelector } from "@/components/settings/PortRangeSelector";
 
 export default function SettingsPage() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -271,6 +272,10 @@ export function GeneralSettings({ appVersion }: { appVersion: string | null }) {
 
       <div className="mt-4">
         <RuntimeModeSelector />
+      </div>
+
+      <div className="mt-4">
+        <PortRangeSelector />
       </div>
 
       <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-4">
