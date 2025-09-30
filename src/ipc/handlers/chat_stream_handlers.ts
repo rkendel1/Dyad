@@ -338,9 +338,12 @@ async function handleChunkedDelivery(
           `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars, ${chunkDeliveryTime}ms)`
         );
 
-        // Small delay between chunks to prevent overwhelming the UI
+        // Adaptive delay between chunks to prevent overwhelming the UI
+        // Longer delay if there are many pending files to give UI time to render
         if (!isLastChunk) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          const baseDelay = 100;
+          const additionalDelay = incompleteFiles > 0 ? Math.min(incompleteFiles * 50, 200) : 0;
+          await new Promise(resolve => setTimeout(resolve, baseDelay + additionalDelay));
         }
 
       } catch (error) {
