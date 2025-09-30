@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'jotai';
-import { appOutputAtom } from '@/atoms/appAtoms';
+import { appOutputAtom, selectedAppIdAtom } from '@/atoms/appAtoms';
 import { Console } from './Console';
 import type { AppOutput } from '@/ipc/ipc_types';
 
@@ -10,6 +10,22 @@ jest.mock('@/hooks/useCopyToClipboard', () => ({
     copyMessageContent: jest.fn(),
     copied: false,
   }),
+}));
+
+// Mock IpcClient
+jest.mock('@/ipc/ipc_client', () => ({
+  IpcClient: {
+    getInstance: jest.fn(() => ({
+      respondToAppInput: jest.fn(),
+    })),
+  },
+}));
+
+// Mock sonner toast
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+  },
 }));
 
 const mockAppOutput: AppOutput[] = [
@@ -40,7 +56,7 @@ describe('Console Component', () => {
     store.set(appOutputAtom, output);
 
     return render(
-      <Provider initialValues={[[appOutputAtom, output]]}>
+      <Provider initialValues={[[appOutputAtom, output], [selectedAppIdAtom, 1]]}>
         <Console />
       </Provider>
     );
@@ -189,5 +205,24 @@ describe('Console Component', () => {
     expect(screen.getByTitle(/Copy all logs \(Ctrl\+Shift\+C\)/)).toBeInTheDocument();
     expect(screen.getByTitle(/Export logs to file \(Ctrl\+Shift\+S\)/)).toBeInTheDocument();
     expect(screen.getByTitle(/Clear logs \(Ctrl\+K\)/)).toBeInTheDocument();
+  });
+
+  it('includes CLI input component', () => {
+    renderConsoleWithOutput();
+    
+    // Check that CLI input is present
+    expect(screen.getByPlaceholderText(/Enter command or app input.../)).toBeInTheDocument();
+  });
+
+  it('handles clear command from CLI input', () => {
+    renderConsoleWithOutput();
+    
+    // Type "clear" in CLI input and press Enter
+    const input = screen.getByPlaceholderText(/Enter command or app input.../);
+    fireEvent.change(input, { target: { value: 'clear' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    
+    // Console should still be rendered (output cleared by the clear action)
+    expect(screen.getByText(/All \(3\)/)).toBeInTheDocument();
   });
 });

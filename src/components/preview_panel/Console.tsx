@@ -5,6 +5,7 @@ import { Copy, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import type { AppOutput } from "@/ipc/ipc_types";
+import { CliInput } from "./CliInput";
 
 // Enhanced Console component
 export const Console = () => {
@@ -206,7 +207,7 @@ export const Console = () => {
       {/* Console output */}
       <div 
         ref={scrollRef}
-        className="font-mono text-xs px-4 py-2 h-full overflow-auto bg-background"
+        className="font-mono text-xs px-4 py-2 flex-1 overflow-auto bg-background"
       >
         {filteredOutput.length === 0 ? (
           <div className="text-muted-foreground italic">
@@ -242,6 +243,13 @@ export const Console = () => {
           ))
         )}
       </div>
+      
+      {/* CLI Input */}
+      <CliInput onCommandExecute={(cmd) => {
+        if (cmd === "clear") {
+          handleClearLogs();
+        }
+      }} />
     </div>
   );
 };

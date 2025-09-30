@@ -92,3 +92,23 @@ Update snapshots for a test:
 ```sh
 npm run e2e e2e-tests/context_manage.spec.ts -- --update-snapshots
 ```
+
+## Testing the CLI Feature
+
+The console includes a built-in CLI input feature for interacting with running apps. To test it:
+
+1. Start Dyad: `npm start`
+2. Create a new app or open an existing one
+3. Run the app (it should start automatically or click "Run")
+4. Open the console by clicking on "System Messages" at the bottom of the preview panel
+5. Use the CLI input field at the bottom of the console to send commands
+
+### CLI Testing Tips
+
+- Test command history: Type commands and use arrow keys (↑/↓) to navigate
+- Test help command: Type `help` and press Enter
+- Test clear command: Type `clear` and press Enter
+- Test app interaction: If your app accepts stdin, send test input
+- Run unit tests: Tests are in `src/components/preview_panel/CliInput.test.tsx`
+
+For more details on the CLI feature, see [CLI_INPUT.md](./CLI_INPUT.md).
