@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { ChunkedMessageIndicator } from "./ChunkIndicator";
 
 interface ChatMessageProps {
   message: Message;
@@ -122,25 +123,31 @@ const ChatMessage = ({ message, isLastMessage }: ChatMessageProps) => {
               />
             </div>
           ) : (
-            <div
-              className="prose dark:prose-invert prose-headings:mb-2 prose-p:my-1 prose-pre:my-0 max-w-none break-words"
-              suppressHydrationWarning
-            >
-              {message.role === "assistant" ? (
-                <>
-                  <DyadMarkdownParser content={message.content} />
-                  {isLastMessage && isStreaming && (
-                    <div className="mt-4 ml-4 relative w-5 h-5 animate-spin">
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full"></div>
-                      <div className="absolute bottom-0 left-0 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full opacity-80"></div>
-                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full opacity-60"></div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <VanillaMarkdownParser content={message.content} />
+            <>
+              {/* Show chunked message indicator for assistant messages */}
+              {message.role === "assistant" && message.chunkMetadata?.isChunked && (
+                <ChunkedMessageIndicator chunkMetadata={message.chunkMetadata} />
               )}
-            </div>
+              <div
+                className="prose dark:prose-invert prose-headings:mb-2 prose-p:my-1 prose-pre:my-0 max-w-none break-words"
+                suppressHydrationWarning
+              >
+                {message.role === "assistant" ? (
+                  <>
+                    <DyadMarkdownParser content={message.content} />
+                    {isLastMessage && isStreaming && (
+                      <div className="mt-4 ml-4 relative w-5 h-5 animate-spin">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full"></div>
+                        <div className="absolute bottom-0 left-0 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full opacity-80"></div>
+                        <div className="absolute bottom-0 right-0 w-2 h-2 bg-(--primary) dark:bg-blue-500 rounded-full opacity-60"></div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <VanillaMarkdownParser content={message.content} />
+                )}
+              </div>
+            </>
           )}
           {(message.role === "assistant" && message.content && !isStreaming) ||
           message.approvalState ? (
