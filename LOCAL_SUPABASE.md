@@ -35,8 +35,11 @@ npm run supabase:stop
 # Start local Supabase
 node scripts/setup-local-supabase.js start
 
-# Check status
+# Check status with detailed information
 node scripts/setup-local-supabase.js status
+
+# View configuration details
+node scripts/setup-local-supabase.js config
 
 # Stop local Supabase
 node scripts/setup-local-supabase.js stop
@@ -47,11 +50,39 @@ node scripts/setup-local-supabase.js stop
 Local Supabase includes all the core services:
 
 - **PostgreSQL Database** (port 5432)
-- **API Gateway** (port 8000) - Main API endpoint
-- **Auth Service** - User authentication and authorization
+- **API Gateway** (port 8000) - Main API endpoint (Kong)
+- **Auth Service** (GoTrue) - User authentication and authorization
 - **Storage Service** - File storage and management
 - **Realtime Service** - Real-time subscriptions
+- **PostgREST API** - Automatic REST API for your database
 - **Dashboard** (port 3001) - Supabase Studio interface
+
+### Enhanced Startup Experience
+
+When you start local Supabase, you'll see:
+- 📦 List of services being started
+- ⏳ Real-time progress indicators
+- ✅ Service-by-service health checks
+- 📊 Formatted connection information
+- 💡 Next steps and helpful tips
+
+Example output:
+```
+═══════════════════════════════════════════════════════
+🚀 Starting local Supabase...
+═══════════════════════════════════════════════════════
+📦 Starting services:
+   - PostgreSQL Database
+   - Kong API Gateway
+   - GoTrue Auth
+   ...
+✅ Local Supabase is ready!
+═══════════════════════════════════════════════════════
+📊 Dashboard:        http://localhost:3001
+🔗 API URL:          http://localhost:8000
+🗄️  Database:         localhost:5432
+═══════════════════════════════════════════════════════
+```
 
 ## Configuration
 
@@ -64,11 +95,22 @@ Local Supabase includes all the core services:
 
 ### Environment Variables
 
-When you connect an app to local Supabase, Dyad automatically creates/updates your `.env.local` file with:
+When you connect an app to local Supabase, Dyad automatically creates/updates your `.env.local` file with a structured format:
 
 ```bash
+# ============================================
+# LOCAL SUPABASE (Development)
+# ============================================
 POSTGRES_URL=postgresql://postgres:your-super-secret-and-long-postgres-password@localhost:5432/postgres
+SUPABASE_URL=http://localhost:8000
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# ============================================
 ```
+
+This structured format makes it easy to switch between local and hosted environments.
 
 ## Usage in Your App
 
@@ -159,12 +201,34 @@ docker-compose -f docker-compose.supabase.yml logs db
 
 ## Switching Between Local and Cloud
 
-You can easily switch between local and cloud Supabase:
+You can easily switch between local and hosted Supabase:
 
-1. **To Cloud**: Click "Disconnect Project" then use "Connect to Supabase"
+### Using the Environment Switcher (Recommended)
+
+```bash
+# Switch to local Supabase
+npm run supabase:switch /path/to/your/app local
+
+# Switch to hosted Supabase  
+npm run supabase:switch /path/to/your/app hosted
+```
+
+The switcher automatically manages your `.env.local` file by commenting/uncommenting the appropriate sections.
+
+### Using the Dyad UI
+
+1. **To Hosted**: Click "Disconnect Project" then use "Connect to Supabase"
 2. **To Local**: Click "Disconnect Project" then use "Use Local Supabase"
 
-Each app can use a different Supabase instance, so you can have some apps using local and others using cloud.
+### Manual Method
+
+Edit your `.env.local` file:
+- Uncomment the `LOCAL SUPABASE` section for local development
+- Uncomment the `HOSTED SUPABASE` section for production/staging
+
+Each app can use a different Supabase instance, so you can have some apps using local and others using hosted.
+
+**📖 For detailed information, see [ENVIRONMENT_SWITCHING.md](./ENVIRONMENT_SWITCHING.md)**
 
 ## Production Promotion
 
@@ -181,9 +245,11 @@ This interactive tool will guide you through:
 
 - Creating or configuring a production Supabase project
 - Migrating your database schema
-- Updating environment files
+- Updating environment files with structured format
 - Deploying functions
 - Providing guidance for data migration
+
+After promotion, your `.env.local` will contain both local and hosted configurations, making it easy to switch between them.
 
 ### Using the Dyad UI
 
