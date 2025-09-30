@@ -377,8 +377,11 @@ async function executeAppInDocker({
   if (!fs.existsSync(dockerfilePath)) {
     const dockerfileContent = `FROM node:22-alpine
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install multiple package managers for compatibility
+RUN npm install -g pnpm@latest-10 && \\
+    npm install -g yarn@latest && \\
+    # Enable corepack for additional package manager support
+    corepack enable
 `;
 
     try {
@@ -447,9 +450,13 @@ RUN npm install -g pnpm
       "-v",
       `${appPath}:/app`,
       "-v",
-      `dyad-pnpm-${appId}:/app/.pnpm-store`,
+      `dyad-cache-${appId}:/app/.cache`,
       "-e",
-      "PNPM_STORE_PATH=/app/.pnpm-store",
+      "NPM_CONFIG_CACHE=/app/.cache",
+      "-e", 
+      "PNPM_STORE_PATH=/app/.cache/.pnpm-store",
+      "-e",
+      "YARN_CACHE_FOLDER=/app/.cache/.yarn-cache",
       "-w",
       "/app",
       `dyad-app-${appId}`,
@@ -962,12 +969,12 @@ export function registerAppHandlers() {
             // If running in Docker mode, also remove container volumes so deps reinstall freshly
             if (runtimeMode === "docker") {
               logger.log(
-                `Docker mode detected for app ${appId}. Removing Docker volumes dyad-pnpm-${appId}...`,
+                `Docker mode detected for app ${appId}. Removing Docker volumes dyad-cache-${appId}...`,
               );
               try {
                 await removeDockerVolumesForApp(appId);
                 logger.log(
-                  `Removed Docker volumes for app ${appId} (dyad-pnpm-${appId}).`,
+                  `Removed Docker volumes for app ${appId} (dyad-cache-${appId}).`,
                 );
               } catch (e) {
                 // Best-effort cleanup; log and continue

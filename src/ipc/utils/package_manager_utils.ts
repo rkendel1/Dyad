@@ -197,6 +197,24 @@ export function getDevCommand(manager: PackageManagerInfo, port?: number): strin
 }
 
 /**
+ * Generate add dev dependency command for a package manager
+ */
+export function getAddDevDependencyCommand(manager: PackageManagerInfo, packages: string[]): string {
+  const packageStr = packages.join(" ");
+  
+  switch (manager.name) {
+    case "pnpm":
+      return `pnpm add -D ${packageStr}`;
+    case "yarn":
+      return `yarn add -D ${packageStr}`;
+    case "bun":
+      return `bun add -d ${packageStr}`;
+    case "npm":
+    default:
+      return `npm install --save-dev --legacy-peer-deps ${packageStr}`;
+  }
+}
+/**
  * Generate add dependency command for a package manager
  */
 export function getAddDependencyCommand(manager: PackageManagerInfo, packages: string[]): string {
@@ -221,7 +239,7 @@ export function getAddDependencyCommand(manager: PackageManagerInfo, packages: s
  */
 export async function generateCommandWithFallbacks(
   projectPath: string,
-  commandType: "install" | "dev" | "addDependency",
+  commandType: "install" | "dev" | "addDependency" | "addDevDependency",
   options: { port?: number; packages?: string[] } = {}
 ): Promise<string> {
   const systemManagers = await detectSystemPackageManagers();
@@ -244,6 +262,8 @@ export async function generateCommandWithFallbacks(
       commands.push(getDevCommand(projectManager, options.port));
     } else if (commandType === "addDependency" && options.packages) {
       commands.push(getAddDependencyCommand(projectManager, options.packages));
+    } else if (commandType === "addDevDependency" && options.packages) {
+      commands.push(getAddDevDependencyCommand(projectManager, options.packages));
     }
   }
 
@@ -259,6 +279,8 @@ export async function generateCommandWithFallbacks(
         commands.push(getDevCommand(manager, options.port));
       } else if (commandType === "addDependency" && options.packages) {
         commands.push(getAddDependencyCommand(manager, options.packages));
+      } else if (commandType === "addDevDependency" && options.packages) {
+        commands.push(getAddDevDependencyCommand(manager, options.packages));
       }
     }
   }
