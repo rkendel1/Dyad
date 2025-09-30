@@ -23,6 +23,27 @@ export interface DyadMessage {
     createdAt?: string;
 }
 
+export interface DyadTemplate {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    githubUrl?: string;
+}
+
+export interface SupabaseSetupParams {
+    appId: number;
+}
+
+export interface SupabasePromotionParams {
+    appId: number;
+    productionProjectRef: string;
+    supabaseUrl: string;
+    anonKey: string;
+    serviceRoleKey: string;
+    dbPassword: string;
+}
+
 /**
  * DyadApi provides methods to interact with the Dyad API
  * Note: Dyad Desktop may need to be running for API calls to work.
@@ -270,6 +291,79 @@ export class DyadApi {
                 console.error(`Failed to get app status for ${appId}:`, error);
             }
             return null;
+        }
+    }
+
+    /**
+     * Get available templates
+     */
+    async getTemplates(): Promise<DyadTemplate[]> {
+        try {
+            const response = await this.client.get<DyadTemplate[]>('/api/templates');
+            return response.data;
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('Failed to get templates:', error.message);
+            } else {
+                console.error('Failed to get templates:', error);
+            }
+            return [];
+        }
+    }
+
+    /**
+     * Create app with specific template
+     */
+    async createAppWithTemplate(name: string, templateId: string): Promise<DyadApp | null> {
+        try {
+            const response = await this.client.post<DyadApp>('/api/apps', { 
+                name,
+                templateId 
+            });
+            return response.data;
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('Failed to create app with template:', error.message);
+            } else {
+                console.error('Failed to create app with template:', error);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Setup local Supabase for an app
+     */
+    async setupLocalSupabase(params: SupabaseSetupParams): Promise<{ success: boolean; message?: string }> {
+        try {
+            const response = await this.client.post<{ success: boolean; message?: string }>('/api/supabase/setup-local', params);
+            return response.data;
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('Failed to setup local Supabase:', error.message);
+                return { success: false, message: error.message };
+            } else {
+                console.error('Failed to setup local Supabase:', error);
+                return { success: false, message: String(error) };
+            }
+        }
+    }
+
+    /**
+     * Promote app to production Supabase
+     */
+    async promoteToProduction(params: SupabasePromotionParams): Promise<{ success: boolean; message?: string }> {
+        try {
+            const response = await this.client.post<{ success: boolean; message?: string }>('/api/supabase/promote-to-production', params);
+            return response.data;
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error('Failed to promote to production:', error.message);
+                return { success: false, message: error.message };
+            } else {
+                console.error('Failed to promote to production:', error);
+                return { success: false, message: String(error) };
+            }
         }
     }
 }

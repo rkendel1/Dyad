@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { DyadCli } from './dyadCli';
 import { DyadApi } from './dyadApi';
 import { DyadSidebarProvider } from './views/sidebar';
+import { matchTemplates, formatTemplateChoices, getBestTemplate } from './templateMatcher';
 
 let dyadCli: DyadCli;
 let dyadApi: DyadApi;
@@ -226,6 +227,260 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showWarningMessage('✗ Cannot connect to Dyad Desktop. Please make sure it is running.');
                 outputChannel.appendLine('✗ Failed to connect to Dyad Desktop');
                 showDyadDesktopRequiredMessage();
+            }
+        })
+    );
+
+    // Add template-based app creation command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.createAppWithTemplate', async () => {
+            // Step 1: Ask user to describe their app
+            const description = await vscode.window.showInputBox({
+                prompt: 'Describe the app you want to build (e.g., "an e-commerce store with payments")',
+                placeHolder: 'e.g., a blog, a dashboard, an e-commerce store',
+                validateInput: (value) => {
+                    if (!value || value.trim().length === 0) {
+                        return 'Please provide a description';
+                    }
+                    return null;
+                }
+            });
+
+            if (!description) {
+                return;
+            }
+
+            try {
+                outputChannel.appendLine(`Analyzing description: ${description}`);
+                
+                // Step 2: Match templates based on description
+                const matchedTemplates = matchTemplates(description);
+                const bestMatch = getBestTemplate(description);
+                
+                outputChannel.appendLine(`Found ${matchedTemplates.length} matching templates`);
+                outputChannel.appendLine(`Best match: ${bestMatch.title}`);
+
+                // Step 3: Show suggested templates
+                const templateChoices = formatTemplateChoices(
+                    matchedTemplates.length > 0 ? matchedTemplates.slice(0, 5) : [bestMatch]
+                );
+
+                const selectedTemplate = await vscode.window.showQuickPick(templateChoices, {
+                    placeHolder: 'Select a template for your app (auto-suggested based on your description)',
+                    title: 'Choose App Template'
+                });
+
+                if (!selectedTemplate) {
+                    return;
+                }
+
+                outputChannel.appendLine(`Selected template: ${selectedTemplate.label} (${selectedTemplate.templateId})`);
+
+                // Step 4: Ask for app name
+                const appName = await vscode.window.showInputBox({
+                    prompt: 'Enter the name for your new Dyad app',
+                    placeHolder: 'my-app',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'App name cannot be empty';
+                        }
+                        if (!/^[a-zA-Z0-9-_]+$/.test(value)) {
+                            return 'App name can only contain letters, numbers, hyphens, and underscores';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!appName) {
+                    return;
+                }
+
+                // Step 5: Create app with selected template
+                outputChannel.appendLine(`Creating app: ${appName} with template: ${selectedTemplate.templateId}`);
+                const app = await dyadApi.createAppWithTemplate(appName, selectedTemplate.templateId || 'react');
+                
+                if (app) {
+                    vscode.window.showInformationMessage(`App "${appName}" created successfully with ${selectedTemplate.label}!`);
+                    outputChannel.appendLine(`App "${appName}" created successfully`);
+                    sidebarProvider.refresh();
+                } else {
+                    throw new Error('Failed to create app');
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error creating app: ${message}`);
+                vscode.window.showErrorMessage(`Failed to create app: ${message}`);
+                
+                if (message.includes('not available') || message.includes('Cannot connect')) {
+                    showDyadDesktopRequiredMessage();
+                }
+            }
+        })
+    );
+
+    // Add local Supabase setup command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.setupLocalSupabase', async () => {
+            try {
+                const apps = await dyadApi.getApps();
+                if (apps.length === 0) {
+                    vscode.window.showInformationMessage('No apps available. Create one first.');
+                    return;
+                }
+
+                const selectedApp = await vscode.window.showQuickPick(
+                    apps.map(app => ({ label: app.name, id: app.id, description: app.path })),
+                    { placeHolder: 'Select an app to setup local Supabase' }
+                );
+
+                if (!selectedApp) {
+                    return;
+                }
+
+                outputChannel.appendLine(`Setting up local Supabase for app: ${selectedApp.label} (ID: ${selectedApp.id})`);
+                
+                const result = await dyadApi.setupLocalSupabase({ appId: selectedApp.id });
+                
+                if (result.success) {
+                    vscode.window.showInformationMessage(`Local Supabase setup successfully for "${selectedApp.label}"!`);
+                    outputChannel.appendLine(`Local Supabase setup completed for app: ${selectedApp.label}`);
+                } else {
+                    throw new Error(result.message || 'Setup failed');
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error setting up local Supabase: ${message}`);
+                vscode.window.showErrorMessage(`Failed to setup local Supabase: ${message}`);
+                
+                if (message.includes('not available') || message.includes('Cannot connect')) {
+                    showDyadDesktopRequiredMessage();
+                }
+            }
+        })
+    );
+
+    // Add production Supabase promotion command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.promoteToProduction', async () => {
+            try {
+                const apps = await dyadApi.getApps();
+                if (apps.length === 0) {
+                    vscode.window.showInformationMessage('No apps available. Create one first.');
+                    return;
+                }
+
+                const selectedApp = await vscode.window.showQuickPick(
+                    apps.map(app => ({ label: app.name, id: app.id, description: app.path })),
+                    { placeHolder: 'Select an app to promote to production Supabase' }
+                );
+
+                if (!selectedApp) {
+                    return;
+                }
+
+                // Collect production Supabase details
+                const projectRef = await vscode.window.showInputBox({
+                    prompt: 'Enter your production Supabase project reference',
+                    placeHolder: 'e.g., abcdefghijklmnop',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Project reference is required';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!projectRef) {
+                    return;
+                }
+
+                const supabaseUrl = await vscode.window.showInputBox({
+                    prompt: 'Enter your production Supabase URL',
+                    placeHolder: 'https://xxxx.supabase.co',
+                    value: `https://${projectRef}.supabase.co`,
+                    validateInput: (value) => {
+                        if (!value || !value.startsWith('https://')) {
+                            return 'Valid HTTPS URL is required';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!supabaseUrl) {
+                    return;
+                }
+
+                const anonKey = await vscode.window.showInputBox({
+                    prompt: 'Enter your production Supabase anon key',
+                    placeHolder: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Anon key is required';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!anonKey) {
+                    return;
+                }
+
+                const serviceRoleKey = await vscode.window.showInputBox({
+                    prompt: 'Enter your production Supabase service role key',
+                    placeHolder: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Service role key is required';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!serviceRoleKey) {
+                    return;
+                }
+
+                const dbPassword = await vscode.window.showInputBox({
+                    prompt: 'Enter your production Supabase database password',
+                    placeHolder: 'Your database password',
+                    password: true,
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Database password is required';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!dbPassword) {
+                    return;
+                }
+
+                outputChannel.appendLine(`Promoting app: ${selectedApp.label} (ID: ${selectedApp.id}) to production`);
+                
+                const result = await dyadApi.promoteToProduction({
+                    appId: selectedApp.id,
+                    productionProjectRef: projectRef,
+                    supabaseUrl,
+                    anonKey,
+                    serviceRoleKey,
+                    dbPassword
+                });
+                
+                if (result.success) {
+                    vscode.window.showInformationMessage(`Successfully promoted "${selectedApp.label}" to production Supabase!`);
+                    outputChannel.appendLine(`Production promotion completed for app: ${selectedApp.label}`);
+                } else {
+                    throw new Error(result.message || 'Promotion failed');
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error promoting to production: ${message}`);
+                vscode.window.showErrorMessage(`Failed to promote to production: ${message}`);
+                
+                if (message.includes('not available') || message.includes('Cannot connect')) {
+                    showDyadDesktopRequiredMessage();
+                }
             }
         })
     );
