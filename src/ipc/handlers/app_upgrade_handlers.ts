@@ -10,6 +10,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { gitAddAll, gitCommit } from "../utils/git_utils";
 import { simpleSpawn } from "../utils/simpleSpawn";
+import { generateCommandWithFallbacks } from "../utils/package_manager_utils";
 
 export const logger = log.scope("app_upgrade_handlers");
 const handle = createLoggedHandler(logger);
@@ -149,33 +150,47 @@ async function applyComponentTagger(appPath: string) {
 
   // Install the dependency
   await new Promise<void>((resolve, reject) => {
-    logger.info("Installing component-tagger dependency");
-    const process = spawn(
-      "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger",
-      {
+    const installDependency = async () => {
+      logger.info("Installing component-tagger dependency");
+      
+      let command: string;
+      try {
+        // Generate smart command with fallbacks
+        command = await generateCommandWithFallbacks(appPath, "addDevDependency", { 
+          packages: ["@dyad-sh/react-vite-component-tagger"] 
+        });
+      } catch (error) {
+        // Fallback to the original command
+        logger.warn("Failed to detect package manager, using fallback command:", error);
+        command = "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger";
+      }
+      
+      const process = spawn(command, {
         cwd: appPath,
         shell: true,
         stdio: "pipe",
-      },
-    );
+      });
 
-    process.stdout?.on("data", (data) => logger.info(data.toString()));
-    process.stderr?.on("data", (data) => logger.error(data.toString()));
+      process.stdout?.on("data", (data) => logger.info(data.toString()));
+      process.stderr?.on("data", (data) => logger.error(data.toString()));
 
-    process.on("close", (code) => {
-      if (code === 0) {
-        logger.info("component-tagger dependency installed successfully");
-        resolve();
-      } else {
-        logger.error(`Failed to install dependency, exit code ${code}`);
-        reject(new Error("Failed to install dependency"));
-      }
-    });
+      process.on("close", (code) => {
+        if (code === 0) {
+          logger.info("component-tagger dependency installed successfully");
+          resolve();
+        } else {
+          logger.error(`Failed to install dependency, exit code ${code}`);
+          reject(new Error("Failed to install dependency"));
+        }
+      });
 
-    process.on("error", (err) => {
-      logger.error("Failed to spawn pnpm", err);
-      reject(err);
-    });
+      process.on("error", (err) => {
+        logger.error("Failed to spawn package manager command", err);
+        reject(err);
+      });
+    };
+
+    installDependency().catch(reject);
   });
 
   // Commit changes
@@ -203,9 +218,19 @@ async function applyCapacitor({
   appPath: string;
 }) {
   // Install Capacitor dependencies
+  let installCommand: string;
+  try {
+    installCommand = await generateCommandWithFallbacks(appPath, "addDependency", {
+      packages: ["@capacitor/core", "@capacitor/cli", "@capacitor/ios", "@capacitor/android"]
+    });
+  } catch (error) {
+    // Fallback to original command
+    logger.warn("Failed to detect package manager for Capacitor install, using fallback:", error);
+    installCommand = "pnpm add @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android || npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android --legacy-peer-deps";
+  }
+  
   await simpleSpawn({
-    command:
-      "pnpm add @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android || npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android --legacy-peer-deps",
+    command: installCommand,
     cwd: appPath,
     successMessage: "Capacitor dependencies installed successfully",
     errorPrefix: "Failed to install Capacitor dependencies",

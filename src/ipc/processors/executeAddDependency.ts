@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { Message } from "../ipc_types";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { generateCommandWithFallbacks } from "../utils/package_manager_utils";
 
 export const execPromise = promisify(exec);
 
@@ -18,12 +19,18 @@ export async function executeAddDependency({
 }) {
   const packageStr = packages.join(" ");
 
-  const { stdout, stderr } = await execPromise(
-    `(pnpm add ${packageStr}) || (npm install --legacy-peer-deps ${packageStr})`,
-    {
-      cwd: appPath,
-    },
-  );
+  let command: string;
+  try {
+    // Use smart package manager detection
+    command = await generateCommandWithFallbacks(appPath, "addDependency", { packages });
+  } catch {
+    // Fallback to the old command if detection fails
+    command = `(pnpm add ${packageStr}) || (npm install --legacy-peer-deps ${packageStr})`;
+  }
+
+  const { stdout, stderr } = await execPromise(command, {
+    cwd: appPath,
+  });
   const installResults = stdout + (stderr ? `\n${stderr}` : "");
 
   // Update the message content with the installation results

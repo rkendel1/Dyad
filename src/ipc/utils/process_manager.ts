@@ -100,9 +100,9 @@ export function stopDockerContainer(containerName: string): Promise<void> {
  */
 export function removeDockerVolumesForApp(appId: number): Promise<void> {
   return new Promise<void>((resolve) => {
-    const pnpmVolume = `dyad-pnpm-${appId}`;
+    const cacheVolume = `dyad-cache-${appId}`;
 
-    const rm = spawn("docker", ["volume", "rm", "-f", pnpmVolume], {
+    const rm = spawn("docker", ["volume", "rm", "-f", cacheVolume], {
       stdio: "pipe",
     });
     rm.on("close", () => resolve());

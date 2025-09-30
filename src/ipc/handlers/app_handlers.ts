@@ -52,15 +52,29 @@ import { isServerFunction } from "@/supabase_admin/supabase_utils";
 import { getVercelTeamSlug } from "../utils/vercel_utils";
 import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
 import { AppSearchResult } from "@/lib/schemas";
+import { generateCommandWithFallbacks } from "../utils/package_manager_utils";
 
+// Default command - will be replaced by dynamic detection
 const DEFAULT_COMMAND =
-  "(pnpm install && pnpm run dev --port 32100) || (npm install --legacy-peer-deps && npm run dev -- --port 32100)";
+  "(pnpm install && pnpm run dev --port 32100) || (yarn install && yarn dev --port 32100) || (bun install && bun run dev --port 32100) || (npm install --legacy-peer-deps && npm run dev -- --port 32100)";
 
 /**
- * Generate a command with a specific port
+ * Generate a command with a specific port using dynamic package manager detection
  */
-function getDefaultCommandWithPort(port: number): string {
-  return `(pnpm install && pnpm run dev --port ${port}) || (npm install --legacy-peer-deps && npm run dev -- --port ${port})`;
+async function getDefaultCommandWithPort(port: number, appPath?: string): Promise<string> {
+  if (appPath) {
+    try {
+      // Try to generate smart command based on project and system detection
+      const installCmd = await generateCommandWithFallbacks(appPath, "install");
+      const devCmd = await generateCommandWithFallbacks(appPath, "dev", { port });
+      return `(${installCmd}) && (${devCmd})`;
+    } catch (error) {
+      logger.warn("Failed to detect package manager, using fallback command:", error);
+    }
+  }
+  
+  // Fallback to the expanded default command
+  return `(pnpm install && pnpm run dev --port ${port}) || (yarn install && yarn dev --port ${port}) || (bun install && bun run dev --port ${port}) || (npm install --legacy-peer-deps && npm run dev -- --port ${port})`;
 }
 async function copyDir(
   source: string,
@@ -162,7 +176,12 @@ async function executeAppLocalNode({
     }
   }
   
-  const command = getCommand({ installCommand, startCommand, port: dynamicPort });
+  const command = await getCommand({ 
+    installCommand, 
+    startCommand, 
+    port: dynamicPort, 
+    appPath 
+  });
   const spawnedProcess = spawn(command, [], {
     cwd: appPath,
     shell: true,
@@ -358,8 +377,11 @@ async function executeAppInDocker({
   if (!fs.existsSync(dockerfilePath)) {
     const dockerfileContent = `FROM node:22-alpine
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install multiple package managers for compatibility
+RUN npm install -g pnpm@latest-10 && \\
+    npm install -g yarn@latest && \\
+    # Enable corepack for additional package manager support
+    corepack enable
 `;
 
     try {
@@ -428,15 +450,24 @@ RUN npm install -g pnpm
       "-v",
       `${appPath}:/app`,
       "-v",
-      `dyad-pnpm-${appId}:/app/.pnpm-store`,
+      `dyad-cache-${appId}:/app/.cache`,
       "-e",
-      "PNPM_STORE_PATH=/app/.pnpm-store",
+      "NPM_CONFIG_CACHE=/app/.cache",
+      "-e", 
+      "PNPM_STORE_PATH=/app/.cache/.pnpm-store",
+      "-e",
+      "YARN_CACHE_FOLDER=/app/.cache/.yarn-cache",
       "-w",
       "/app",
       `dyad-app-${appId}`,
       "sh",
       "-c",
-      getCommand({ installCommand, startCommand, port: dynamicPort }),
+      await getCommand({ 
+        installCommand, 
+        startCommand, 
+        port: dynamicPort, 
+        appPath 
+      }),
     ],
     {
       stdio: "pipe",
@@ -938,12 +969,12 @@ export function registerAppHandlers() {
             // If running in Docker mode, also remove container volumes so deps reinstall freshly
             if (runtimeMode === "docker") {
               logger.log(
-                `Docker mode detected for app ${appId}. Removing Docker volumes dyad-pnpm-${appId}...`,
+                `Docker mode detected for app ${appId}. Removing Docker volumes dyad-cache-${appId}...`,
               );
               try {
                 await removeDockerVolumesForApp(appId);
                 logger.log(
-                  `Removed Docker volumes for app ${appId} (dyad-pnpm-${appId}).`,
+                  `Removed Docker volumes for app ${appId} (dyad-cache-${appId}).`,
                 );
               } catch (e) {
                 // Best-effort cleanup; log and continue
@@ -1467,21 +1498,23 @@ export function registerAppHandlers() {
   );
 }
 
-function getCommand({
+async function getCommand({
   installCommand,
   startCommand,
   port,
+  appPath,
 }: {
   installCommand?: string | null;
   startCommand?: string | null;
   port?: number;
+  appPath?: string;
 }) {
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
   if (hasCustomCommands) {
     return `${installCommand!.trim()} && ${startCommand!.trim()}`;
   }
   
-  return port ? getDefaultCommandWithPort(port) : DEFAULT_COMMAND;
+  return port ? await getDefaultCommandWithPort(port, appPath) : DEFAULT_COMMAND;
 }
 
 async function cleanUpPort(port: number) {

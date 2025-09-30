@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm";
 import { getDyadAppPath } from "../../paths/paths";
 import { LargeLanguageModel } from "@/lib/schemas";
 import { validateChatContext } from "../utils/context_paths_utils";
+import { detectSystemPackageManagers } from "../utils/package_manager_utils";
 
 // Shared function to get system debug info
 async function getSystemDebugInfo({
@@ -25,20 +26,45 @@ async function getSystemDebugInfo({
 }): Promise<SystemDebugInfo> {
   console.log("Getting system debug info");
 
-  // Get Node.js and pnpm versions
+  // Get Node.js version
   let nodeVersion: string | null = null;
-  let pnpmVersion: string | null = null;
   let nodePath: string | null = null;
+  
   try {
     nodeVersion = await runShellCommand("node --version");
   } catch (err) {
     console.error("Failed to get Node.js version:", err);
   }
 
+  // Get all package manager information
+  let pnpmVersion: string | null = null;
+  let packageManagerInfo: string | null = null;
+  
   try {
-    pnpmVersion = await runShellCommand("pnpm --version");
+    const packageManagers = await detectSystemPackageManagers();
+    const availableManagers = packageManagers.filter(pm => pm.available);
+    const unavailableManagers = packageManagers.filter(pm => !pm.available);
+    
+    // Keep pnpmVersion for backwards compatibility
+    const pnpmManager = packageManagers.find(pm => pm.name === "pnpm");
+    pnpmVersion = pnpmManager?.version || null;
+    
+    // Create a comprehensive package manager info string
+    const availableInfo = availableManagers.map(pm => `${pm.name}: ${pm.version}`).join(", ");
+    const unavailableInfo = unavailableManagers.map(pm => pm.name).join(", ");
+    
+    packageManagerInfo = `Available: ${availableInfo || "none"}${unavailableInfo ? ` | Unavailable: ${unavailableInfo}` : ""}`;
+    
+    console.log("Package manager info:", packageManagerInfo);
   } catch (err) {
-    console.error("Failed to get pnpm version:", err);
+    console.error("Failed to get package manager versions:", err);
+    
+    // Fallback to old pnpm-only detection
+    try {
+      pnpmVersion = await runShellCommand("pnpm --version");
+    } catch (pnpmErr) {
+      console.error("Failed to get pnpm version:", pnpmErr);
+    }
   }
 
   try {
@@ -101,6 +127,7 @@ async function getSystemDebugInfo({
   return {
     nodeVersion,
     pnpmVersion,
+    packageManagerInfo,
     nodePath,
     telemetryId,
     selectedLanguageModel:
