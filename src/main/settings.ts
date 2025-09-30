@@ -34,6 +34,10 @@ const DEFAULT_SETTINGS: UserSettings = {
   enableAutoUpdate: true,
   releaseChannel: "stable",
   selectedTemplateId: DEFAULT_TEMPLATE_ID,
+  portRange: {
+    min: 32100,
+    max: 32200,
+  },
 };
 
 const SETTINGS_FILE = "user-settings.json";

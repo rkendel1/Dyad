@@ -29,7 +29,7 @@ export async function neonTemplateHook({
       },
       {
         key: "NEXT_PUBLIC_SERVER_URL",
-        value: "http://localhost:32100",
+        value: "http://localhost:${PORT}",
       },
       {
         key: "GMAIL_USER",

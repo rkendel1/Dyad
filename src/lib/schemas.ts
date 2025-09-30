@@ -231,6 +231,14 @@ export const UserSettingsSchema = z.object({
   enableAutoUpdate: z.boolean(),
   releaseChannel: ReleaseChannelSchema,
   runtimeMode2: RuntimeMode2Schema.optional(),
+  
+  // Port range configuration for dynamic port handling
+  portRange: z.object({
+    min: z.number().min(1000).max(65535),
+    max: z.number().min(1000).max(65535),
+  }).refine(data => data.min <= data.max, {
+    message: "Minimum port must be less than or equal to maximum port",
+  }).optional(),
 
   ////////////////////////////////
   // E2E TESTING ONLY.
