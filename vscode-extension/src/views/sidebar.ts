@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DyadCli } from '../dyadCli';
-import { DyadApi, DyadApp } from '../dyadApi';
+import { DyadApi } from '../dyadApi';
 
 /**
  * Tree item for the sidebar
@@ -97,6 +97,16 @@ export class DyadSidebarProvider implements vscode.TreeDataProvider<DyadTreeItem
                         undefined,
                         'noApps',
                         new vscode.ThemeIcon('info')
+                    ),
+                    new DyadTreeItem(
+                        'Create an app in Dyad Desktop',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'dyad.createApp',
+                            title: 'Create New App'
+                        },
+                        'helpItem',
+                        new vscode.ThemeIcon('add')
                     )
                 ];
             }
@@ -107,7 +117,15 @@ export class DyadSidebarProvider implements vscode.TreeDataProvider<DyadTreeItem
                     ? new vscode.ThemeIcon('debug-start', new vscode.ThemeColor('charts.green'))
                     : new vscode.ThemeIcon('circle-outline');
                 
-                return new DyadTreeItem(
+                const tooltip = new vscode.MarkdownString();
+                tooltip.appendMarkdown(`**${app.name}**\n\n`);
+                tooltip.appendMarkdown(`Path: \`${app.path}\`\n\n`);
+                tooltip.appendMarkdown(`Status: ${isRunning ? '🟢 Running' : '⚪ Stopped'}\n\n`);
+                if (app.createdAt) {
+                    tooltip.appendMarkdown(`Created: ${new Date(app.createdAt).toLocaleDateString()}\n\n`);
+                }
+                
+                const item = new DyadTreeItem(
                     app.name,
                     vscode.TreeItemCollapsibleState.None,
                     {
@@ -118,9 +136,48 @@ export class DyadSidebarProvider implements vscode.TreeDataProvider<DyadTreeItem
                     'app',
                     icon
                 );
+                item.tooltip = tooltip;
+                item.description = isRunning ? 'Running' : '';
+                
+                return item;
             });
         } catch (error) {
             console.error('Failed to get apps:', error);
+            const message = error instanceof Error ? error.message : String(error);
+            
+            // Check if it's a connection error
+            if (message.includes('Cannot connect') || message.includes('ECONNREFUSED')) {
+                return [
+                    new DyadTreeItem(
+                        'Cannot connect to Dyad Desktop',
+                        vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        'error',
+                        new vscode.ThemeIcon('error')
+                    ),
+                    new DyadTreeItem(
+                        'Make sure Dyad Desktop is running',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'dyad.checkHealth',
+                            title: 'Check Connection'
+                        },
+                        'helpItem',
+                        new vscode.ThemeIcon('debug-disconnect')
+                    ),
+                    new DyadTreeItem(
+                        'Check Connection',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'dyad.checkHealth',
+                            title: 'Check Connection'
+                        },
+                        'action',
+                        new vscode.ThemeIcon('refresh')
+                    )
+                ];
+            }
+            
             return [
                 new DyadTreeItem(
                     'Error loading apps',
@@ -128,6 +185,16 @@ export class DyadSidebarProvider implements vscode.TreeDataProvider<DyadTreeItem
                     undefined,
                     'error',
                     new vscode.ThemeIcon('error')
+                ),
+                new DyadTreeItem(
+                    'Click to retry',
+                    vscode.TreeItemCollapsibleState.None,
+                    {
+                        command: 'dyad.refreshSidebar',
+                        title: 'Refresh'
+                    },
+                    'action',
+                    new vscode.ThemeIcon('refresh')
                 )
             ];
         }

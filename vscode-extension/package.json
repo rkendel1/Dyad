@@ -45,6 +45,10 @@
       {
         "command": "dyad.refreshSidebar",
         "title": "Dyad: Refresh Sidebar"
+      },
+      {
+        "command": "dyad.checkHealth",
+        "title": "Dyad: Check Connection to Dyad Desktop"
       }
     ],
     "viewsContainers": {
@@ -76,6 +80,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
+    "test-sanity": "node ./scripts/sanity-check.js",
     "package": "vsce package"
   },
   "devDependencies": {
