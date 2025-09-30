@@ -8,6 +8,7 @@ import {
   previewPanelKeyAtom,
   previewErrorMessageAtom,
   selectedAppIdAtom,
+  userSettingsAtom,
 } from "@/atoms/appAtoms";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AppOutput } from "@/ipc/ipc_types";
@@ -23,6 +24,7 @@ export function useRunApp() {
   const setPreviewPanelKey = useSetAtom(previewPanelKeyAtom);
   const appId = useAtomValue(selectedAppIdAtom);
   const setPreviewErrorMessage = useSetAtom(previewErrorMessageAtom);
+  const settings = useAtomValue(userSettingsAtom);
 
   const processProxyServerOutput = (output: AppOutput) => {
     const matchesProxyServerStart = output.message.includes(
@@ -38,8 +40,12 @@ export function useRunApp() {
       if (proxyUrlMatch && proxyUrlMatch[1]) {
         const proxyUrl = proxyUrlMatch[1];
         const originalUrl = originalUrlMatch && originalUrlMatch[1];
+        
+        // Use custom preview URL if set in settings, otherwise use proxy URL
+        const finalUrl = settings?.previewUrl || proxyUrl;
+        
         setAppUrlObj({
-          appUrl: proxyUrl,
+          appUrl: finalUrl,
           appId: output.appId,
           originalUrl: originalUrl!,
         });
