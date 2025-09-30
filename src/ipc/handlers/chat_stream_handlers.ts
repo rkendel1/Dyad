@@ -245,7 +245,10 @@ async function processStreamChunks({
     }
 
     // Final delivery - handle any remaining content as the last chunk
-    await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+    // Only do final delivery if stream wasn't aborted
+    if (!abortController.signal.aborted) {
+      await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+    }
 
   } finally {
     // Clean up chunking state
@@ -372,7 +375,7 @@ async function handleChunkedDelivery(
                 chunkIndex: chunk.index,
                 totalChunks: chunks.length,
                 isChunked: true,
-                chunkDeliveryStatus: isLastChunk ? "completed" : "delivering",
+                chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
                 filesDelivered: completedFiles,
                 filesPending: incompleteFiles,
               },
@@ -397,7 +400,7 @@ async function handleChunkedDelivery(
                     chunkIndex: chunk.index,
                     totalChunks: chunks.length,
                     isChunked: true,
-                    chunkDeliveryStatus: "failed",
+                    chunkDeliveryStatus: "failed" as const,
                     filesDelivered: completedFiles,
                     filesPending: incompleteFiles,
                   },
@@ -1030,7 +1033,8 @@ This conversation includes one or more image attachments. When the user uploads 
               const requestIdPrefix = isEngineEnabled
                 ? `[Request ID: ${dyadRequestId}] `
                 : "";
-              event.sender.send(
+              safeSend(
+                event.sender,
                 "chat:response:error",
                 `Sorry, there was an error from the AI: ${requestIdPrefix}${message}`,
               );

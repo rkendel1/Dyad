@@ -189,4 +189,31 @@ describe('CliInput Component', () => {
     const historyButton = screen.getByTitle(/Command history/);
     expect(historyButton.title).toContain('50 commands');
   });
+
+  it('handles IPC errors gracefully and resets executing state', async () => {
+    const mockRespondToAppInput = jest.fn().mockRejectedValue(new Error('IPC failed'));
+    (IpcClient.getInstance as jest.Mock).mockReturnValue({
+      respondToAppInput: mockRespondToAppInput,
+    });
+
+    const { toast } = require('sonner');
+    
+    renderCliInput(42);
+    
+    const input = screen.getByPlaceholderText(/Enter command or app input.../);
+    const submitButton = screen.getByTitle(/Execute command/);
+    
+    fireEvent.change(input, { target: { value: 'test' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    
+    // Wait for async operation to complete
+    await screen.findByPlaceholderText(/Enter command or app input.../);
+    
+    // Toast error should be called
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Failed to execute command'));
+    
+    // Submit button should be enabled again (not stuck in executing state)
+    fireEvent.change(input, { target: { value: 'another test' } });
+    expect(submitButton).not.toBeDisabled();
+  });
 });
