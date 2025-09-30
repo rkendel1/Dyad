@@ -65,6 +65,8 @@ export interface ChunkMetadata {
   totalChunks: number; // Total number of chunks
   isChunked: boolean; // Whether this message is part of a chunked response
   chunkDeliveryStatus: "delivering" | "completed" | "failed"; // Status of chunk delivery
+  filesDelivered?: number; // Number of complete files delivered so far
+  filesPending?: number; // Number of incomplete/pending files
 }
 
 export interface Message {
