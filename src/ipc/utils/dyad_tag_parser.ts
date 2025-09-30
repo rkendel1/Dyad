@@ -137,3 +137,44 @@ export function getDyadCommandTags(fullResponse: string): string[] {
 
   return commands;
 }
+
+/**
+ * Counts complete and incomplete file operation tags in a response
+ * Used to provide better user messaging during chunked delivery
+ */
+export function countFileOperations(fullResponse: string): {
+  completedFiles: number;
+  incompleteFiles: number;
+} {
+  // Count complete dyad-write tags
+  const completeWriteRegex = /<dyad-write([^>]*)>([\s\S]*?)<\/dyad-write>/gi;
+  const completeWrites = (fullResponse.match(completeWriteRegex) || []).length;
+
+  // Count incomplete dyad-write tags (opening tag without closing tag)
+  const openingWriteRegex = /<dyad-write([^>]*)>/gi;
+  const allOpeningWrites = (fullResponse.match(openingWriteRegex) || []).length;
+  const incompleteWrites = allOpeningWrites - completeWrites;
+
+  // Count complete dyad-rename tags
+  const completeRenameRegex = /<dyad-rename from="([^"]+)" to="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-rename>/g;
+  const completeRenames = (fullResponse.match(completeRenameRegex) || []).length;
+
+  // Count incomplete dyad-rename tags
+  const openingRenameRegex = /<dyad-rename/gi;
+  const allOpeningRenames = (fullResponse.match(openingRenameRegex) || []).length;
+  const incompleteRenames = allOpeningRenames - completeRenames;
+
+  // Count complete dyad-delete tags
+  const completeDeleteRegex = /<dyad-delete path="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-delete>/g;
+  const completeDeletes = (fullResponse.match(completeDeleteRegex) || []).length;
+
+  // Count incomplete dyad-delete tags
+  const openingDeleteRegex = /<dyad-delete/gi;
+  const allOpeningDeletes = (fullResponse.match(openingDeleteRegex) || []).length;
+  const incompleteDeletes = allOpeningDeletes - completeDeletes;
+
+  return {
+    completedFiles: completeWrites + completeRenames + completeDeletes,
+    incompleteFiles: incompleteWrites + incompleteRenames + incompleteDeletes,
+  };
+}

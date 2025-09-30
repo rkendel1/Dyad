@@ -131,11 +131,15 @@ export function ChunkedMessageIndicator({
   };
 
   const getStatusMessage = () => {
+    const fileInfo = chunkMetadata.filesDelivered !== undefined || chunkMetadata.filesPending !== undefined
+      ? ` (${chunkMetadata.filesDelivered || 0} file${(chunkMetadata.filesDelivered || 0) !== 1 ? 's' : ''} delivered${chunkMetadata.filesPending ? `, ${chunkMetadata.filesPending} pending` : ''})`
+      : '';
+    
     switch (chunkDeliveryStatus) {
       case "delivering":
-        return `Chunk ${chunkIndex + 1} of ${totalChunks} is being delivered...`;
+        return `Chunk ${chunkIndex + 1} of ${totalChunks} is being delivered...${fileInfo}`;
       case "completed":
-        return `All ${totalChunks} chunks delivered successfully.`;
+        return `All ${totalChunks} chunks delivered successfully.${fileInfo}`;
       case "failed":
         return `Chunk ${chunkIndex + 1} failed to deliver. You may see incomplete content.`;
       default:
@@ -159,6 +163,16 @@ export function ChunkedMessageIndicator({
           <div className={`text-xs mt-1 ${getSubtextColor()}`}>
             {getStatusMessage()}
           </div>
+          {chunkDeliveryStatus === "delivering" && chunkMetadata.filesPending && chunkMetadata.filesPending > 0 && (
+            <div className="text-xs mt-2 text-blue-700 bg-blue-100 rounded px-2 py-1">
+              <strong>More files incoming:</strong> {chunkMetadata.filesPending} file{chunkMetadata.filesPending !== 1 ? 's are' : ' is'} still being delivered. Please wait...
+            </div>
+          )}
+          {chunkDeliveryStatus === "completed" && chunkMetadata.filesDelivered && chunkMetadata.filesDelivered > 0 && (
+            <div className="text-xs mt-2 text-green-700 bg-green-100 rounded px-2 py-1">
+              ✓ All files delivered successfully ({chunkMetadata.filesDelivered} file{chunkMetadata.filesDelivered !== 1 ? 's' : ''})
+            </div>
+          )}
           {chunkDeliveryStatus === "failed" && (
             <div className="text-xs mt-2 text-red-600">
               <strong>Troubleshooting:</strong> Try refreshing the page or retrying your request. 

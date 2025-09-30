@@ -60,6 +60,7 @@ import {
   getDyadWriteTags,
   getDyadDeleteTags,
   getDyadRenameTags,
+  countFileOperations,
 } from "../utils/dyad_tag_parser";
 import { fileExists } from "../utils/file_utils";
 import { FileUploadsState } from "../utils/file_uploads_state";
@@ -167,6 +168,8 @@ async function processStreamChunks({
       totalChunks: number;
       isChunked: boolean;
       chunkDeliveryStatus: "delivering" | "completed" | "failed";
+      filesDelivered?: number;
+      filesPending?: number;
     };
   }) => Promise<string>;
 }): Promise<{ fullResponse: string; incrementalResponse: string }> {
@@ -263,6 +266,8 @@ async function handleChunkedDelivery(
       totalChunks: number;
       isChunked: boolean;
       chunkDeliveryStatus: "delivering" | "completed" | "failed";
+      filesDelivered?: number;
+      filesPending?: number;
     };
   }) => Promise<string>,
   isFinalChunk = false,
@@ -298,11 +303,17 @@ async function handleChunkedDelivery(
       
       try {
         const chunkStartTime = Date.now();
+        
+        // Count file operations in the current chunk
+        const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
+        
         const chunkMetadata = {
           chunkIndex: chunk.index,
           totalChunks: chunks.length,
           isChunked: true,
           chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
+          filesDelivered: completedFiles,
+          filesPending: incompleteFiles,
         };
 
         fullResponse = await processResponseChunkUpdate({
@@ -327,9 +338,12 @@ async function handleChunkedDelivery(
           `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars, ${chunkDeliveryTime}ms)`
         );
 
-        // Small delay between chunks to prevent overwhelming the UI
+        // Adaptive delay between chunks to prevent overwhelming the UI
+        // Longer delay if there are many pending files to give UI time to render
         if (!isLastChunk) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          const baseDelay = 100;
+          const additionalDelay = incompleteFiles > 0 ? Math.min(incompleteFiles * 50, 200) : 0;
+          await new Promise(resolve => setTimeout(resolve, baseDelay + additionalDelay));
         }
 
       } catch (error) {
@@ -349,6 +363,9 @@ async function handleChunkedDelivery(
             // Wait before retry with exponential backoff
             await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
             
+            // Count file operations for retry
+            const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
+            
             await processResponseChunkUpdate({
               fullResponse: chunk.content,
               chunkMetadata: {
@@ -356,6 +373,8 @@ async function handleChunkedDelivery(
                 totalChunks: chunks.length,
                 isChunked: true,
                 chunkDeliveryStatus: isLastChunk ? "completed" : "delivering",
+                filesDelivered: completedFiles,
+                filesPending: incompleteFiles,
               },
             });
             
@@ -369,6 +388,9 @@ async function handleChunkedDelivery(
             if (retryCount === maxRetries) {
               // Final attempt: try to deliver with failed status
               try {
+                // Count file operations for failed delivery
+                const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
+                
                 await processResponseChunkUpdate({
                   fullResponse: chunk.content,
                   chunkMetadata: {
@@ -376,6 +398,8 @@ async function handleChunkedDelivery(
                     totalChunks: chunks.length,
                     isChunked: true,
                     chunkDeliveryStatus: "failed",
+                    filesDelivered: completedFiles,
+                    filesPending: incompleteFiles,
                   },
                 });
                 logger.log(`Marked chunk ${i} as failed after ${maxRetries} retries`);
@@ -1027,6 +1051,8 @@ This conversation includes one or more image attachments. When the user uploads 
             totalChunks: number;
             isChunked: boolean;
             chunkDeliveryStatus: "delivering" | "completed" | "failed";
+            filesDelivered?: number;
+            filesPending?: number;
           };
         }) => {
           if (

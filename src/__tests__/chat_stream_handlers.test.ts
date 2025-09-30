@@ -5,6 +5,7 @@ import {
   getDyadRenameTags,
   getDyadAddDependencyTags,
   getDyadDeleteTags,
+  countFileOperations,
 } from "../ipc/utils/dyad_tag_parser";
 
 import { processFullResponseActions } from "../ipc/processors/response_processor";
@@ -1204,5 +1205,93 @@ Some text after the unclosed tag`;
     const text = `<dyad-write path="src/file-name_with.special@chars.js" description="File with special chars in path">content</dyad-write>`;
     const result = hasUnclosedDyadWrite(text);
     expect(result).toBe(false);
+  });
+});
+
+describe("countFileOperations", () => {
+  it("should return zero for empty string", () => {
+    const result = countFileOperations("");
+    expect(result).toEqual({ completedFiles: 0, incompleteFiles: 0 });
+  });
+
+  it("should count a single complete write tag", () => {
+    const text = '<dyad-write path="src/App.tsx" description="Main app">export default function App() {}</dyad-write>';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
+  });
+
+  it("should count a single incomplete write tag", () => {
+    const text = '<dyad-write path="src/App.tsx" description="Main app">export default function App() {';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 0, incompleteFiles: 1 });
+  });
+
+  it("should count multiple complete write tags", () => {
+    const text = `
+      <dyad-write path="src/App.tsx">content1</dyad-write>
+      <dyad-write path="src/Button.tsx">content2</dyad-write>
+    `;
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 2, incompleteFiles: 0 });
+  });
+
+  it("should count mixed complete and incomplete write tags", () => {
+    const text = `
+      <dyad-write path="src/App.tsx">content1</dyad-write>
+      <dyad-write path="src/Button.tsx">incomplete content
+    `;
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 1, incompleteFiles: 1 });
+  });
+
+  it("should count complete rename tags", () => {
+    const text = '<dyad-rename from="old.tsx" to="new.tsx">Renaming file</dyad-rename>';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
+  });
+
+  it("should count incomplete rename tags", () => {
+    const text = '<dyad-rename from="old.tsx" to="new.tsx">Incomplete';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 0, incompleteFiles: 1 });
+  });
+
+  it("should count complete delete tags", () => {
+    const text = '<dyad-delete path="unused.tsx">Deleting file</dyad-delete>';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
+  });
+
+  it("should count incomplete delete tags", () => {
+    const text = '<dyad-delete path="unused.tsx">Incomplete';
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 0, incompleteFiles: 1 });
+  });
+
+  it("should count mixed write, rename, and delete operations", () => {
+    const text = `
+      <dyad-write path="src/App.tsx">content</dyad-write>
+      <dyad-rename from="old.tsx" to="new.tsx">Renaming</dyad-rename>
+      <dyad-delete path="unused.tsx">Deleting</dyad-delete>
+      <dyad-write path="src/Incomplete.tsx">partial content
+    `;
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 3, incompleteFiles: 1 });
+  });
+
+  it("should handle text with no file operation tags", () => {
+    const text = "This is just regular text without any tags";
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 0, incompleteFiles: 0 });
+  });
+
+  it("should handle nested content correctly", () => {
+    const text = `
+      <dyad-write path="src/App.tsx">
+        Some content with <div>nested</div> tags
+      </dyad-write>
+    `;
+    const result = countFileOperations(text);
+    expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
   });
 });
