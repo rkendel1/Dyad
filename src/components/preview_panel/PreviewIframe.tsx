@@ -551,6 +551,9 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
         } else if (urlToNavigate.includes('.') && !urlToNavigate.includes(' ')) {
           // Looks like a domain - add https://
           urlToNavigate = `https://${urlToNavigate}`;
+        } else if (/^\d+$/.test(urlToNavigate)) {
+          // If it's just a number, treat it as a port on localhost
+          urlToNavigate = `http://localhost:${urlToNavigate}`;
         } else {
           // Treat as a path relative to current origin
           if (appUrl) {
@@ -583,8 +586,18 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
       setIsEditingUrl(false);
       setEditedUrl("");
     } catch (error) {
-      // Show error message for invalid URL
-      setErrorMessage(`Invalid URL: ${urlToNavigate}. ${error instanceof Error ? error.message : 'Please enter a valid URL.'}`);
+      // Show error message for invalid URL with helpful suggestions
+      let errorMsg = `Invalid URL: ${urlToNavigate}`;
+      if (error instanceof Error) {
+        errorMsg += `. ${error.message}`;
+      }
+      
+      // Add helpful suggestions for common URL formats
+      if (!urlToNavigate.includes(':') && !urlToNavigate.startsWith('/')) {
+        errorMsg += ' Try entering just a port number (e.g., "3000") or a full URL (e.g., "http://localhost:3000").';
+      }
+      
+      setErrorMessage(errorMsg);
     }
   };
 

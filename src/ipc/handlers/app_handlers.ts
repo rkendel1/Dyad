@@ -42,6 +42,7 @@ import {
 import { createLoggedHandler } from "./safe_handle";
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
 import { startProxy } from "../utils/start_proxy_server";
+import { findAvailablePort } from "../utils/port_utils";
 import { Worker } from "worker_threads";
 import { createFromTemplate } from "./createFromTemplate";
 import { gitCommit } from "../utils/git_utils";
@@ -54,6 +55,13 @@ import { AppSearchResult } from "@/lib/schemas";
 
 const DEFAULT_COMMAND =
   "(pnpm install && pnpm run dev --port 32100) || (npm install --legacy-peer-deps && npm run dev -- --port 32100)";
+
+/**
+ * Generate a command with a specific port
+ */
+function getDefaultCommandWithPort(port: number): string {
+  return `(pnpm install && pnpm run dev --port ${port}) || (npm install --legacy-peer-deps && npm run dev -- --port ${port})`;
+}
 async function copyDir(
   source: string,
   destination: string,
@@ -140,7 +148,21 @@ async function executeAppLocalNode({
   installCommand?: string | null;
   startCommand?: string | null;
 }): Promise<void> {
-  const command = getCommand({ installCommand, startCommand });
+  // Find an available port in the configured range for default commands
+  let dynamicPort: number | undefined;
+  const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
+  
+  if (!hasCustomCommands) {
+    const portRange = getPortRange();
+    try {
+      dynamicPort = await findAvailablePort(portRange.min, portRange.max);
+      logger.info(`Using dynamic port ${dynamicPort} for app ${appId}`);
+    } catch (error) {
+      logger.warn(`Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`);
+    }
+  }
+  
+  const command = getCommand({ installCommand, startCommand, port: dynamicPort });
   const spawnedProcess = spawn(command, [], {
     cwd: appPath,
     shell: true,
@@ -226,7 +248,7 @@ function listenToProcess({
         appId,
       });
 
-      const urlMatch = message.match(/(https?:\/\/localhost:\d+\/?)/);
+      const urlMatch = message.match(/(https?:\/\/(?:localhost|127\.0\.0\.1):\d+\/?)/);
       if (urlMatch) {
         proxyWorker = await startProxy(urlMatch[1], {
           onStarted: (proxyUrl) => {
@@ -377,6 +399,23 @@ RUN npm install -g pnpm
   });
 
   // Run the Docker container
+  // Find an available port in the configured range for default commands
+  let dynamicPort: number | undefined;
+  const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
+  
+  if (!hasCustomCommands) {
+    const portRange = getPortRange();
+    try {
+      dynamicPort = await findAvailablePort(portRange.min, portRange.max);
+      logger.info(`Using dynamic port ${dynamicPort} for Docker app ${appId}`);
+    } catch (error) {
+      logger.warn(`Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`);
+      dynamicPort = 32100; // Fallback to default
+    }
+  } else {
+    dynamicPort = 32100; // Use default for custom commands
+  }
+  
   const process = spawn(
     "docker",
     [
@@ -385,7 +424,7 @@ RUN npm install -g pnpm
       "--name",
       containerName,
       "-p",
-      "32100:32100",
+      `${dynamicPort}:${dynamicPort}`,
       "-v",
       `${appPath}:/app`,
       "-v",
@@ -397,7 +436,7 @@ RUN npm install -g pnpm
       `dyad-app-${appId}`,
       "sh",
       "-c",
-      getCommand({ installCommand, startCommand }),
+      getCommand({ installCommand, startCommand, port: dynamicPort }),
     ],
     {
       stdio: "pipe",
@@ -762,8 +801,8 @@ export function registerAppHandlers() {
 
         const appPath = getDyadAppPath(app.path);
         try {
-          // There may have been a previous run that left a process on port 32100.
-          await cleanUpPort(32100);
+          // Clean up any processes that may be running on ports in the configured range
+          await cleanUpPortRange();
           await executeApp({
             appPath,
             appId,
@@ -863,8 +902,8 @@ export function registerAppHandlers() {
             logger.log(`App ${appId} not running. Proceeding to start.`);
           }
 
-          // There may have been a previous run that left a process on port 32100.
-          await cleanUpPort(32100);
+          // Clean up any processes that may be running on ports in the configured range
+          await cleanUpPortRange();
 
           // Now start the app again
           const app = await db.query.apps.findFirst({
@@ -1431,14 +1470,18 @@ export function registerAppHandlers() {
 function getCommand({
   installCommand,
   startCommand,
+  port,
 }: {
   installCommand?: string | null;
   startCommand?: string | null;
+  port?: number;
 }) {
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
-  return hasCustomCommands
-    ? `${installCommand!.trim()} && ${startCommand!.trim()}`
-    : DEFAULT_COMMAND;
+  if (hasCustomCommands) {
+    return `${installCommand!.trim()} && ${startCommand!.trim()}`;
+  }
+  
+  return port ? getDefaultCommandWithPort(port) : DEFAULT_COMMAND;
 }
 
 async function cleanUpPort(port: number) {
@@ -1448,4 +1491,27 @@ async function cleanUpPort(port: number) {
   } else {
     await killProcessOnPort(port);
   }
+}
+
+/**
+ * Clean up all ports within the configured port range
+ */
+async function cleanUpPortRange() {
+  const settings = readSettings();
+  const portRange = settings.portRange || { min: 32100, max: 32200 };
+  
+  const cleanupPromises = [];
+  for (let port = portRange.min; port <= portRange.max; port++) {
+    cleanupPromises.push(cleanUpPort(port));
+  }
+  
+  await Promise.allSettled(cleanupPromises);
+}
+
+/**
+ * Get the configured port range from settings
+ */
+function getPortRange(): { min: number; max: number } {
+  const settings = readSettings();
+  return settings.portRange || { min: 32100, max: 32200 };
 }
