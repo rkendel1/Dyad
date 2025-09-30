@@ -258,6 +258,7 @@ function listenToProcess({
         type: "input-requested",
         message,
         appId,
+        timestamp: Date.now(),
       });
     } else {
       // Normal stdout handling
@@ -265,6 +266,7 @@ function listenToProcess({
         type: "stdout",
         message,
         appId,
+        timestamp: Date.now(),
       });
 
       const urlMatch = message.match(/(https?:\/\/(?:localhost|127\.0\.0\.1):\d+\/?)/);
@@ -275,6 +277,7 @@ function listenToProcess({
               type: "stdout",
               message: `[dyad-proxy-server]started=[${proxyUrl}] original=[${urlMatch[1]}]`,
               appId,
+              timestamp: Date.now(),
             });
           },
         });
@@ -291,6 +294,7 @@ function listenToProcess({
       type: "stderr",
       message,
       appId,
+      timestamp: Date.now(),
     });
   });
 

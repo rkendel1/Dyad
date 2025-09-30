@@ -21,6 +21,8 @@ interface ConsoleHeaderProps {
   isOpen: boolean;
   onToggle: () => void;
   latestMessage?: string;
+  messageCount: number;
+  errorCount: number;
 }
 
 // Console header component
@@ -28,6 +30,8 @@ const ConsoleHeader = ({
   isOpen,
   onToggle,
   latestMessage,
+  messageCount,
+  errorCount,
 }: ConsoleHeaderProps) => (
   <div
     onClick={onToggle}
@@ -35,7 +39,19 @@ const ConsoleHeader = ({
   >
     <Logs size={16} className="mt-0.5" />
     <div className="flex flex-col">
-      <span className="text-sm font-medium">System Messages</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">System Messages</span>
+        {messageCount > 0 && (
+          <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+            {messageCount}
+          </span>
+        )}
+        {errorCount > 0 && (
+          <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">
+            {errorCount} errors
+          </span>
+        )}
+      </div>
       {!isOpen && latestMessage && (
         <span className="text-xs text-gray-500 truncate max-w-[200px] md:max-w-[400px]">
           {latestMessage}
@@ -58,6 +74,11 @@ export function PreviewPanel() {
   const appOutput = useAtomValue(appOutputAtom);
 
   const messageCount = appOutput.length;
+  const errorCount = appOutput.filter(output => 
+    output.type === "stderr" || 
+    output.type === "client-error" ||
+    output.message.toLowerCase().includes("error")
+  ).length;
   const latestMessage =
     messageCount > 0 ? appOutput[messageCount - 1]?.message : undefined;
 
@@ -133,6 +154,8 @@ export function PreviewPanel() {
                     isOpen={true}
                     onToggle={() => setIsConsoleOpen(false)}
                     latestMessage={latestMessage}
+                    messageCount={messageCount}
+                    errorCount={errorCount}
                   />
                   <Console />
                 </div>
@@ -146,6 +169,8 @@ export function PreviewPanel() {
           isOpen={false}
           onToggle={() => setIsConsoleOpen(true)}
           latestMessage={latestMessage}
+          messageCount={messageCount}
+          errorCount={errorCount}
         />
       )}
     </div>
