@@ -240,6 +240,12 @@ export const UserSettingsSchema = z.object({
     message: "Minimum port must be less than or equal to maximum port",
   }).optional(),
 
+  // Package manager preference
+  preferredPackageManager: z.enum(["npm", "yarn", "pnpm", "bun"]).optional(),
+  
+  // Custom preview URL
+  previewUrl: z.string().optional(),
+
   ////////////////////////////////
   // E2E TESTING ONLY.
   ////////////////////////////////
