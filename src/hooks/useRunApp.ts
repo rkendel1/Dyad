@@ -65,11 +65,17 @@ export function useRunApp() {
         return; // Don't add to regular output
       }
 
+      // Ensure timestamp is present (add if missing)
+      const outputWithTimestamp = {
+        ...output,
+        timestamp: output.timestamp || Date.now(),
+      };
+
       // Add to regular app output
-      setAppOutput((prev) => [...prev, output]);
+      setAppOutput((prev) => [...prev, outputWithTimestamp]);
 
       // Process proxy server output
-      processProxyServerOutput(output);
+      processProxyServerOutput(outputWithTimestamp);
     },
     [setAppOutput],
   );
