@@ -109,6 +109,8 @@ export interface App {
   vercelDeploymentUrl: string | null;
   installCommand: string | null;
   startCommand: string | null;
+  preferredPackageManager: string | null;
+  previewUrl: string | null;
 }
 
 export interface Version {
@@ -366,6 +368,24 @@ export interface SetAppEnvVarsParams {
 export interface GetAppEnvVarsParams {
   appId: number;
 }
+
+export interface UpdateAppSettingsParams {
+  appId: number;
+  settings: {
+    preferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null;
+    previewUrl?: string | null;
+  };
+}
+
+export interface GetAppSettingsParams {
+  appId: number;
+}
+
+export interface AppSettings {
+  preferredPackageManager: "npm" | "yarn" | "pnpm" | "bun" | null;
+  previewUrl: string | null;
+}
+
 
 export interface ConnectToExistingVercelProjectParams {
   projectId: string;

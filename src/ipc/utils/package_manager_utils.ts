@@ -128,15 +128,31 @@ export async function detectProjectPackageManager(projectPath: string): Promise<
 
 /**
  * Get the best package manager for a project
- * Prioritizes user-selected preference, then project-detected manager, then falls back to system preference
+ * Prioritizes app-level preference, then user-selected preference, then project-detected manager, then falls back to system preference
  */
 export async function getBestPackageManagerForProject(
-  projectPath: string
+  projectPath: string,
+  appPreferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null
 ): Promise<PackageManagerInfo | null> {
   const settings = readSettings();
   const systemManagers = await detectSystemPackageManagers();
 
-  // First priority: User's preferred package manager from settings
+  // First priority: App-level preferred package manager
+  if (appPreferredPackageManager) {
+    const appPreferredManager = systemManagers.find(
+      m => m.name === appPreferredPackageManager && m.available
+    );
+    if (appPreferredManager) {
+      logger.info(`Using app-level preferred package manager: ${appPreferredManager.name}`);
+      return appPreferredManager;
+    } else {
+      logger.warn(
+        `App prefers ${appPreferredPackageManager} but it's not available on system`
+      );
+    }
+  }
+
+  // Second priority: User's preferred package manager from settings
   if (settings.preferredPackageManager) {
     const preferredManager = systemManagers.find(
       m => m.name === settings.preferredPackageManager && m.available
@@ -151,7 +167,7 @@ export async function getBestPackageManagerForProject(
     }
   }
 
-  // Second priority: Project-detected package manager
+  // Third priority: Project-detected package manager
   const projectInfo = await detectProjectPackageManager(projectPath);
   if (projectInfo.detected) {
     const systemManager = systemManagers.find(
@@ -257,7 +273,11 @@ export function getAddDependencyCommand(manager: PackageManagerInfo, packages: s
 export async function generateCommandWithFallbacks(
   projectPath: string,
   commandType: "install" | "dev" | "addDependency" | "addDevDependency",
-  options: { port?: number; packages?: string[] } = {}
+  options: { 
+    port?: number; 
+    packages?: string[];
+    appPreferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null;
+  } = {}
 ): Promise<string> {
   const systemManagers = await detectSystemPackageManagers();
   const availableManagers = systemManagers.filter(m => m.available);
@@ -266,7 +286,10 @@ export async function generateCommandWithFallbacks(
     throw new Error("No package manager available on system");
   }
 
-  const projectManager = await getBestPackageManagerForProject(projectPath);
+  const projectManager = await getBestPackageManagerForProject(
+    projectPath,
+    options.appPreferredPackageManager
+  );
   
   // Create fallback commands in priority order
   const commands: string[] = [];

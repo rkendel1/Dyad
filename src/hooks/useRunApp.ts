@@ -41,8 +41,19 @@ export function useRunApp() {
         const proxyUrl = proxyUrlMatch[1];
         const originalUrl = originalUrlMatch && originalUrlMatch[1];
         
-        // Use custom preview URL if set in settings, otherwise use proxy URL
-        const finalUrl = settings?.previewUrl || proxyUrl;
+        // Priority order:
+        // 1. App-level preview URL (if set)
+        // 2. Global preview URL from settings (if set)
+        // 3. Proxy URL
+        let finalUrl = proxyUrl;
+        
+        // Check for app-level preview URL
+        if (app?.previewUrl) {
+          finalUrl = app.previewUrl;
+        } else if (settings?.previewUrl) {
+          // Fall back to global preview URL
+          finalUrl = settings.previewUrl;
+        }
         
         setAppUrlObj({
           appUrl: finalUrl,

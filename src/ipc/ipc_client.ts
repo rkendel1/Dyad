@@ -292,6 +292,20 @@ export class IpcClient {
     return this.ipcRenderer.invoke("set-app-env-vars", params);
   }
 
+  public async getAppSettings(appId: number) {
+    return this.ipcRenderer.invoke("get-app-settings", { appId });
+  }
+
+  public async updateAppSettings(params: {
+    appId: number;
+    settings: {
+      preferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null;
+      previewUrl?: string | null;
+    };
+  }) {
+    return this.ipcRenderer.invoke("update-app-settings", params);
+  }
+
   public async getChat(chatId: number): Promise<Chat> {
     try {
       const data = await this.ipcRenderer.invoke("get-chat", chatId);
