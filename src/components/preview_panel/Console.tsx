@@ -21,6 +21,40 @@ export const Console = () => {
     }
   }, [appOutput]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts when console is focused or no other input is focused
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            handleClearLogs();
+            break;
+          case 'c':
+            if (e.shiftKey) {
+              e.preventDefault();
+              handleCopyAll();
+            }
+            break;
+          case 's':
+            if (e.shiftKey) {
+              e.preventDefault();
+              handleExportLogs();
+            }
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [filteredOutput]);
+
   // Filter messages based on selected filter
   const filteredOutput = useMemo(() => {
     switch (filter) {
@@ -32,7 +66,8 @@ export const Console = () => {
         return appOutput.filter(output => 
           output.type === "stderr" || 
           output.type === "client-error" ||
-          output.message.toLowerCase().includes("error")
+          // Enhanced error detection patterns
+          /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message)
         );
       default:
         return appOutput;
@@ -49,8 +84,12 @@ export const Console = () => {
     });
   };
 
-  // Get message styling based on type
+  // Get message styling based on type and content
   const getMessageStyle = (output: AppOutput) => {
+    // Check for error patterns in message content
+    const hasErrorPattern = /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message);
+    const hasWarningPattern = /warn|Warn|WARN|warning|Warning|WARNING/i.test(output.message);
+    
     switch (output.type) {
       case "stderr":
         return "text-red-400 bg-red-50 dark:bg-red-950/20 border-l-2 border-red-400 pl-2";
@@ -60,6 +99,14 @@ export const Console = () => {
         return "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-l-2 border-yellow-500 pl-2";
       case "info":
         return "text-blue-500 bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-400 pl-2";
+      case "stdout":
+        // Highlight errors and warnings in stdout
+        if (hasErrorPattern) {
+          return "text-red-400 bg-red-50 dark:bg-red-950/20 border-l-2 border-red-400 pl-2";
+        } else if (hasWarningPattern) {
+          return "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-l-2 border-yellow-500 pl-2";
+        }
+        return "text-foreground";
       default:
         return "text-foreground";
     }
@@ -131,7 +178,7 @@ export const Console = () => {
             size="sm"
             onClick={handleCopyAll}
             disabled={filteredOutput.length === 0}
-            title={copied ? "Copied!" : "Copy all logs"}
+            title={`${copied ? "Copied!" : "Copy all logs"} (Ctrl+Shift+C)`}
           >
             <Copy size={14} />
           </Button>
@@ -140,7 +187,7 @@ export const Console = () => {
             size="sm" 
             onClick={handleExportLogs}
             disabled={filteredOutput.length === 0}
-            title="Export logs to file"
+            title="Export logs to file (Ctrl+Shift+S)"
           >
             <Download size={14} />
           </Button>
@@ -149,7 +196,7 @@ export const Console = () => {
             size="sm"
             onClick={handleClearLogs}
             disabled={filteredOutput.length === 0}
-            title="Clear logs"
+            title="Clear logs (Ctrl+K)"
           >
             <Trash2 size={14} />
           </Button>

@@ -77,7 +77,8 @@ export function PreviewPanel() {
   const errorCount = appOutput.filter(output => 
     output.type === "stderr" || 
     output.type === "client-error" ||
-    output.message.toLowerCase().includes("error")
+    // Enhanced error detection patterns
+    /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message)
   ).length;
   const latestMessage =
     messageCount > 0 ? appOutput[messageCount - 1]?.message : undefined;
