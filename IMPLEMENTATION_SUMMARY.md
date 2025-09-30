@@ -1,6 +1,7 @@
 # CLI Input Feature Implementation Summary
 
 ## Overview
+
 This implementation adds a fully-functional CLI (Command Line Interface) input feature to the Dyad console, enabling users to interact directly with their running applications through an intuitive terminal-like interface.
 
 ## What Was Implemented
@@ -8,6 +9,7 @@ This implementation adds a fully-functional CLI (Command Line Interface) input f
 ### 1. Core Components
 
 #### CliInput Component (`src/components/preview_panel/CliInput.tsx`)
+
 - **Lines of Code**: 222
 - **Key Features**:
   - Interactive input field with Terminal icon
@@ -19,6 +21,7 @@ This implementation adds a fully-functional CLI (Command Line Interface) input f
   - Integration with IPC for sending commands to running apps
 
 #### Console Component Updates (`src/components/preview_panel/Console.tsx`)
+
 - **Changes**: Minimal, surgical modifications
 - **Integration**:
   - Added CliInput import
@@ -37,14 +40,15 @@ if (response !== "y" && response !== "n") {
 }
 
 // After: Accepts any non-empty string
-if (!response || typeof response !== 'string') {
-  throw new Error('Invalid response: must be a non-empty string');
+if (!response || typeof response !== "string") {
+  throw new Error("Invalid response: must be a non-empty string");
 }
 ```
 
 ### 3. Test Coverage
 
 #### CliInput Tests (`src/components/preview_panel/CliInput.test.tsx`)
+
 - **Lines of Code**: 192
 - **Test Cases**: 12 comprehensive tests covering:
   - Component rendering with different states
@@ -57,12 +61,14 @@ if (!response || typeof response !== 'string') {
   - History limits
 
 #### Console Tests (`src/components/preview_panel/Console.test.tsx`)
+
 - **Added**: 3 new tests for CLI integration
 - **Updated**: All existing tests to include selectedAppIdAtom mock
 
 ### 4. Documentation
 
 #### Main CLI Documentation (`CLI_INPUT.md`)
+
 - **Lines**: 219
 - **Sections**:
   - Overview and features
@@ -75,16 +81,19 @@ if (!response || typeof response !== 'string') {
   - Future enhancements roadmap
 
 #### Updated Contributing Guide (`CONTRIBUTING.md`)
+
 - Added CLI testing section
 - Included manual testing steps
 - Referenced detailed CLI documentation
 
 #### Updated README (`README.md`)
+
 - Added CLI feature to features list
 
 ## Key Features
 
 ### ✨ User-Facing Features
+
 1. **Direct App Interaction**: Send any text input to running app's stdin
 2. **Command History**: Navigate 50 most recent commands with ↑/↓ keys
 3. **Built-in Commands**:
@@ -101,12 +110,14 @@ if (!response || typeof response !== 'string') {
    - Context-aware placeholder text
 
 ### 🔒 Security Features
+
 1. **App Context Validation**: Commands only sent to selected running app
 2. **Input Validation**: Non-empty string validation before sending
 3. **Error Handling**: Graceful error messages via toast notifications
 4. **Sandboxed Execution**: Commands run in app's existing sandbox
 
 ### 🎯 Developer Features
+
 1. **Type Safety**: Full TypeScript support with proper interfaces
 2. **Clean API**: Simple `onCommandExecute` callback for parent components
 3. **IPC Integration**: Uses existing `respondToAppInput` IPC handler
@@ -116,6 +127,7 @@ if (!response || typeof response !== 'string') {
 ## Technical Architecture
 
 ### Component Hierarchy
+
 ```
 PreviewPanel
   └── Console
@@ -129,6 +141,7 @@ PreviewPanel
 ```
 
 ### Data Flow
+
 ```
 User Input → CliInput Component
            ↓
@@ -144,6 +157,7 @@ User Input → CliInput Component
 ```
 
 ### State Management
+
 - Uses Jotai atoms for:
   - `selectedAppIdAtom`: Track which app to send commands to
   - Component-level state for:
@@ -156,6 +170,7 @@ User Input → CliInput Component
 ## Code Quality
 
 ### Metrics
+
 - **Total Lines Added**: 704
 - **Files Modified**: 8
 - **Test Coverage**: 12 new test cases
@@ -163,6 +178,7 @@ User Input → CliInput Component
 - **Type Safety**: ✅ Full TypeScript support
 
 ### Best Practices Applied
+
 1. ✅ Minimal, surgical changes to existing code
 2. ✅ Comprehensive test coverage
 3. ✅ Detailed documentation
@@ -175,6 +191,7 @@ User Input → CliInput Component
 ## Testing Strategy
 
 ### Unit Tests
+
 - Component rendering tests
 - User interaction tests
 - IPC integration tests
@@ -182,6 +199,7 @@ User Input → CliInput Component
 - Edge case handling
 
 ### Manual Testing Steps
+
 1. Start Dyad application
 2. Create/open an app
 3. Run the app
@@ -198,23 +216,28 @@ User Input → CliInput Component
 From the original problem statement:
 
 ✅ **Users can access a CLI within the tool to execute commands**
+
 - CLI input field integrated into console
 
 ✅ **The CLI supports standard features like history, autocomplete, and error messages**
+
 - Command history: ✅ (50 commands, arrow key navigation)
 - Error messages: ✅ (Toast notifications)
 - Autocomplete: Not implemented (minimal change principle)
 
 ✅ **Command output is displayed clearly in the tool**
+
 - Output shown in existing console output panel
 
 ✅ **The CLI environment is secure and prevents unauthorized access to system resources**
+
 - Validates app context
 - Input sanitization
 - Sandboxed execution
 - No direct system access
 
 ✅ **Comprehensive documentation is available for users**
+
 - CLI_INPUT.md: Complete user guide
 - CONTRIBUTING.md: Testing instructions
 - README.md: Feature highlight
