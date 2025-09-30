@@ -26,6 +26,8 @@ import { NeonIntegration } from "@/components/NeonIntegration";
 import { RuntimeModeSelector } from "@/components/RuntimeModeSelector";
 import { ToolsMcpSettings } from "@/components/settings/ToolsMcpSettings";
 import { PortRangeSelector } from "@/components/settings/PortRangeSelector";
+import { PackageManagerSelector } from "@/components/settings/PackageManagerSelector";
+import { PreviewUrlInput } from "@/components/settings/PreviewUrlInput";
 
 export default function SettingsPage() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -310,6 +312,14 @@ export function WorkflowSettings() {
         <div className="text-sm text-gray-500 dark:text-gray-400">
           This will automatically fix TypeScript errors.
         </div>
+      </div>
+
+      <div className="mt-4">
+        <PackageManagerSelector />
+      </div>
+
+      <div className="mt-4">
+        <PreviewUrlInput />
       </div>
     </div>
   );

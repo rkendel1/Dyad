@@ -2,6 +2,7 @@ import { runShellCommand } from "./runShellCommand";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import log from "electron-log";
+import { readSettings } from "@/main/settings";
 
 const logger = log.scope("package_manager_utils");
 
@@ -127,15 +128,31 @@ export async function detectProjectPackageManager(projectPath: string): Promise<
 
 /**
  * Get the best package manager for a project
- * Prioritizes project-detected manager, then falls back to system preference
+ * Prioritizes user-selected preference, then project-detected manager, then falls back to system preference
  */
 export async function getBestPackageManagerForProject(
   projectPath: string
 ): Promise<PackageManagerInfo | null> {
-  const projectInfo = await detectProjectPackageManager(projectPath);
+  const settings = readSettings();
   const systemManagers = await detectSystemPackageManagers();
 
-  // If project has a detected package manager and it's available on system, use it
+  // First priority: User's preferred package manager from settings
+  if (settings.preferredPackageManager) {
+    const preferredManager = systemManagers.find(
+      m => m.name === settings.preferredPackageManager && m.available
+    );
+    if (preferredManager) {
+      logger.info(`Using user-preferred package manager from settings: ${preferredManager.name}`);
+      return preferredManager;
+    } else {
+      logger.warn(
+        `User prefers ${settings.preferredPackageManager} but it's not available on system`
+      );
+    }
+  }
+
+  // Second priority: Project-detected package manager
+  const projectInfo = await detectProjectPackageManager(projectPath);
   if (projectInfo.detected) {
     const systemManager = systemManagers.find(
       m => m.name === projectInfo.detected && m.available
