@@ -43,7 +43,9 @@
     "supabase:start": "node scripts/setup-local-supabase.js start",
     "supabase:stop": "node scripts/setup-local-supabase.js stop",
     "supabase:status": "node scripts/setup-local-supabase.js status",
-    "supabase:promote": "node scripts/promote-to-production.js"
+    "supabase:config": "node scripts/setup-local-supabase.js config",
+    "supabase:promote": "node scripts/promote-to-production.js",
+    "supabase:switch": "node scripts/switch-supabase-env.js"
   },
   "keywords": [],
   "author": {

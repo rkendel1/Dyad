@@ -35,29 +35,70 @@ function isSupabaseRunning() {
 }
 
 function startSupabase() {
+  console.log("═══════════════════════════════════════════════════════");
   console.log("🚀 Starting local Supabase...");
+  console.log("═══════════════════════════════════════════════════════");
+
+  if (!checkDockerInstalled()) {
+    console.error("❌ Docker is not installed or not running");
+    console.error("   Please install Docker Desktop and ensure it's running");
+    return false;
+  }
 
   try {
+    console.log("📦 Starting services:");
+    console.log("   - PostgreSQL Database");
+    console.log("   - Kong API Gateway");
+    console.log("   - GoTrue Auth");
+    console.log("   - PostgREST API");
+    console.log("   - Realtime Server");
+    console.log("   - Storage API");
+    console.log("   - Supabase Studio");
+    console.log("");
+
     // Start the services
     execSync("docker-compose -f docker-compose.supabase.yml up -d", {
       stdio: "inherit",
       cwd: process.cwd(),
     });
 
+    console.log("");
+    console.log("═══════════════════════════════════════════════════════");
     console.log("✅ Supabase started successfully!");
-    console.log(`📊 Dashboard: ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
-    console.log(`🔗 API URL: ${LOCAL_SUPABASE_CONFIG.url}`);
-    console.log(`🔑 Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey}`);
+    console.log("═══════════════════════════════════════════════════════");
+    console.log(`📊 Dashboard:        ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
+    console.log(`🔗 API URL:          ${LOCAL_SUPABASE_CONFIG.url}`);
+    console.log(`🗄️  Database:         localhost:5432`);
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("📝 Connection details:");
+    console.log(`   Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`);
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("💡 Next steps:");
+    console.log("   1. Open the dashboard to manage your database");
+    console.log("   2. Connect your app to local Supabase");
+    console.log("   3. Use 'npm run supabase:status' to check status");
+    console.log("═══════════════════════════════════════════════════════");
 
     return true;
   } catch (error) {
-    console.error("❌ Failed to start Supabase:", error.message);
+    console.error("═══════════════════════════════════════════════════════");
+    console.error("❌ Failed to start Supabase");
+    console.error("═══════════════════════════════════════════════════════");
+    console.error("Error:", error.message);
+    console.error("═══════════════════════════════════════════════════════");
+    console.error("💡 Troubleshooting:");
+    console.error("   1. Make sure Docker Desktop is running");
+    console.error("   2. Check if ports 5432, 8000, 3001 are available");
+    console.error("   3. Try 'npm run supabase:stop' first, then start again");
+    console.error("═══════════════════════════════════════════════════════");
     return false;
   }
 }
 
 function stopSupabase() {
+  console.log("═══════════════════════════════════════════════════════");
   console.log("🛑 Stopping local Supabase...");
+  console.log("═══════════════════════════════════════════════════════");
 
   try {
     execSync("docker-compose -f docker-compose.supabase.yml down", {
@@ -65,67 +106,119 @@ function stopSupabase() {
       cwd: process.cwd(),
     });
 
+    console.log("═══════════════════════════════════════════════════════");
     console.log("✅ Supabase stopped successfully!");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("💡 All containers stopped");
+    console.log("   Data is preserved in Docker volumes");
+    console.log("   Run 'npm run supabase:start' to restart");
+    console.log("═══════════════════════════════════════════════════════");
     return true;
   } catch (error) {
-    console.error("❌ Failed to stop Supabase:", error.message);
+    console.error("═══════════════════════════════════════════════════════");
+    console.error("❌ Failed to stop Supabase");
+    console.error("═══════════════════════════════════════════════════════");
+    console.error("Error:", error.message);
+    console.error("═══════════════════════════════════════════════════════");
     return false;
   }
 }
 
 function getStatus() {
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("📊 Local Supabase Status");
+  console.log("═══════════════════════════════════════════════════════");
+
   if (!checkDockerInstalled()) {
     console.log("❌ Docker is not installed or not running");
+    console.log("   Please install Docker Desktop and ensure it's running");
+    console.log("═══════════════════════════════════════════════════════");
     return false;
   }
+
+  console.log("✅ Docker is installed and running");
 
   if (isSupabaseRunning()) {
-    console.log("✅ Supabase is running");
-    console.log(`📊 Dashboard: ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
-    console.log(`🔗 API URL: ${LOCAL_SUPABASE_CONFIG.url}`);
+    console.log("✅ Local Supabase is running");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("📝 Connection Information:");
+    console.log(`   Dashboard:  ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
+    console.log(`   API URL:    ${LOCAL_SUPABASE_CONFIG.url}`);
+    console.log(`   Database:   localhost:5432`);
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("💡 Available commands:");
+    console.log("   npm run supabase:stop     - Stop Supabase");
+    console.log("   npm run supabase:promote  - Promote to production");
+    console.log("═══════════════════════════════════════════════════════");
     return true;
   } else {
-    console.log("⏹️ Supabase is not running");
+    console.log("⏹️  Local Supabase is not running");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("💡 Start Supabase with:");
+    console.log("   npm run supabase:start");
+    console.log("═══════════════════════════════════════════════════════");
     return false;
   }
-}
-
-function showHelp() {
-  console.log(`
-Local Supabase Setup Script
-
-Usage: node setup-local-supabase.js [command]
-
-Commands:
-  start     Start the local Supabase environment
-  stop      Stop the local Supabase environment
-  status    Check if Supabase is running
-  config    Show connection configuration
-  help      Show this help message
-
-Production Promotion:
-  To promote your local development to production, use:
-  npm run supabase:promote
-  
-  This will guide you through:
-  - Creating or configuring production project
-  - Migrating database schema
-  - Updating environment files
-  - Deploying functions to production
-
-Examples:
-  node scripts/setup-local-supabase.js start
-  node scripts/setup-local-supabase.js status
-  npm run supabase:promote
-  `);
 }
 
 function showConfig() {
-  console.log("Local Supabase Configuration:");
-  console.log(`URL: ${LOCAL_SUPABASE_CONFIG.url}`);
-  console.log(`Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey}`);
-  console.log(`Service Role Key: ${LOCAL_SUPABASE_CONFIG.serviceRoleKey}`);
-  console.log(`Dashboard: ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("⚙️  Local Supabase Configuration");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log(`📊 Dashboard:        ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
+  console.log(`🔗 API URL:          ${LOCAL_SUPABASE_CONFIG.url}`);
+  console.log(`🗄️  Database:         localhost:5432`);
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("📝 API Keys:");
+  console.log(`   Anon Key:         ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`);
+  console.log(`   Service Role Key: ${LOCAL_SUPABASE_CONFIG.serviceRoleKey.substring(0, 50)}...`);
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("💡 These credentials are for local development only");
+  console.log("   Use different credentials for production");
+  console.log("═══════════════════════════════════════════════════════");
+}
+
+function showHelp() {
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("📚 Local Supabase Setup Script");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("");
+  console.log("Usage: node setup-local-supabase.js [command]");
+  console.log("");
+  console.log("Commands:");
+  console.log("  start     Start the local Supabase environment");
+  console.log("  stop      Stop the local Supabase environment");
+  console.log("  status    Check if Supabase is running");
+  console.log("  config    Show connection configuration");
+  console.log("  help      Show this help message");
+  console.log("");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("🚀 Production Promotion:");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("");
+  console.log("To promote your local development to production:");
+  console.log("  npm run supabase:promote");
+  console.log("");
+  console.log("This interactive tool will guide you through:");
+  console.log("  • Creating or configuring production project");
+  console.log("  • Migrating database schema");
+  console.log("  • Updating environment files");
+  console.log("  • Deploying functions to production");
+  console.log("");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("📖 Examples:");
+  console.log("═══════════════════════════════════════════════════════");
+  console.log("");
+  console.log("  # Start local Supabase");
+  console.log("  npm run supabase:start");
+  console.log("");
+  console.log("  # Check status");
+  console.log("  npm run supabase:status");
+  console.log("");
+  console.log("  # Promote to production");
+  console.log("  npm run supabase:promote");
+  console.log("");
+  console.log("═══════════════════════════════════════════════════════");
 }
 
 // Main execution
