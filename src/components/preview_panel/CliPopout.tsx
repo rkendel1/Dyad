@@ -6,7 +6,6 @@ import { selectedAppIdAtom, appOutputAtom } from "@/atoms/appAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
 import { toast } from "sonner";
 import { AppOutput } from "@/ipc/ipc_types";
-import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 interface CliPopoutProps {
   onClose: () => void;
@@ -25,7 +24,6 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
   const outputRef = useRef<HTMLDivElement>(null);
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const globalOutput = useAtomValue(appOutputAtom);
-  const { copyMessageContent } = useCopyToClipboard();
 
   // Sync global output to local output
   useEffect(() => {
