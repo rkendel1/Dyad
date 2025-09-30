@@ -27,6 +27,7 @@ import { registerAppUpgradeHandlers } from "./handlers/app_upgrade_handlers";
 import { registerCapacitorHandlers } from "./handlers/capacitor_handlers";
 import { registerProblemsHandlers } from "./handlers/problems_handlers";
 import { registerAppEnvVarsHandlers } from "./handlers/app_env_vars_handlers";
+import { registerAppSettingsHandlers } from "./handlers/app_settings_handlers";
 import { registerTemplateHandlers } from "./handlers/template_handlers";
 import { registerPortalHandlers } from "./handlers/portal_handlers";
 import { registerPromptHandlers } from "./handlers/prompt_handlers";
@@ -64,6 +65,7 @@ export function registerIpcHandlers() {
   registerAppUpgradeHandlers();
   registerCapacitorHandlers();
   registerAppEnvVarsHandlers();
+  registerAppSettingsHandlers();
   registerTemplateHandlers();
   registerPortalHandlers();
   registerPromptHandlers();

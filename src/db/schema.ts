@@ -39,6 +39,8 @@ export const apps = sqliteTable("apps", {
   installCommand: text("install_command"),
   startCommand: text("start_command"),
   chatContext: text("chat_context", { mode: "json" }),
+  preferredPackageManager: text("preferred_package_manager"),
+  previewUrl: text("preview_url"),
 });
 
 export const chats = sqliteTable("chats", {

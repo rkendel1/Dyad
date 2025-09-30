@@ -10,12 +10,14 @@ import { CodeView } from "./CodeView";
 import { PreviewIframe } from "./PreviewIframe";
 import { Problems } from "./Problems";
 import { ConfigurePanel } from "./ConfigurePanel";
-import { ChevronDown, ChevronUp, Logs } from "lucide-react";
+import { ChevronDown, ChevronUp, Logs, ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { Console } from "./Console";
+import { CliPopout } from "./CliPopout";
 import { useRunApp } from "@/hooks/useRunApp";
 import { PublishPanel } from "./PublishPanel";
+import { Button } from "@/components/ui/button";
 
 interface ConsoleHeaderProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ interface ConsoleHeaderProps {
   latestMessage?: string;
   messageCount: number;
   errorCount: number;
+  onOpenCliPopout: () => void;
 }
 
 // Console header component
@@ -32,34 +35,51 @@ const ConsoleHeader = ({
   latestMessage,
   messageCount,
   errorCount,
+  onOpenCliPopout,
 }: ConsoleHeaderProps) => (
   <div
-    onClick={onToggle}
-    className="flex items-start gap-2 px-4 py-1.5 border-t border-border cursor-pointer hover:bg-[var(--background-darkest)] transition-colors"
+    className="flex items-start gap-2 px-4 py-1.5 border-t border-border hover:bg-[var(--background-darkest)] transition-colors"
   >
-    <Logs size={16} className="mt-0.5" />
-    <div className="flex flex-col">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">System Messages</span>
-        {messageCount > 0 && (
-          <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
-            {messageCount}
-          </span>
-        )}
-        {errorCount > 0 && (
-          <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">
-            {errorCount} errors
+    <div className="flex items-start gap-2 flex-1 cursor-pointer" onClick={onToggle}>
+      <Logs size={16} className="mt-0.5" />
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">System Messages</span>
+          {messageCount > 0 && (
+            <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+              {messageCount}
+            </span>
+          )}
+          {errorCount > 0 && (
+            <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">
+              {errorCount} errors
+            </span>
+          )}
+        </div>
+        {!isOpen && latestMessage && (
+          <span className="text-xs text-gray-500 truncate max-w-[200px] md:max-w-[400px]">
+            {latestMessage}
           </span>
         )}
       </div>
-      {!isOpen && latestMessage && (
-        <span className="text-xs text-gray-500 truncate max-w-[200px] md:max-w-[400px]">
-          {latestMessage}
-        </span>
-      )}
     </div>
-    <div className="flex-1" />
-    {isOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenCliPopout();
+        }}
+        title="Open CLI in popout window"
+        className="h-7 px-2"
+      >
+        <ExternalLink size={14} />
+      </Button>
+      <div className="cursor-pointer" onClick={onToggle}>
+        {isOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+      </div>
+    </div>
   </div>
 );
 
@@ -68,6 +88,8 @@ export function PreviewPanel() {
   const [previewMode] = useAtom(previewModeAtom);
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+  const [isCliPopoutOpen, setIsCliPopoutOpen] = useState(false);
+  const [isCliPopoutMinimized, setIsCliPopoutMinimized] = useState(false);
   const { runApp, stopApp, loading, app } = useRunApp();
   const runningAppIdRef = useRef<number | null>(null);
   const key = useAtomValue(previewPanelKeyAtom);
@@ -128,52 +150,65 @@ export function PreviewPanel() {
     // runApp/stopApp are stable due to useCallback.
   }, [selectedAppId, runApp, stopApp]);
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-hidden">
-        <PanelGroup direction="vertical">
-          <Panel id="content" minSize={30}>
-            <div className="h-full overflow-y-auto">
-              {previewMode === "preview" ? (
-                <PreviewIframe key={key} loading={loading} />
-              ) : previewMode === "code" ? (
-                <CodeView loading={loading} app={app} />
-              ) : previewMode === "configure" ? (
-                <ConfigurePanel />
-              ) : previewMode === "publish" ? (
-                <PublishPanel />
-              ) : (
-                <Problems />
-              )}
-            </div>
-          </Panel>
-          {isConsoleOpen && (
-            <>
-              <PanelResizeHandle className="h-1 bg-border hover:bg-gray-400 transition-colors cursor-row-resize" />
-              <Panel id="console" minSize={10} defaultSize={30}>
-                <div className="flex flex-col h-full">
-                  <ConsoleHeader
-                    isOpen={true}
-                    onToggle={() => setIsConsoleOpen(false)}
-                    latestMessage={latestMessage}
-                    messageCount={messageCount}
-                    errorCount={errorCount}
-                  />
-                  <Console />
-                </div>
-              </Panel>
-            </>
-          )}
-        </PanelGroup>
+    <>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-hidden">
+          <PanelGroup direction="vertical">
+            <Panel id="content" minSize={30}>
+              <div className="h-full overflow-y-auto">
+                {previewMode === "preview" ? (
+                  <PreviewIframe key={key} loading={loading} />
+                ) : previewMode === "code" ? (
+                  <CodeView loading={loading} app={app} />
+                ) : previewMode === "configure" ? (
+                  <ConfigurePanel />
+                ) : previewMode === "publish" ? (
+                  <PublishPanel />
+                ) : (
+                  <Problems />
+                )}
+              </div>
+            </Panel>
+            {isConsoleOpen && (
+              <>
+                <PanelResizeHandle className="h-1 bg-border hover:bg-gray-400 transition-colors cursor-row-resize" />
+                <Panel id="console" minSize={10} defaultSize={30}>
+                  <div className="flex flex-col h-full">
+                    <ConsoleHeader
+                      isOpen={true}
+                      onToggle={() => setIsConsoleOpen(false)}
+                      latestMessage={latestMessage}
+                      messageCount={messageCount}
+                      errorCount={errorCount}
+                      onOpenCliPopout={() => setIsCliPopoutOpen(true)}
+                    />
+                    <Console />
+                  </div>
+                </Panel>
+              </>
+            )}
+          </PanelGroup>
+        </div>
+        {!isConsoleOpen && (
+          <ConsoleHeader
+            isOpen={false}
+            onToggle={() => setIsConsoleOpen(true)}
+            latestMessage={latestMessage}
+            messageCount={messageCount}
+            errorCount={errorCount}
+            onOpenCliPopout={() => setIsCliPopoutOpen(true)}
+          />
+        )}
       </div>
-      {!isConsoleOpen && (
-        <ConsoleHeader
-          isOpen={false}
-          onToggle={() => setIsConsoleOpen(true)}
-          latestMessage={latestMessage}
-          messageCount={messageCount}
-          errorCount={errorCount}
+      
+      {/* CLI Popout */}
+      {isCliPopoutOpen && (
+        <CliPopout
+          onClose={() => setIsCliPopoutOpen(false)}
+          isMinimized={isCliPopoutMinimized}
+          onToggleMinimize={() => setIsCliPopoutMinimized(!isCliPopoutMinimized)}
         />
       )}
-    </div>
+    </>
   );
 }
