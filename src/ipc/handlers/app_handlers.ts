@@ -52,7 +52,7 @@ import { isServerFunction } from "@/supabase_admin/supabase_utils";
 import { getVercelTeamSlug } from "../utils/vercel_utils";
 import { storeDbTimestampAtCurrentVersion } from "../utils/neon_timestamp_utils";
 import { AppSearchResult } from "@/lib/schemas";
-import { generateCommandWithFallbacks, getBestPackageManagerForProject } from "../utils/package_manager_utils";
+import { generateCommandWithFallbacks } from "../utils/package_manager_utils";
 
 // Default command - will be replaced by dynamic detection
 const DEFAULT_COMMAND =

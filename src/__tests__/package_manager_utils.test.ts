@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { promises as fs } from "node:fs";
-import * as path from "node:path";
 import {
   detectSystemPackageManagers,
   getPreferredSystemPackageManager,
   detectProjectPackageManager,
-  getBestPackageManagerForProject,
   getInstallCommand,
   getDevCommand,
   getAddDependencyCommand,

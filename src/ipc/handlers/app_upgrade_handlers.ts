@@ -149,44 +149,48 @@ async function applyComponentTagger(appPath: string) {
   await fs.promises.writeFile(viteConfigPath, content);
 
   // Install the dependency
-  await new Promise<void>(async (resolve, reject) => {
-    logger.info("Installing component-tagger dependency");
-    
-    let command: string;
-    try {
-      // Generate smart command with fallbacks
-      command = await generateCommandWithFallbacks(appPath, "addDevDependency", { 
-        packages: ["@dyad-sh/react-vite-component-tagger"] 
-      });
-    } catch (error) {
-      // Fallback to the original command
-      logger.warn("Failed to detect package manager, using fallback command:", error);
-      command = "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger";
-    }
-    
-    const process = spawn(command, {
-      cwd: appPath,
-      shell: true,
-      stdio: "pipe",
-    });
-
-    process.stdout?.on("data", (data) => logger.info(data.toString()));
-    process.stderr?.on("data", (data) => logger.error(data.toString()));
-
-    process.on("close", (code) => {
-      if (code === 0) {
-        logger.info("component-tagger dependency installed successfully");
-        resolve();
-      } else {
-        logger.error(`Failed to install dependency, exit code ${code}`);
-        reject(new Error("Failed to install dependency"));
+  await new Promise<void>((resolve, reject) => {
+    const installDependency = async () => {
+      logger.info("Installing component-tagger dependency");
+      
+      let command: string;
+      try {
+        // Generate smart command with fallbacks
+        command = await generateCommandWithFallbacks(appPath, "addDevDependency", { 
+          packages: ["@dyad-sh/react-vite-component-tagger"] 
+        });
+      } catch (error) {
+        // Fallback to the original command
+        logger.warn("Failed to detect package manager, using fallback command:", error);
+        command = "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger";
       }
-    });
+      
+      const process = spawn(command, {
+        cwd: appPath,
+        shell: true,
+        stdio: "pipe",
+      });
 
-    process.on("error", (err) => {
-      logger.error("Failed to spawn package manager command", err);
-      reject(err);
-    });
+      process.stdout?.on("data", (data) => logger.info(data.toString()));
+      process.stderr?.on("data", (data) => logger.error(data.toString()));
+
+      process.on("close", (code) => {
+        if (code === 0) {
+          logger.info("component-tagger dependency installed successfully");
+          resolve();
+        } else {
+          logger.error(`Failed to install dependency, exit code ${code}`);
+          reject(new Error("Failed to install dependency"));
+        }
+      });
+
+      process.on("error", (err) => {
+        logger.error("Failed to spawn package manager command", err);
+        reject(err);
+      });
+    };
+
+    installDependency().catch(reject);
   });
 
   // Commit changes
