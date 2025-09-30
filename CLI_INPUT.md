@@ -1,10 +1,10 @@
 # CLI Input Feature
 
-The Dyad console includes a built-in CLI (Command Line Interface) input feature that allows you to interact directly with your running applications through the console panel.
+The Dyad console includes a built-in CLI (Command Line Interface) input feature that allows you to interact directly with your running applications through the console panel or a floating popout window.
 
 ## Overview
 
-The CLI input component is integrated into the Console component and provides an interactive terminal-like experience for sending commands and input to your running applications.
+The CLI input component is integrated into the Console component and can also be opened as a floating popout. It provides an interactive terminal-like experience for sending commands and input to your running applications.
 
 ## Features
 
@@ -15,6 +15,9 @@ The CLI input component is integrated into the Console component and provides an
 - **Keyboard Shortcuts**: Fast command execution with keyboard shortcuts
 - **Built-in Commands**: Helpful utility commands built into the CLI
 - **Help System**: Contextual help available at any time
+- **Popout Window**: Open CLI in a floating window for flexible workspace layout
+- **Real-time Output**: See all terminal output (stdout, stderr, errors) in real-time
+- **Minimize/Maximize**: Keep the CLI popout accessible but out of the way
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -45,11 +48,26 @@ clear
 
 ## How to Use
 
-### Opening the Console
+### Using the Inline CLI (Console Panel)
 
 1. The console is located at the bottom of the preview panel
 2. Click on the "System Messages" header to expand/collapse the console
 3. The CLI input field is always visible at the bottom of the console
+
+### Using the CLI Popout
+
+1. Start an app in the preview panel
+2. Click the **External Link** icon (↗) in the System Messages header
+3. A floating CLI terminal window will appear in the bottom-right corner
+4. The popout shows the same terminal output as the inline console
+5. Click the **minimize** icon to minimize the popout to a compact button
+6. Click the **X** icon to close the popout
+
+**Benefits of the Popout:**
+- Keep the CLI accessible while working on code
+- See terminal output without expanding the console panel
+- Flexible positioning and minimize/maximize options
+- Same functionality as the inline CLI
 
 ### Sending Commands
 
@@ -63,6 +81,7 @@ clear
 1. Press `↑` (Arrow Up) to navigate to previous commands
 2. Press `↓` (Arrow Down) to navigate to newer commands
 3. The last 50 commands are stored in the history
+4. Command history is shared between inline and popout CLI
 
 ### Getting Help
 

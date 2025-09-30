@@ -24,6 +24,8 @@ import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
 import { useNavigate } from "@tanstack/react-router";
 import { NeonConfigure } from "./NeonConfigure";
+import { AppPackageManagerSelector } from "@/components/settings/AppPackageManagerSelector";
+import { AppPreviewUrlInput } from "@/components/settings/AppPreviewUrlInput";
 
 const EnvironmentVariablesTitle = () => (
   <div className="flex items-center gap-2">
@@ -397,6 +399,21 @@ export const ConfigurePanel = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* App-level Settings */}
+      {selectedAppId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">
+              App Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <AppPackageManagerSelector appId={selectedAppId} />
+            <AppPreviewUrlInput appId={selectedAppId} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Neon Database Configuration */}
       {/* Neon Connector */}
