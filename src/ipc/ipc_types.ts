@@ -60,6 +60,13 @@ export interface CreateAppResult {
   chatId: number;
 }
 
+export interface ChunkMetadata {
+  chunkIndex: number; // 0-based index of current chunk
+  totalChunks: number; // Total number of chunks
+  isChunked: boolean; // Whether this message is part of a chunked response
+  chunkDeliveryStatus: "delivering" | "completed" | "failed"; // Status of chunk delivery
+}
+
 export interface Message {
   id: number;
   role: "user" | "assistant";
@@ -68,6 +75,7 @@ export interface Message {
   commitHash?: string | null;
   dbTimestamp?: string | null;
   createdAt?: Date | string;
+  chunkMetadata?: ChunkMetadata; // Optional chunk metadata
 }
 
 export interface Chat {

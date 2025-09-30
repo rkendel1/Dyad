@@ -70,6 +70,13 @@ import { prompts as promptsTable } from "../../db/schema";
 import { inArray } from "drizzle-orm";
 import { replacePromptReference } from "../utils/replacePromptReference";
 import { mcpManager } from "../utils/mcp_manager";
+import { 
+  shouldChunkResponse, 
+  chunkResponse, 
+  type ChunkingOptions,
+  type TextChunk,
+} from "../utils/chunking_utils";
+import { DEFAULT_CHUNK_SIZE_CHARS } from "@/constants/settings_constants";
 import z from "zod";
 
 type AsyncIterableStream<T> = AsyncIterable<T> & ReadableStream<T>;
@@ -81,6 +88,15 @@ const activeStreams = new Map<number, AbortController>();
 
 // Track partial responses for cancelled streams
 const partialResponses = new Map<number, string>();
+
+// Track chunking state for active responses
+const chunkingState = new Map<number, {
+  chunks: TextChunk[];
+  deliveredChunks: number;
+  totalExpectedLength: number;
+  startTime: number;
+  errorCount: number;
+}>();
 
 // Directory for storing temporary files
 const TEMP_DIR = path.join(os.tmpdir(), "dyad-attachments");
@@ -132,7 +148,7 @@ if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
 
-// Helper function to process stream chunks
+// Helper function to process stream chunks with chunking support
 async function processStreamChunks({
   fullStream,
   fullResponse,
@@ -146,60 +162,189 @@ async function processStreamChunks({
   chatId: number;
   processResponseChunkUpdate: (params: {
     fullResponse: string;
+    chunkMetadata?: {
+      chunkIndex: number;
+      totalChunks: number;
+      isChunked: boolean;
+      chunkDeliveryStatus: "delivering" | "completed" | "failed";
+    };
   }) => Promise<string>;
 }): Promise<{ fullResponse: string; incrementalResponse: string }> {
   let incrementalResponse = "";
   let inThinkingBlock = false;
+  let lastChunkCheckLength = 0;
+  const chunkCheckInterval = 1000; // Check for chunking every 1000 characters
 
-  for await (const part of fullStream) {
-    let chunk = "";
-    if (
-      inThinkingBlock &&
-      !["reasoning-delta", "reasoning-end", "reasoning-start"].includes(
-        part.type,
-      )
-    ) {
-      chunk = "</think>";
-      inThinkingBlock = false;
-    }
-    if (part.type === "text-delta") {
-      chunk += part.text;
-    } else if (part.type === "reasoning-delta") {
-      if (!inThinkingBlock) {
-        chunk = "<think>";
-        inThinkingBlock = true;
+  // Initialize chunking state
+  chunkingState.set(chatId, {
+    chunks: [],
+    deliveredChunks: 0,
+    totalExpectedLength: 0,
+    startTime: Date.now(),
+    errorCount: 0,
+  });
+
+  try {
+    for await (const part of fullStream) {
+      let chunk = "";
+      if (
+        inThinkingBlock &&
+        !["reasoning-delta", "reasoning-end", "reasoning-start"].includes(
+          part.type,
+        )
+      ) {
+        chunk = "</think>";
+        inThinkingBlock = false;
+      }
+      if (part.type === "text-delta") {
+        chunk += part.text;
+      } else if (part.type === "reasoning-delta") {
+        if (!inThinkingBlock) {
+          chunk = "<think>";
+          inThinkingBlock = true;
+        }
+
+        chunk += escapeDyadTags(part.text);
+      } else if (part.type === "tool-call") {
+        const { serverName, toolName } = parseMcpToolKey(part.toolName);
+        const content = escapeDyadTags(JSON.stringify(part.input));
+        chunk = `<dyad-mcp-tool-call server="${serverName}" tool="${toolName}">\n${content}\n</dyad-mcp-tool-call>\n`;
+      } else if (part.type === "tool-result") {
+        const { serverName, toolName } = parseMcpToolKey(part.toolName);
+        const content = escapeDyadTags(part.output);
+        chunk = `<dyad-mcp-tool-result server="${serverName}" tool="${toolName}">\n${content}\n</dyad-mcp-tool-result>\n`;
       }
 
-      chunk += escapeDyadTags(part.text);
-    } else if (part.type === "tool-call") {
-      const { serverName, toolName } = parseMcpToolKey(part.toolName);
-      const content = escapeDyadTags(JSON.stringify(part.input));
-      chunk = `<dyad-mcp-tool-call server="${serverName}" tool="${toolName}">\n${content}\n</dyad-mcp-tool-call>\n`;
-    } else if (part.type === "tool-result") {
-      const { serverName, toolName } = parseMcpToolKey(part.toolName);
-      const content = escapeDyadTags(part.output);
-      chunk = `<dyad-mcp-tool-result server="${serverName}" tool="${toolName}">\n${content}\n</dyad-mcp-tool-result>\n`;
+      if (!chunk) {
+        continue;
+      }
+
+      fullResponse += chunk;
+      incrementalResponse += chunk;
+      fullResponse = cleanFullResponse(fullResponse);
+
+      // Check if we should deliver a chunk
+      if (fullResponse.length - lastChunkCheckLength >= chunkCheckInterval) {
+        await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate);
+        lastChunkCheckLength = fullResponse.length;
+      } else {
+        // Regular update without chunking metadata
+        fullResponse = await processResponseChunkUpdate({
+          fullResponse,
+        });
+      }
+
+      // If the stream was aborted, exit early
+      if (abortController.signal.aborted) {
+        logger.log(`Stream for chat ${chatId} was aborted`);
+        break;
+      }
     }
 
-    if (!chunk) {
-      continue;
-    }
+    // Final delivery - handle any remaining content as the last chunk
+    await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
 
-    fullResponse += chunk;
-    incrementalResponse += chunk;
-    fullResponse = cleanFullResponse(fullResponse);
-    fullResponse = await processResponseChunkUpdate({
-      fullResponse,
-    });
-
-    // If the stream was aborted, exit early
-    if (abortController.signal.aborted) {
-      logger.log(`Stream for chat ${chatId} was aborted`);
-      break;
-    }
+  } finally {
+    // Clean up chunking state
+    chunkingState.delete(chatId);
   }
 
   return { fullResponse, incrementalResponse };
+}
+
+// Helper function to handle chunked delivery
+async function handleChunkedDelivery(
+  fullResponse: string,
+  chatId: number,
+  processResponseChunkUpdate: (params: {
+    fullResponse: string;
+    chunkMetadata?: {
+      chunkIndex: number;
+      totalChunks: number;
+      isChunked: boolean;
+      chunkDeliveryStatus: "delivering" | "completed" | "failed";
+    };
+  }) => Promise<string>,
+  isFinalChunk = false,
+): Promise<string> {
+  const state = chunkingState.get(chatId);
+  if (!state) {
+    return await processResponseChunkUpdate({ fullResponse });
+  }
+
+  const chunkingOptions: ChunkingOptions = {
+    maxChunkSize: DEFAULT_CHUNK_SIZE_CHARS,
+    preserveCodeBlocks: true,
+    preserveDyadTags: true,
+  };
+
+  if (shouldChunkResponse(fullResponse, chunkingOptions) || state.chunks.length > 0) {
+    // Split the current response into chunks
+    const chunks = chunkResponse(fullResponse, chunkingOptions);
+    
+    // Update state
+    state.chunks = chunks;
+    state.totalExpectedLength = fullResponse.length;
+
+    // Deliver chunks that haven't been delivered yet
+    for (let i = state.deliveredChunks; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const isLastChunk = i === chunks.length - 1 && isFinalChunk;
+      
+      try {
+        const chunkMetadata = {
+          chunkIndex: chunk.index,
+          totalChunks: chunks.length,
+          isChunked: true,
+          chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
+        };
+
+        fullResponse = await processResponseChunkUpdate({
+          fullResponse: chunk.content,
+          chunkMetadata,
+        });
+
+        state.deliveredChunks = i + 1;
+        
+        // Log chunk delivery
+        logger.log(
+          `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars)`
+        );
+
+        // Small delay between chunks to prevent overwhelming the UI
+        if (!isLastChunk) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+      } catch (error) {
+        state.errorCount++;
+        logger.error(`Error delivering chunk ${i} for chat ${chatId}:`, error);
+        
+        // Try to deliver with error status
+        try {
+          await processResponseChunkUpdate({
+            fullResponse: chunk.content,
+            chunkMetadata: {
+              chunkIndex: chunk.index,
+              totalChunks: chunks.length,
+              isChunked: true,
+              chunkDeliveryStatus: "failed",
+            },
+          });
+        } catch (secondaryError) {
+          logger.error(`Failed to deliver error status for chunk ${i}:`, secondaryError);
+        }
+        
+        // Re-throw error to be handled by caller
+        throw error;
+      }
+    }
+
+    return fullResponse;
+  } else {
+    // Not chunked, deliver normally
+    return await processResponseChunkUpdate({ fullResponse });
+  }
 }
 
 export function registerChatStreamHandlers() {
@@ -797,8 +942,15 @@ This conversation includes one or more image attachments. When the user uploads 
 
         const processResponseChunkUpdate = async ({
           fullResponse,
+          chunkMetadata,
         }: {
           fullResponse: string;
+          chunkMetadata?: {
+            chunkIndex: number;
+            totalChunks: number;
+            isChunked: boolean;
+            chunkDeliveryStatus: "delivering" | "completed" | "failed";
+          };
         }) => {
           if (
             fullResponse.includes("$$SUPABASE_CLIENT_CODE$$") &&
@@ -821,7 +973,13 @@ This conversation includes one or more image attachments. When the user uploads 
             currentMessages.length > 0 &&
             currentMessages[currentMessages.length - 1].role === "assistant"
           ) {
-            currentMessages[currentMessages.length - 1].content = fullResponse;
+            const lastMessage = currentMessages[currentMessages.length - 1];
+            lastMessage.content = fullResponse;
+            
+            // Add chunk metadata if provided (only for UI, not stored in DB)
+            if (chunkMetadata) {
+              (lastMessage as any).chunkMetadata = chunkMetadata;
+            }
           }
 
           // Update the assistant message in the database
