@@ -1030,7 +1030,8 @@ This conversation includes one or more image attachments. When the user uploads 
               const requestIdPrefix = isEngineEnabled
                 ? `[Request ID: ${dyadRequestId}] `
                 : "";
-              event.sender.send(
+              safeSend(
+                event.sender,
                 "chat:response:error",
                 `Sorry, there was an error from the AI: ${requestIdPrefix}${message}`,
               );
