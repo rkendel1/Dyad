@@ -1390,9 +1390,11 @@ export function registerAppHandlers() {
   handle(
     "respond-to-app-input",
     async (_, { appId, response }: RespondToAppInputParams) => {
-      if (response !== "y" && response !== "n") {
-        throw new Error(`Invalid response: ${response}`);
+      // Validate that response is not empty
+      if (!response || typeof response !== 'string') {
+        throw new Error('Invalid response: must be a non-empty string');
       }
+      
       const appInfo = runningApps.get(appId);
 
       if (!appInfo) {
