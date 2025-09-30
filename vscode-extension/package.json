@@ -80,6 +80,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
+    "test-sanity": "node ./scripts/sanity-check.js",
     "package": "vsce package"
   },
   "devDependencies": {
