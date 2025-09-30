@@ -27,6 +27,10 @@
         "title": "Dyad: Create New App"
       },
       {
+        "command": "dyad.createAppWithTemplate",
+        "title": "Dyad: Create App with AI Template Selection"
+      },
+      {
         "command": "dyad.runApp",
         "title": "Dyad: Run App"
       },
@@ -49,6 +53,14 @@
       {
         "command": "dyad.checkHealth",
         "title": "Dyad: Check Connection to Dyad Desktop"
+      },
+      {
+        "command": "dyad.setupLocalSupabase",
+        "title": "Dyad: Setup Local Supabase"
+      },
+      {
+        "command": "dyad.promoteToProduction",
+        "title": "Dyad: Promote to Production Supabase"
       }
     ],
     "viewsContainers": {

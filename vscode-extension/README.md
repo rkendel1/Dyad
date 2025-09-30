@@ -6,6 +6,9 @@ VS Code extension for running Dyad CLI commands and API calls with a sidebar for
 
 - **CLI Commands**: Run Dyad CLI commands directly from VS Code (requires Dyad Desktop)
 - **App Management**: Create, run, and stop Dyad apps
+- **AI-Powered Template Selection**: Describe your app in natural language and get intelligent template suggestions
+- **One-Click Supabase Setup**: Quickly set up local Supabase integration for your apps
+- **Production Promotion**: Seamlessly promote your app from local to production Supabase
 - **Quick Actions Sidebar**: Access common Dyad actions from a dedicated sidebar
 - **Console Integration**: Open and interact with the Dyad console
 - **API Integration**: Make API calls to Dyad Desktop services
@@ -23,9 +26,19 @@ VS Code extension for running Dyad CLI commands and API calls with a sidebar for
 
 This extension contributes the following commands:
 
-- `Dyad: Create New App` - Create a new Dyad app
+### App Creation
+- `Dyad: Create New App` - Create a new Dyad app (basic)
+- `Dyad: Create App with AI Template Selection` - Describe your app and get intelligent template suggestions
+
+### App Management
 - `Dyad: Run App` - Run a Dyad app
 - `Dyad: Stop App` - Stop a running Dyad app
+
+### Supabase Integration
+- `Dyad: Setup Local Supabase` - One-click setup for local Supabase integration
+- `Dyad: Promote to Production Supabase` - Promote your app to production Supabase environment
+
+### Utilities
 - `Dyad: Open Console` - Open the Dyad console
 - `Dyad: Send CLI Command` - Send a command to the Dyad CLI
 - `Dyad: Refresh Sidebar` - Refresh the sidebar view
@@ -46,6 +59,39 @@ This extension contributes the following commands:
 1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
 2. Type "Dyad" to see all available commands
 3. Select the command you want to run
+
+### Creating Apps with AI Template Selection
+
+1. Run `Dyad: Create App with AI Template Selection`
+2. Describe your app in natural language (e.g., "an e-commerce store with Stripe payments")
+3. The extension will analyze your description and suggest matching templates
+4. Select from the suggested templates or choose a different one
+5. Enter a name for your app
+6. Your app will be created with the selected template
+
+### Setting Up Local Supabase
+
+1. Run `Dyad: Setup Local Supabase`
+2. Select the app you want to configure
+3. The extension will automatically:
+   - Start local Supabase containers (if not running)
+   - Configure environment variables
+   - Set up database connection
+
+### Promoting to Production Supabase
+
+1. Run `Dyad: Promote to Production Supabase`
+2. Select the app to promote
+3. Provide your production Supabase credentials:
+   - Project reference
+   - Supabase URL
+   - Anon key
+   - Service role key
+   - Database password
+4. The extension will:
+   - Export local database schema
+   - Update environment variables
+   - Configure production settings
 
 ### Sending CLI Commands
 
@@ -148,6 +194,9 @@ Initial release of the Dyad VS Code extension:
 - API integration with health checks
 - Sidebar with app management and status indicators
 - Quick actions panel
+- **AI-powered template selection based on natural language descriptions**
+- **One-click local Supabase integration setup**
+- **Seamless promotion to production Supabase**
 - Comprehensive error messages and user guidance
 - Troubleshooting documentation
 
