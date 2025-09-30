@@ -126,6 +126,7 @@ export interface SystemDebugInfo {
   nodeVersion: string | null;
   pnpmVersion: string | null;
   nodePath: string | null;
+  packageManagerInfo: string | null; // Comprehensive package manager info
   telemetryId: string;
   telemetryConsent: string;
   telemetryUrl: string;
