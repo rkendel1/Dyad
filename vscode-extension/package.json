@@ -45,6 +45,10 @@
       {
         "command": "dyad.refreshSidebar",
         "title": "Dyad: Refresh Sidebar"
+      },
+      {
+        "command": "dyad.checkHealth",
+        "title": "Dyad: Check Connection to Dyad Desktop"
       }
     ],
     "viewsContainers": {
