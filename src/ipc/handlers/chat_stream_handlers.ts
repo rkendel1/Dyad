@@ -245,7 +245,10 @@ async function processStreamChunks({
     }
 
     // Final delivery - handle any remaining content as the last chunk
-    await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+    // Only do final delivery if stream wasn't aborted
+    if (!abortController.signal.aborted) {
+      await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+    }
 
   } finally {
     // Clean up chunking state
