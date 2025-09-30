@@ -76,7 +76,7 @@ import {
   type ChunkingOptions,
   type TextChunk,
 } from "../utils/chunking_utils";
-import { DEFAULT_CHUNK_SIZE_CHARS } from "@/constants/settings_constants";
+import { chunkPerfTracker } from "../utils/chunk_performance";
 import z from "zod";
 
 type AsyncIterableStream<T> = AsyncIterable<T> & ReadableStream<T>;
@@ -273,7 +273,7 @@ async function handleChunkedDelivery(
   }
 
   const chunkingOptions: ChunkingOptions = {
-    maxChunkSize: DEFAULT_CHUNK_SIZE_CHARS,
+    maxChunkSize: chunkPerfTracker.getRecommendedChunkSize(),
     preserveCodeBlocks: true,
     preserveDyadTags: true,
   };
@@ -286,12 +286,18 @@ async function handleChunkedDelivery(
     state.chunks = chunks;
     state.totalExpectedLength = fullResponse.length;
 
+    // Start performance tracking
+    if (chunks.length > 1) {
+      chunkPerfTracker.startSession(chatId, chunks.length);
+    }
+
     // Deliver chunks that haven't been delivered yet
     for (let i = state.deliveredChunks; i < chunks.length; i++) {
       const chunk = chunks[i];
       const isLastChunk = i === chunks.length - 1 && isFinalChunk;
       
       try {
+        const chunkStartTime = Date.now();
         const chunkMetadata = {
           chunkIndex: chunk.index,
           totalChunks: chunks.length,
@@ -304,11 +310,21 @@ async function handleChunkedDelivery(
           chunkMetadata,
         });
 
+        const chunkDeliveryTime = Date.now() - chunkStartTime;
         state.deliveredChunks = i + 1;
+        
+        // Track performance
+        chunkPerfTracker.recordChunkDelivery(
+          chatId,
+          chunk.index,
+          chunk.content.length,
+          chunkDeliveryTime,
+          true // success
+        );
         
         // Log chunk delivery
         logger.log(
-          `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars)`
+          `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars, ${chunkDeliveryTime}ms)`
         );
 
         // Small delay between chunks to prevent overwhelming the UI
@@ -320,23 +336,84 @@ async function handleChunkedDelivery(
         state.errorCount++;
         logger.error(`Error delivering chunk ${i} for chat ${chatId}:`, error);
         
-        // Try to deliver with error status
-        try {
-          await processResponseChunkUpdate({
-            fullResponse: chunk.content,
-            chunkMetadata: {
-              chunkIndex: chunk.index,
-              totalChunks: chunks.length,
-              isChunked: true,
-              chunkDeliveryStatus: "failed",
-            },
-          });
-        } catch (secondaryError) {
-          logger.error(`Failed to deliver error status for chunk ${i}:`, secondaryError);
+        // Implement retry logic for failed chunks
+        let retryCount = 0;
+        const maxRetries = 2;
+        let chunkDelivered = false;
+        
+        while (retryCount < maxRetries && !chunkDelivered) {
+          try {
+            retryCount++;
+            logger.log(`Retrying chunk ${i} delivery, attempt ${retryCount}/${maxRetries}`);
+            
+            // Wait before retry with exponential backoff
+            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+            
+            await processResponseChunkUpdate({
+              fullResponse: chunk.content,
+              chunkMetadata: {
+                chunkIndex: chunk.index,
+                totalChunks: chunks.length,
+                isChunked: true,
+                chunkDeliveryStatus: isLastChunk ? "completed" : "delivering",
+              },
+            });
+            
+            chunkDelivered = true;
+            state.deliveredChunks = i + 1;
+            logger.log(`Successfully delivered chunk ${i} on retry ${retryCount}`);
+            
+          } catch (retryError) {
+            logger.error(`Retry ${retryCount} failed for chunk ${i}:`, retryError);
+            
+            if (retryCount === maxRetries) {
+              // Final attempt: try to deliver with failed status
+              try {
+                await processResponseChunkUpdate({
+                  fullResponse: chunk.content,
+                  chunkMetadata: {
+                    chunkIndex: chunk.index,
+                    totalChunks: chunks.length,
+                    isChunked: true,
+                    chunkDeliveryStatus: "failed",
+                  },
+                });
+                logger.log(`Marked chunk ${i} as failed after ${maxRetries} retries`);
+              } catch (failedStatusError) {
+                logger.error(`Failed to mark chunk ${i} as failed:`, failedStatusError);
+              }
+            }
+          }
         }
         
-        // Re-throw error to be handled by caller
-        throw error;
+        // If we couldn't deliver the chunk after retries, continue with next chunks
+        // Don't throw error to allow remaining chunks to be delivered
+        if (!chunkDelivered) {
+          logger.warn(`Skipping failed chunk ${i}, continuing with remaining chunks`);
+          
+          // Track failed chunk
+          chunkPerfTracker.recordChunkDelivery(
+            chatId,
+            chunk.index,
+            chunk.content.length,
+            0, // no delivery time for failed chunks
+            false, // failure
+            error instanceof Error ? error : new Error(String(error))
+          );
+          
+          continue;
+        }
+      }
+    }
+
+    // End performance tracking session if chunking was used
+    if (chunks.length > 1) {
+      const sessionMetrics = chunkPerfTracker.endSession(chatId);
+      if (sessionMetrics && sessionMetrics.errorRate > 0.1) {
+        logger.warn(
+          `High error rate detected (${(sessionMetrics.errorRate * 100).toFixed(1)}%) ` +
+          `for chat ${chatId}. Consider reducing chunk size.`
+        );
       }
     }
 
