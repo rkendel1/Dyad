@@ -369,28 +369,34 @@ export function AppDetailsPage() {
                 <CardFooter className="border-t pt-4">
                   <form
                     onSubmit={handleSendMessage}
-                    className="flex gap-2 w-full"
+                    className="flex flex-col gap-2 w-full"
                   >
-                    <input
-                      type="text"
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                      disabled={sendMessageMutation.isPending}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={
-                        !messageInput.trim() || sendMessageMutation.isPending
-                      }
-                    >
-                      {sendMessageMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                        disabled={sendMessageMutation.isPending}
+                      />
+                      <Button
+                        type="submit"
+                        disabled={
+                          !messageInput.trim() || sendMessageMutation.isPending
+                        }
+                      >
+                        {sendMessageMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Note: AI responses may take a moment to appear. Messages
+                      refresh every 2 seconds.
+                    </p>
                   </form>
                 </CardFooter>
               )}
