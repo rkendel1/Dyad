@@ -805,7 +805,9 @@ export function registerAppHandlers() {
       });
 
       if (!app) {
-        throw new Error("App not found");
+        const errorMsg = `App not found with id ${appId}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       const appPath = getDyadAppPath(app.path);
@@ -813,19 +815,24 @@ export function registerAppHandlers() {
 
       // Check if the path is within the app directory (security check)
       if (!fullPath.startsWith(appPath)) {
-        throw new Error("Invalid file path");
+        const errorMsg = `Invalid file path: ${filePath} is outside app directory`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
       if (!fs.existsSync(fullPath)) {
-        throw new Error("File not found");
+        const errorMsg = `File not found: ${filePath} in app ${appId} (${app.name})`;
+        logger.warn(errorMsg);
+        throw new Error(errorMsg);
       }
 
       try {
         const contents = fs.readFileSync(fullPath, "utf-8");
         return contents;
       } catch (error) {
-        logger.error(`Error reading file ${filePath} for app ${appId}:`, error);
-        throw new Error("Failed to read file");
+        const errorMsg = `Failed to read file ${filePath} for app ${appId}`;
+        logger.error(errorMsg, error);
+        throw new Error(errorMsg);
       }
     },
   );
