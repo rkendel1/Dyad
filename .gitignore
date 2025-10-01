@@ -107,3 +107,7 @@ userData/
 
 # Local Supabase volumes (Docker volumes for local development)
 volumes/storage/
+
+# Generated files
+openapi.json
+quality-report.txt
