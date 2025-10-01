@@ -83,6 +83,14 @@ import type {
 } from "@/lib/schemas";
 import { showError } from "@/lib/toast";
 
+export interface VoiceSettings {
+  enabled: boolean;
+  language: string;
+  continuousMode: boolean;
+  emotionDetection: boolean;
+  adaptivePrompts: boolean;
+}
+
 export interface ChatStreamCallbacks {
   onUpdate: (messages: Message[]) => void;
   onEnd: (response: ChatResponseEnd) => void;
@@ -1339,5 +1347,14 @@ export class IpcClient {
 
   public cancelHelpChat(sessionId: string): void {
     this.ipcRenderer.invoke("help:chat:cancel", sessionId).catch(() => {});
+  }
+
+  // --- Voice Settings ---
+  public async getVoiceSettings(): Promise<VoiceSettings> {
+    return this.ipcRenderer.invoke("voice:get-settings");
+  }
+
+  public async updateVoiceSettings(settings: VoiceSettings): Promise<VoiceSettings> {
+    return this.ipcRenderer.invoke("voice:update-settings", settings);
   }
 }

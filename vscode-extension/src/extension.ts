@@ -7,6 +7,7 @@ import { matchTemplates, formatTemplateChoices, getBestTemplate } from './templa
 import { CollaborationService } from './collaboration/collaborationService';
 import { CollaborationPanel } from './collaboration/collaborationPanel';
 import { DecoratorManager } from './collaboration/decoratorManager';
+import { VoiceCommandService } from './voiceCommandService';
 
 let dyadCli: DyadCli;
 let dyadApi: DyadApi;
@@ -14,6 +15,7 @@ let outputChannel: vscode.OutputChannel;
 let collaborationService: CollaborationService;
 let collaborationPanel: CollaborationPanel;
 let decoratorManager: DecoratorManager;
+let voiceCommandService: VoiceCommandService;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Dyad extension is now active');
@@ -35,6 +37,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     decoratorManager = new DecoratorManager(collaborationService);
     context.subscriptions.push(decoratorManager);
+
+    // Initialize voice command service
+    voiceCommandService = new VoiceCommandService(outputChannel);
+    context.subscriptions.push(voiceCommandService);
 
     // Check API health on activation
     checkDyadConnection();
@@ -697,6 +703,19 @@ export function activate(context: vscode.ExtensionContext) {
                 collaborationService.addInlineComment(line, comment);
                 vscode.window.showInformationMessage(`Comment added to line ${line + 1}`);
             }
+        })
+    );
+
+    // Voice command handlers
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.startVoiceInput', async () => {
+            await voiceCommandService.startListening();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.stopVoiceInput', () => {
+            voiceCommandService.stopListening();
         })
     );
 }

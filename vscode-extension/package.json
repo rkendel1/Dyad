@@ -86,6 +86,16 @@
         "command": "dyad.addInlineComment",
         "title": "Dyad: Add Inline Comment",
         "icon": "$(comment)"
+      },
+      {
+        "command": "dyad.startVoiceInput",
+        "title": "Dyad: Start Voice Input",
+        "icon": "$(mic)"
+      },
+      {
+        "command": "dyad.stopVoiceInput",
+        "title": "Dyad: Stop Voice Input",
+        "icon": "$(mic-off)"
       }
     ],
     "viewsContainers": {
