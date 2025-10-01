@@ -71,7 +71,9 @@ function startSupabase() {
     console.log(`🗄️  Database:         localhost:5432`);
     console.log("═══════════════════════════════════════════════════════");
     console.log("📝 Connection details:");
-    console.log(`   Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`);
+    console.log(
+      `   Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`,
+    );
     console.log("═══════════════════════════════════════════════════════");
     console.log("💡 Next steps:");
     console.log("   1. Open the dashboard to manage your database");
@@ -170,8 +172,12 @@ function showConfig() {
   console.log(`🗄️  Database:         localhost:5432`);
   console.log("═══════════════════════════════════════════════════════");
   console.log("📝 API Keys:");
-  console.log(`   Anon Key:         ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`);
-  console.log(`   Service Role Key: ${LOCAL_SUPABASE_CONFIG.serviceRoleKey.substring(0, 50)}...`);
+  console.log(
+    `   Anon Key:         ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`,
+  );
+  console.log(
+    `   Service Role Key: ${LOCAL_SUPABASE_CONFIG.serviceRoleKey.substring(0, 50)}...`,
+  );
   console.log("═══════════════════════════════════════════════════════");
   console.log("💡 These credentials are for local development only");
   console.log("   Use different credentials for production");

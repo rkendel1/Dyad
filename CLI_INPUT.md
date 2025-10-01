@@ -64,6 +64,7 @@ clear
 6. Click the **X** icon to close the popout
 
 **Benefits of the Popout:**
+
 - Keep the CLI accessible while working on code
 - See terminal output without expanding the console panel
 - Flexible positioning and minimize/maximize options

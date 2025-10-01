@@ -14,7 +14,7 @@ vi.mock("electron", () => ({
 }));
 
 // Mock the window object for electron
-Object.defineProperty(global, 'window', {
+Object.defineProperty(global, "window", {
   value: {
     electron: {
       ipcRenderer: mockIpcRenderer,
@@ -42,7 +42,7 @@ describe("External Preview Functionality", () => {
 
       expect(mockIpcRenderer.invoke).toHaveBeenCalledWith(
         "open-external-preview",
-        testUrl
+        testUrl,
       );
     });
 
@@ -52,7 +52,7 @@ describe("External Preview Functionality", () => {
       mockIpcRenderer.invoke.mockRejectedValue(error);
 
       await expect(ipcClient.openExternalPreview(testUrl)).rejects.toThrow(
-        "IPC failed"
+        "IPC failed",
       );
     });
   });
@@ -66,7 +66,7 @@ describe("External Preview Functionality", () => {
 
       expect(mockIpcRenderer.invoke).toHaveBeenCalledWith(
         "open-external-url",
-        testUrl
+        testUrl,
       );
     });
   });

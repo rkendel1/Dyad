@@ -1,14 +1,14 @@
 /**
  * App Controller
- * 
+ *
  * HTTP endpoints for application management
  */
 
-import type { Response } from 'express';
-import type { ApiRequest, ApiResponse, AppListResponse } from '../types';
-import { asyncHandler, HttpApiError } from '../middleware/errorHandler';
-import { AppService } from '../../services/app.service';
-import { z } from 'zod';
+import type { Response } from "express";
+import type { ApiRequest, ApiResponse, AppListResponse } from "../types";
+import { asyncHandler, HttpApiError } from "../middleware/errorHandler";
+import { AppService } from "../../services/app.service";
+import { z } from "zod";
 
 const appService = new AppService();
 
@@ -18,7 +18,7 @@ const appService = new AppService();
  */
 export const listApps = asyncHandler(async (req: ApiRequest, res: Response) => {
   const result = await appService.listApps();
-  
+
   const response: ApiResponse<AppListResponse> = {
     success: true,
     data: {
@@ -36,15 +36,15 @@ export const listApps = asyncHandler(async (req: ApiRequest, res: Response) => {
  */
 export const getApp = asyncHandler(async (req: ApiRequest, res: Response) => {
   const appId = parseInt(req.params.id, 10);
-  
+
   if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
+    throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
   }
 
   const app = await appService.getApp(appId);
-  
+
   if (!app) {
-    throw new HttpApiError('App not found', 404, 'APP_NOT_FOUND');
+    throw new HttpApiError("App not found", 404, "APP_NOT_FOUND");
   }
 
   const response: ApiResponse = {
@@ -59,67 +59,73 @@ export const getApp = asyncHandler(async (req: ApiRequest, res: Response) => {
  * DELETE /api/apps/:id
  * Delete an application
  */
-export const deleteApp = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const appId = parseInt(req.params.id, 10);
-  
-  if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
-  }
+export const deleteApp = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.id, 10);
 
-  await appService.deleteApp(appId);
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
 
-  const response: ApiResponse = {
-    success: true,
-    data: {
-      message: 'App deleted successfully',
-      appId,
-    },
-  };
+    await appService.deleteApp(appId);
 
-  res.json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: {
+        message: "App deleted successfully",
+        appId,
+      },
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * GET /api/apps/:id/settings
  * Get app settings
  */
-export const getAppSettings = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const appId = parseInt(req.params.id, 10);
-  
-  if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
-  }
+export const getAppSettings = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.id, 10);
 
-  const settings = await appService.getAppSettings(appId);
-  
-  const response: ApiResponse = {
-    success: true,
-    data: settings,
-  };
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
 
-  res.json(response);
-});
+    const settings = await appService.getAppSettings(appId);
+
+    const response: ApiResponse = {
+      success: true,
+      data: settings,
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * PUT /api/apps/:id/settings
  * Update app settings
  */
-export const updateAppSettings = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const appId = parseInt(req.params.id, 10);
-  
-  if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
-  }
+export const updateAppSettings = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.id, 10);
 
-  const settings = await appService.updateAppSettings(appId, req.body);
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
 
-  const response: ApiResponse = {
-    success: true,
-    data: settings,
-  };
+    const settings = await appService.updateAppSettings(appId, req.body);
 
-  res.json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: settings,
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * Validation schemas

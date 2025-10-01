@@ -18,15 +18,17 @@ npm run prettier && npm run lint && npm test
 ## 📦 What Was Added
 
 ### 1. Centralized Types (`src/types/`)
+
 ```typescript
 // Instead of:
-import type { App } from '../ipc/ipc_types';
+import type { App } from "../ipc/ipc_types";
 
 // Use:
-import type { App } from '../../types';
+import type { App } from "../../types";
 ```
 
 ### 2. Service Layer (`src/api/services/`)
+
 ```typescript
 // New: Business logic in services
 export class AppService {
@@ -36,18 +38,20 @@ export class AppService {
 }
 
 // Handlers delegate to services
-ipcMain.handle('create-app', async (event, params) => {
+ipcMain.handle("create-app", async (event, params) => {
   return await appService.createApp(params);
 });
 ```
 
 ### 3. OpenAPI Documentation
+
 ```bash
 # Generate openapi.json
 npm run openapi:generate
 ```
 
 ### 4. Code Quality Monitoring
+
 ```bash
 # Analyze codebase
 npm run quality:analyze
@@ -58,17 +62,18 @@ npm run quality:report
 
 ## 📚 Key Documentation
 
-| Document | Purpose |
-|----------|---------|
-| `docs/PRODUCTION_READY_INFRASTRUCTURE.md` | Complete usage guide |
-| `docs/guidelines/CODING_STANDARDS.md` | Coding standards |
-| `docs/architecture/ARCHITECTURE.md` | System architecture |
-| `docs/adr/` | Architecture decisions |
-| `PRODUCTION_ENHANCEMENTS.md` | Implementation summary |
+| Document                                  | Purpose                |
+| ----------------------------------------- | ---------------------- |
+| `docs/PRODUCTION_READY_INFRASTRUCTURE.md` | Complete usage guide   |
+| `docs/guidelines/CODING_STANDARDS.md`     | Coding standards       |
+| `docs/architecture/ARCHITECTURE.md`       | System architecture    |
+| `docs/adr/`                               | Architecture decisions |
+| `PRODUCTION_ENHANCEMENTS.md`              | Implementation summary |
 
 ## 🎯 Common Tasks
 
 ### Adding a New Type
+
 1. Choose appropriate file in `src/types/`
 2. Define the type
 3. Export from `index.ts`
@@ -81,10 +86,11 @@ export interface NewFeature {
 }
 
 // In src/types/index.ts
-export * from './feature.types';
+export * from "./feature.types";
 ```
 
 ### Creating a Service
+
 1. Create file in `src/api/services/`
 2. Implement service class
 3. Export singleton instance
@@ -101,10 +107,11 @@ export const featureService = new FeatureService();
 ```
 
 ### Using in Handler
-```typescript
-import { featureService } from '../../api/services/feature.service';
 
-handle('feature-action', async (event, params) => {
+```typescript
+import { featureService } from "../../api/services/feature.service";
+
+handle("feature-action", async (event, params) => {
   return await featureService.doSomething(params);
 });
 ```
@@ -123,13 +130,16 @@ handle('feature-action', async (event, params) => {
 ## 🛠️ Refactoring
 
 ### When to Refactor
+
 - File > 300 lines
 - Function > 50 lines
 - Duplicate code
 - High complexity
 
 ### How
+
 The system will automatically suggest refactoring:
+
 ```
 ⚠️  File src/example.ts has 450 lines
     Suggestion: Split into smaller modules
@@ -138,6 +148,7 @@ The system will automatically suggest refactoring:
 ## 📊 Quality Metrics
 
 Current thresholds:
+
 - **Max file lines**: 300
 - **Max function lines**: 50
 - **Max complexity**: 10

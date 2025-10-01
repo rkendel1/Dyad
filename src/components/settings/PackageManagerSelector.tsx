@@ -17,7 +17,7 @@ export function PackageManagerSelector() {
   }
 
   const handlePackageManagerChange = async (
-    value: "npm" | "yarn" | "pnpm" | "bun"
+    value: "npm" | "yarn" | "pnpm" | "bun",
   ) => {
     try {
       await updateSettings({ preferredPackageManager: value });

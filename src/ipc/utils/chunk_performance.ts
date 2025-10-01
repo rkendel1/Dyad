@@ -48,16 +48,18 @@ class ChunkPerformanceTracker {
     };
 
     this.sessions.set(chatId, session);
-    logger.log(`Started chunk delivery session for chat ${chatId} with ${totalChunks} chunks`);
+    logger.log(
+      `Started chunk delivery session for chat ${chatId} with ${totalChunks} chunks`,
+    );
   }
 
   recordChunkDelivery(
-    chatId: number, 
-    chunkIndex: number, 
-    chunkSize: number, 
+    chatId: number,
+    chunkIndex: number,
+    chunkSize: number,
     deliveryTime: number,
     success: boolean,
-    error?: Error
+    error?: Error,
   ): void {
     const session = this.sessions.get(chatId);
     if (!session) {
@@ -80,10 +82,10 @@ class ChunkPerformanceTracker {
     }
 
     this.globalMetrics.totalChunks++;
-    
+
     logger.log(
       `Chunk ${chunkIndex + 1}/${session.totalChunks} for chat ${chatId}: ` +
-      `${success ? 'delivered' : 'failed'} (${chunkSize} chars, ${deliveryTime}ms)`
+        `${success ? "delivered" : "failed"} (${chunkSize} chars, ${deliveryTime}ms)`,
     );
   }
 
@@ -95,15 +97,18 @@ class ChunkPerformanceTracker {
     }
 
     const totalTime = Date.now() - session.startTime;
-    const avgChunkSize = session.chunkSizes.length > 0 
-      ? session.chunkSizes.reduce((a, b) => a + b, 0) / session.chunkSizes.length 
-      : 0;
-    const avgDeliveryTime = session.deliveryTimes.length > 0
-      ? session.deliveryTimes.reduce((a, b) => a + b, 0) / session.deliveryTimes.length
-      : 0;
-    const errorRate = session.totalChunks > 0 
-      ? session.failedChunks / session.totalChunks 
-      : 0;
+    const avgChunkSize =
+      session.chunkSizes.length > 0
+        ? session.chunkSizes.reduce((a, b) => a + b, 0) /
+          session.chunkSizes.length
+        : 0;
+    const avgDeliveryTime =
+      session.deliveryTimes.length > 0
+        ? session.deliveryTimes.reduce((a, b) => a + b, 0) /
+          session.deliveryTimes.length
+        : 0;
+    const errorRate =
+      session.totalChunks > 0 ? session.failedChunks / session.totalChunks : 0;
 
     const sessionMetrics: ChunkPerformanceMetrics = {
       totalChunks: session.totalChunks,
@@ -120,24 +125,27 @@ class ChunkPerformanceTracker {
 
     logger.log(
       `Chunk delivery session completed for chat ${chatId}: ` +
-      `${session.deliveredChunks}/${session.totalChunks} delivered ` +
-      `(${(errorRate * 100).toFixed(1)}% error rate, ${totalTime}ms total)`
+        `${session.deliveredChunks}/${session.totalChunks} delivered ` +
+        `(${(errorRate * 100).toFixed(1)}% error rate, ${totalTime}ms total)`,
     );
 
     // Log performance summary
     if (session.failedChunks > 0) {
       logger.warn(
-        `Session had ${session.failedChunks} failed chunks. Error rate: ${(errorRate * 100).toFixed(1)}%`
+        `Session had ${session.failedChunks} failed chunks. Error rate: ${(errorRate * 100).toFixed(1)}%`,
       );
-      
+
       // Log error details if available
       if (session.errors.length > 0) {
-        const errorSummary = session.errors.reduce((acc, error) => {
-          const key = error.message || 'Unknown error';
-          acc[key] = (acc[key] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        
+        const errorSummary = session.errors.reduce(
+          (acc, error) => {
+            const key = error.message || "Unknown error";
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
+
         logger.warn(`Error summary for chat ${chatId}:`, errorSummary);
       }
     }
@@ -166,15 +174,18 @@ class ChunkPerformanceTracker {
       return null;
     }
 
-    const avgChunkSize = session.chunkSizes.length > 0 
-      ? session.chunkSizes.reduce((a, b) => a + b, 0) / session.chunkSizes.length 
-      : 0;
-    const avgDeliveryTime = session.deliveryTimes.length > 0
-      ? session.deliveryTimes.reduce((a, b) => a + b, 0) / session.deliveryTimes.length
-      : 0;
-    const errorRate = session.totalChunks > 0 
-      ? session.failedChunks / session.totalChunks 
-      : 0;
+    const avgChunkSize =
+      session.chunkSizes.length > 0
+        ? session.chunkSizes.reduce((a, b) => a + b, 0) /
+          session.chunkSizes.length
+        : 0;
+    const avgDeliveryTime =
+      session.deliveryTimes.length > 0
+        ? session.deliveryTimes.reduce((a, b) => a + b, 0) /
+          session.deliveryTimes.length
+        : 0;
+    const errorRate =
+      session.totalChunks > 0 ? session.failedChunks / session.totalChunks : 0;
 
     return {
       totalChunks: session.totalChunks,
@@ -190,22 +201,24 @@ class ChunkPerformanceTracker {
   getRecommendedChunkSize(): number {
     const metrics = this.getGlobalMetrics();
     const DEFAULT_SIZE = 8000;
-    
+
     // If error rate is high, recommend smaller chunks
-    if (metrics.errorRate > 0.1) { // 10% error rate
+    if (metrics.errorRate > 0.1) {
+      // 10% error rate
       return Math.max(4000, DEFAULT_SIZE * 0.7);
     }
-    
+
     // If delivery time is slow, recommend smaller chunks
-    if (metrics.avgDeliveryTimePerChunk > 5000) { // 5 seconds per chunk
+    if (metrics.avgDeliveryTimePerChunk > 5000) {
+      // 5 seconds per chunk
       return Math.max(4000, DEFAULT_SIZE * 0.8);
     }
-    
+
     // If performance is good, can use larger chunks
     if (metrics.errorRate < 0.02 && metrics.avgDeliveryTimePerChunk < 2000) {
       return Math.min(12000, DEFAULT_SIZE * 1.2);
     }
-    
+
     return DEFAULT_SIZE;
   }
 }

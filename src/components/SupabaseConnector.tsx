@@ -128,10 +128,9 @@ export function SupabaseConnector({ appId }: { appId: number }) {
               <Button
                 variant="outline"
                 onClick={() => {
-                  const url =
-                    currentProjectId?.startsWith("local-supabase")
-                      ? localStatus?.dashboardUrl || "http://localhost:3001"
-                      : `https://supabase.com/dashboard/project/${app.supabaseProjectId}`;
+                  const url = currentProjectId?.startsWith("local-supabase")
+                    ? localStatus?.dashboardUrl || "http://localhost:3001"
+                    : `https://supabase.com/dashboard/project/${app.supabaseProjectId}`;
                   IpcClient.getInstance().openExternalUrl(url);
                 }}
                 className="ml-2 px-2 py-1"
@@ -169,7 +168,9 @@ export function SupabaseConnector({ appId }: { appId: number }) {
                   className="ml-2"
                   onClick={async () => {
                     try {
-                      await IpcClient.getInstance().stopLocalSupabase({ appId });
+                      await IpcClient.getInstance().stopLocalSupabase({
+                        appId,
+                      });
                       toast.success("Local Supabase stopped");
                       setLocalStatus({ isRunning: false });
                     } catch (error) {

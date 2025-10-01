@@ -1,6 +1,6 @@
 /**
  * App Service
- * 
+ *
  * Business logic for application management operations.
  * This service provides a clean abstraction layer between the IPC handlers
  * and the core business logic.
@@ -14,13 +14,13 @@ import type {
   ImportAppParams,
   ImportAppResult,
   ListAppsResponse,
-} from '../../types';
-import { db } from '../../db';
-import { apps } from '../../db/schema';
-import { eq, desc } from 'drizzle-orm';
-import { getDyadAppPath } from '../../paths/paths';
-import { getFilesRecursively } from '../../ipc/utils/file_utils';
-import { normalizePath } from '../../../shared/normalizePath';
+} from "../../types";
+import { db } from "../../db";
+import { apps } from "../../db/schema";
+import { eq, desc } from "drizzle-orm";
+import { getDyadAppPath } from "../../paths/paths";
+import { getFilesRecursively } from "../../ipc/utils/file_utils";
+import { normalizePath } from "../../../shared/normalizePath";
 
 /**
  * Service class for managing applications
@@ -35,7 +35,9 @@ export class AppService {
     // The full implementation including git initialization and template creation
     // is complex and tightly coupled to the IPC handler context.
     // This method provides the core database operation that can be used by handlers.
-    throw new Error('Use IPC handler "create-app" for full app creation with git initialization');
+    throw new Error(
+      'Use IPC handler "create-app" for full app creation with git initialization',
+    );
   }
 
   /**
@@ -47,7 +49,7 @@ export class AppService {
     });
     return {
       apps: allApps,
-      appBasePath: getDyadAppPath('$APP_BASE_PATH'),
+      appBasePath: getDyadAppPath("$APP_BASE_PATH"),
     };
   }
 
@@ -95,7 +97,13 @@ export class AppService {
     }
 
     return {
-      preferredPackageManager: (app.preferredPackageManager as "npm" | "yarn" | "pnpm" | "bun" | null) || null,
+      preferredPackageManager:
+        (app.preferredPackageManager as
+          | "npm"
+          | "yarn"
+          | "pnpm"
+          | "bun"
+          | null) || null,
       previewUrl: app.previewUrl || null,
     };
   }
@@ -103,7 +111,10 @@ export class AppService {
   /**
    * Update application settings
    */
-  async updateAppSettings(appId: number, settings: Partial<AppSettings>): Promise<AppSettings> {
+  async updateAppSettings(
+    appId: number,
+    settings: Partial<AppSettings>,
+  ): Promise<AppSettings> {
     const app = await db.query.apps.findFirst({
       where: eq(apps.id, appId),
     });
@@ -130,7 +141,13 @@ export class AppService {
     });
 
     return {
-      preferredPackageManager: (updatedApp?.preferredPackageManager as "npm" | "yarn" | "pnpm" | "bun" | null) || null,
+      preferredPackageManager:
+        (updatedApp?.preferredPackageManager as
+          | "npm"
+          | "yarn"
+          | "pnpm"
+          | "bun"
+          | null) || null,
       previewUrl: updatedApp?.previewUrl || null,
     };
   }
@@ -161,7 +178,9 @@ export class AppService {
     // The full implementation including file copying and git initialization
     // is complex and tightly coupled to the IPC handler context.
     // This method provides the core database operation that can be used by handlers.
-    throw new Error('Use IPC handler "import-app" for full app import with file operations');
+    throw new Error(
+      'Use IPC handler "import-app" for full app import with file operations',
+    );
   }
 }
 

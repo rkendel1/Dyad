@@ -147,7 +147,8 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   // Navigation state
   const [isComponentSelectorInitialized, setIsComponentSelectorInitialized] =
     useState(false);
-  const [isCssSelectorInitialized, setIsCssSelectorInitialized] = useState(false);
+  const [isCssSelectorInitialized, setIsCssSelectorInitialized] =
+    useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
@@ -158,7 +159,9 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isPicking, setIsPicking] = useState(false);
   const [isPickingCssSelector, setIsPickingCssSelector] = useState(false);
-  const [capturedCssSelector, setCapturedCssSelector] = useState<string | null>(null);
+  const [capturedCssSelector, setCapturedCssSelector] = useState<string | null>(
+    null,
+  );
 
   // URL editing state
   const [isEditingUrl, setIsEditingUrl] = useState(false);
@@ -515,7 +518,8 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
 
   // Function to start URL editing
   const handleStartUrlEdit = () => {
-    const currentUrl = navigationHistory[currentHistoryPosition] || appUrl || "";
+    const currentUrl =
+      navigationHistory[currentHistoryPosition] || appUrl || "";
     setEditedUrl(currentUrl);
     setIsEditingUrl(true);
   };
@@ -534,21 +538,29 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
     }
 
     let urlToNavigate = editedUrl.trim();
-    
+
     // Basic URL validation and normalization
     try {
       // If it doesn't start with http(s), try to determine if it's a relative path or needs a protocol
-      if (!urlToNavigate.startsWith('http://') && !urlToNavigate.startsWith('https://')) {
-        if (urlToNavigate.startsWith('/')) {
+      if (
+        !urlToNavigate.startsWith("http://") &&
+        !urlToNavigate.startsWith("https://")
+      ) {
+        if (urlToNavigate.startsWith("/")) {
           // It's a relative path - combine with current origin
           if (appUrl) {
             const baseUrl = new URL(appUrl).origin;
             urlToNavigate = `${baseUrl}${urlToNavigate}`;
           } else {
             // Can't navigate to relative path without a base URL
-            throw new Error("Cannot navigate to relative path without a base URL");
+            throw new Error(
+              "Cannot navigate to relative path without a base URL",
+            );
           }
-        } else if (urlToNavigate.includes('.') && !urlToNavigate.includes(' ')) {
+        } else if (
+          urlToNavigate.includes(".") &&
+          !urlToNavigate.includes(" ")
+        ) {
           // Looks like a domain - add https://
           urlToNavigate = `https://${urlToNavigate}`;
         } else if (/^\d+$/.test(urlToNavigate)) {
@@ -591,21 +603,22 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
       if (error instanceof Error) {
         errorMsg += `. ${error.message}`;
       }
-      
+
       // Add helpful suggestions for common URL formats
-      if (!urlToNavigate.includes(':') && !urlToNavigate.startsWith('/')) {
-        errorMsg += ' Try entering just a port number (e.g., "3000") or a full URL (e.g., "http://localhost:3000").';
+      if (!urlToNavigate.includes(":") && !urlToNavigate.startsWith("/")) {
+        errorMsg +=
+          ' Try entering just a port number (e.g., "3000") or a full URL (e.g., "http://localhost:3000").';
       }
-      
+
       setErrorMessage(errorMsg);
     }
   };
 
   // Function to handle URL input key press
   const handleUrlKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleNavigateToUrl();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleCancelUrlEdit();
     }
   };
@@ -677,7 +690,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
           </TooltipProvider>
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>  
+              <TooltipTrigger asChild>
                 <button
                   onClick={handleActivateCssSelector}
                   className={`p-1 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -762,13 +775,17 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
             </div>
           ) : (
             <div className="flex items-center gap-1">
-              <div 
+              <div
                 className="flex-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-200 cursor-pointer min-w-0"
-                title={navigationHistory[currentHistoryPosition] || appUrl || ""}
+                title={
+                  navigationHistory[currentHistoryPosition] || appUrl || ""
+                }
                 data-testid="preview-url-display"
               >
                 <span className="truncate block">
-                  {navigationHistory[currentHistoryPosition] || appUrl || "Loading..."}
+                  {navigationHistory[currentHistoryPosition] ||
+                    appUrl ||
+                    "Loading..."}
                 </span>
               </div>
               <button
@@ -785,7 +802,9 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
                   <button
                     className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
                     title="Quick navigate to routes"
-                    disabled={loading || !selectedAppId || availableRoutes.length === 0}
+                    disabled={
+                      loading || !selectedAppId || availableRoutes.length === 0
+                    }
                     data-testid="preview-routes-dropdown"
                   >
                     <ChevronDown size={16} />
@@ -806,7 +825,9 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
                       </DropdownMenuItem>
                     ))
                   ) : (
-                    <DropdownMenuItem disabled>Loading routes...</DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      Loading routes...
+                    </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -882,7 +903,10 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <Code size={16} className="text-green-600 dark:text-green-400" />
+                  <Code
+                    size={16}
+                    className="text-green-600 dark:text-green-400"
+                  />
                   <span className="font-medium text-green-800 dark:text-green-200 text-sm">
                     CSS Selector Captured
                   </span>

@@ -74,6 +74,7 @@ When you set a custom preview URL:
 4. App-level URLs override global URLs
 
 The priority order is:
+
 1. **App-Level Preview URL (Highest Priority)**: Set in Configure panel for specific app
 2. **Global Preview URL**: Set in Settings > Workflow Settings
 3. **Auto-detected URL (Fallback)**: Detected from server output
@@ -111,10 +112,12 @@ The priority order is:
 To go back to auto-detection:
 
 #### Global Setting
+
 1. Clear the preview URL field in Settings
 2. Click **Save**
 
 #### App-Level Setting
+
 1. Clear the preview URL field in Configure panel
 2. Click **Save**
 3. Or click the **X** button to immediately clear
@@ -162,6 +165,7 @@ Dyad now includes a CLI popout feature that allows you to interact with your run
 ### Package Manager Integration
 
 The package manager preference is integrated into the `getBestPackageManagerForProject` function in `src/ipc/utils/package_manager_utils.ts`. This function now accepts an optional app-level preference parameter and is used throughout Dyad when:
+
 - Installing dependencies
 - Running development servers
 - Adding new packages
@@ -174,6 +178,7 @@ The preview URL override is integrated into the `useRunApp` hook in `src/hooks/u
 ### Database Schema
 
 App-level settings are stored in the `apps` table with these new columns:
+
 - `preferred_package_manager`: text (nullable)
 - `preview_url`: text (nullable)
 

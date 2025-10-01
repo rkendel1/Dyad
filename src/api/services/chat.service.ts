@@ -1,6 +1,6 @@
 /**
  * Chat Service
- * 
+ *
  * Business logic for chat and message operations.
  */
 
@@ -9,13 +9,13 @@ import type {
   Message,
   ChatStreamParams,
   ChatResponseEnd,
-} from '../../types';
-import { db } from '../../db';
-import { apps, chats, messages } from '../../db/schema';
-import { eq, desc, and, like } from 'drizzle-orm';
-import { getDyadAppPath } from '../../paths/paths';
-import * as git from 'isomorphic-git';
-import * as fs from 'fs';
+} from "../../types";
+import { db } from "../../db";
+import { apps, chats, messages } from "../../db/schema";
+import { eq, desc, and, like } from "drizzle-orm";
+import { getDyadAppPath } from "../../paths/paths";
+import * as git from "isomorphic-git";
+import * as fs from "fs";
 
 /**
  * Service class for managing chats and messages
@@ -43,10 +43,10 @@ export class ChatService {
       initialCommitHash = await git.resolveRef({
         fs,
         dir: getDyadAppPath(app.path),
-        ref: 'main',
+        ref: "main",
       });
     } catch (error) {
-      console.error('Error getting git revision:', error);
+      console.error("Error getting git revision:", error);
       // Continue without the git revision
     }
 
@@ -62,7 +62,7 @@ export class ChatService {
     // Return chat with empty messages array to match Chat type
     return {
       id: chat.id,
-      title: chat.title || '',
+      title: chat.title || "",
       messages: [],
       initialCommitHash: chat.initialCommitHash,
     };
@@ -105,9 +105,9 @@ export class ChatService {
     });
 
     // Map to Chat type with empty messages array
-    return allChats.map(chat => ({
+    return allChats.map((chat) => ({
       id: chat.id,
-      title: chat.title || '',
+      title: chat.title || "",
       messages: [],
       initialCommitHash: chat.initialCommitHash,
     }));
@@ -121,7 +121,9 @@ export class ChatService {
   async sendMessage(params: ChatStreamParams): Promise<ChatResponseEnd> {
     // The full implementation with AI streaming is complex and tightly coupled
     // to the IPC handler context. This method should be called by the handler.
-    throw new Error('Use IPC handler "chat-stream" for full message streaming with AI');
+    throw new Error(
+      'Use IPC handler "chat-stream" for full message streaming with AI',
+    );
   }
 
   /**
@@ -164,7 +166,7 @@ export class ChatService {
 
     return {
       id: updatedChat.id,
-      title: updatedChat.title || '',
+      title: updatedChat.title || "",
       messages: [],
       initialCommitHash: updatedChat.initialCommitHash,
     };
@@ -193,7 +195,10 @@ export class ChatService {
   /**
    * Create a new message in a chat
    */
-  async createMessage(chatId: number, messageData: { content: string; role: 'user' | 'assistant' }): Promise<Message> {
+  async createMessage(
+    chatId: number,
+    messageData: { content: string; role: "user" | "assistant" },
+  ): Promise<Message> {
     const chat = await db.query.chats.findFirst({
       where: eq(chats.id, chatId),
     });

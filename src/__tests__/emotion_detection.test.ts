@@ -32,7 +32,9 @@ describe("EmotionDetectionService", () => {
     });
 
     it("should detect frustration with frustration keywords", () => {
-      const analysis = service.analyzeMessage("This is broken and doesn't work again");
+      const analysis = service.analyzeMessage(
+        "This is broken and doesn't work again",
+      );
       expect(analysis.state).toBe(EmotionState.FRUSTRATED);
       expect(analysis.indicators).toContain("frustration: broken");
       expect(analysis.indicators).toContain("frustration: doesn't work");
@@ -43,9 +45,11 @@ describe("EmotionDetectionService", () => {
       service.analyzeMessage("Fix the login bug");
       service.analyzeMessage("Fix the login bug");
       const analysis = service.analyzeMessage("Fix the login bug");
-      
+
       expect(analysis.state).toBe(EmotionState.FRUSTRATED);
-      expect(analysis.indicators.some(i => i.includes("repetition"))).toBe(true);
+      expect(analysis.indicators.some((i) => i.includes("repetition"))).toBe(
+        true,
+      );
     });
   });
 
@@ -67,8 +71,11 @@ describe("EmotionDetectionService", () => {
   describe("generateAdaptivePrompt", () => {
     it("should modify prompt for frustrated state", () => {
       const prompt = "How do I fix this?";
-      const adapted = service.generateAdaptivePrompt(prompt, EmotionState.FRUSTRATED);
-      
+      const adapted = service.generateAdaptivePrompt(
+        prompt,
+        EmotionState.FRUSTRATED,
+      );
+
       expect(adapted).toContain("frustrated");
       expect(adapted).toContain("step-by-step");
       expect(adapted).toContain(prompt);
@@ -76,19 +83,28 @@ describe("EmotionDetectionService", () => {
 
     it("should modify prompt for negative state", () => {
       const prompt = "I need help";
-      const adapted = service.generateAdaptivePrompt(prompt, EmotionState.NEGATIVE);
-      
+      const adapted = service.generateAdaptivePrompt(
+        prompt,
+        EmotionState.NEGATIVE,
+      );
+
       expect(adapted).toContain("additional guidance");
       expect(adapted).toContain(prompt);
     });
 
     it("should not modify prompt for positive or neutral state", () => {
       const prompt = "This looks good";
-      
-      const adaptedPositive = service.generateAdaptivePrompt(prompt, EmotionState.POSITIVE);
+
+      const adaptedPositive = service.generateAdaptivePrompt(
+        prompt,
+        EmotionState.POSITIVE,
+      );
       expect(adaptedPositive).toBe(prompt);
 
-      const adaptedNeutral = service.generateAdaptivePrompt(prompt, EmotionState.NEUTRAL);
+      const adaptedNeutral = service.generateAdaptivePrompt(
+        prompt,
+        EmotionState.NEUTRAL,
+      );
       expect(adaptedNeutral).toBe(prompt);
     });
   });
@@ -117,9 +133,9 @@ describe("EmotionDetectionService", () => {
     it("should reset context correctly", () => {
       service.analyzeMessage("Test message");
       service.trackError();
-      
+
       service.resetContext();
-      
+
       const context = service.getContext();
       expect(context.messageHistory).toHaveLength(0);
       expect(context.errorCount).toBe(0);
@@ -136,7 +152,7 @@ describe("EmotionDetectionService", () => {
       });
 
       service.analyzeMessage("This is great!");
-      
+
       expect(capturedAnalysis).not.toBeNull();
       expect(capturedAnalysis?.state).toBe(EmotionState.POSITIVE);
     });
@@ -148,7 +164,7 @@ describe("EmotionDetectionService", () => {
       });
 
       service.analyzeMessage("This is broken and doesn't work");
-      
+
       expect(capturedLevel).toBeGreaterThan(0);
     });
 

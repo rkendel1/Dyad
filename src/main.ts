@@ -1,7 +1,11 @@
 // Increase Node.js memory limit for better performance with large applications
 // This must be set before any other imports or it won't take effect
-if (!process.env.NODE_OPTIONS || !process.env.NODE_OPTIONS.includes('--max-old-space-size')) {
-  process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --max-old-space-size=4096';
+if (
+  !process.env.NODE_OPTIONS ||
+  !process.env.NODE_OPTIONS.includes("--max-old-space-size")
+) {
+  process.env.NODE_OPTIONS =
+    (process.env.NODE_OPTIONS || "") + " --max-old-space-size=4096";
 }
 
 import { app, BrowserWindow, dialog } from "electron";
@@ -92,7 +96,7 @@ export async function onReady() {
     await startHttpApiServer({
       enabled: true,
       port: 3000,
-      host: 'localhost',
+      host: "localhost",
     });
     logger.info("HTTP API server started successfully");
   } catch (error) {

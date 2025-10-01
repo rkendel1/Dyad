@@ -21,8 +21,9 @@
 ```
 
 **Problems:**
+
 - ❌ All apps share same database
-- ❌ Can't run multiple apps simultaneously  
+- ❌ Can't run multiple apps simultaneously
 - ❌ Same credentials for all apps
 - ❌ Port conflicts when trying multiple instances
 
@@ -72,6 +73,7 @@
 ```
 
 **Benefits:**
+
 - ✅ Complete database isolation per app
 - ✅ Run multiple apps concurrently
 - ✅ Unique credentials per app
@@ -228,7 +230,7 @@ To completely remove: docker-compose -p dyad-supabase-{appId} down -v
 
 ## Key Design Decisions
 
-1. **Docker Compose Project Names**: 
+1. **Docker Compose Project Names**:
    - Provides automatic namespace isolation
    - Simple and reliable
    - Built-in Docker feature

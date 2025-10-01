@@ -15,6 +15,7 @@ This implementation fixes critical crashes in the streaming code delivery system
 **Solution**: Changed to use `safeSend(event.sender, ...)` which checks if the WebContents is destroyed before attempting to send messages.
 
 **Code Change**:
+
 ```typescript
 // Before (UNSAFE):
 event.sender.send(
@@ -31,6 +32,7 @@ safeSend(
 ```
 
 **Impact**: Prevents crashes in the following scenarios:
+
 - User closes the application during AI response generation
 - User switches between windows during streaming
 - Window is destroyed while async AI operations are in progress
@@ -45,6 +47,7 @@ safeSend(
 **Solution**: Added `as const` to all literal type assignments for consistency with the rest of the codebase.
 
 **Code Changes**:
+
 ```typescript
 // Line 375 - Retry logic
 chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
@@ -53,7 +56,8 @@ chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
 chunkDeliveryStatus: "failed" as const,
 ```
 
-**Impact**: 
+**Impact**:
+
 - Improved type safety throughout the chunking system
 - Consistent type inference for better IDE support
 - Prevents potential runtime type mismatches
@@ -67,17 +71,29 @@ chunkDeliveryStatus: "failed" as const,
 **Solution**: Added abort signal check before final chunk delivery to skip processing when stream is cancelled.
 
 **Code Change**:
+
 ```typescript
 // Before:
-await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+await handleChunkedDelivery(
+  fullResponse,
+  chatId,
+  processResponseChunkUpdate,
+  true,
+);
 
 // After:
 if (!abortController.signal.aborted) {
-  await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+  await handleChunkedDelivery(
+    fullResponse,
+    chatId,
+    processResponseChunkUpdate,
+    true,
+  );
 }
 ```
 
 **Impact**:
+
 - Reduced CPU usage when users cancel streams
 - Prevents errors from attempting to process aborted streams
 - Cleaner shutdown of cancelled operations
@@ -91,6 +107,7 @@ if (!abortController.signal.aborted) {
 **Verification**: The component properly uses a `finally` block to ensure `setIsExecuting(false)` is always called, preventing the UI from being stuck in an executing state even if errors occur.
 
 **Test Added**: Added comprehensive test case `handles IPC errors gracefully and resets executing state` to verify:
+
 - Error toast is displayed to user
 - Component state is properly reset after errors
 - Submit button becomes enabled again after error recovery
@@ -98,21 +115,26 @@ if (!abortController.signal.aborted) {
 ## Files Modified
 
 ### Core Fixes
+
 - `src/ipc/handlers/chat_stream_handlers.ts` - 3 changes for crash prevention and type safety
 
 ### Tests Added
+
 - `src/components/preview_panel/CliInput.test.tsx` - New test for error handling verification
 
 ## Related Utilities
 
 ### `src/ipc/utils/safe_sender.ts`
+
 This utility prevents "Object has been destroyed" errors by:
+
 1. Checking if WebContents exists and is not destroyed
 2. Checking if WebContents has crashed
 3. Wrapping the send operation in try-catch
 4. Logging failures instead of crashing
 
 **Key Features**:
+
 ```typescript
 export function safeSend(
   sender: WebContents | null | undefined,
@@ -122,7 +144,7 @@ export function safeSend(
   if (!sender) return;
   if (sender.isDestroyed()) return;
   if (typeof sender.isCrashed === "function" && sender.isCrashed()) return;
-  
+
   try {
     sender.send(channel, ...args);
   } catch (error) {
@@ -134,33 +156,37 @@ export function safeSend(
 ## Testing Recommendations
 
 ### Manual Testing
-1. **Test window closure during streaming**: 
+
+1. **Test window closure during streaming**:
    - Start an AI response
    - Close window mid-stream
    - Verify no crash occurs
 
-2. **Test stream cancellation**: 
+2. **Test stream cancellation**:
    - Start an AI response
    - Click cancel button mid-stream
    - Verify clean cancellation
 
-3. **Test CLI input errors**: 
+3. **Test CLI input errors**:
    - Send commands when no app is running
    - Verify error messages display correctly
    - Verify UI doesn't get stuck in executing state
 
-4. **Test chunk delivery**: 
+4. **Test chunk delivery**:
    - Generate large responses that trigger chunking
    - Verify all chunks are delivered correctly
    - Test cancellation during chunk delivery
 
 ### Automated Testing
+
 The existing test suite includes:
+
 - CliInput component tests (193 total test cases)
 - Chat stream handlers tests
 - New error handling test for CLI input state management
 
 Run tests with:
+
 ```bash
 npm run test
 ```
@@ -168,14 +194,18 @@ npm run test
 ## Technical Details
 
 ### Chunking System
+
 The chunking system splits large AI responses into smaller chunks for better UI responsiveness:
+
 - Maximum chunk size is dynamically adjusted based on performance
 - Preserves code blocks and Dyad tags across chunks
 - Implements retry logic with exponential backoff
 - Tracks performance metrics for optimization
 
 ### Error Recovery
+
 All fixes implement proper error recovery:
+
 - Finally blocks ensure cleanup
 - Abort signals are checked before operations
 - Safe sending prevents IPC crashes
@@ -184,11 +214,13 @@ All fixes implement proper error recovery:
 ## Metrics
 
 ### Lines Changed
+
 - `chat_stream_handlers.ts`: 6 lines modified
 - `CliInput.test.tsx`: 27 lines added
 - **Total**: 33 lines changed (minimal, surgical fixes)
 
 ### Files Modified
+
 - 2 files modified
 - 0 files deleted
 - 0 new files created
@@ -196,6 +228,7 @@ All fixes implement proper error recovery:
 ## Backwards Compatibility
 
 ✅ All changes are backwards compatible:
+
 - No API changes
 - No database schema changes
 - No configuration changes required
@@ -204,6 +237,7 @@ All fixes implement proper error recovery:
 ## Performance Impact
 
 ✅ Positive performance impact:
+
 - Reduced processing for cancelled streams
 - No additional overhead from safety checks
 - Better memory management with proper cleanup
@@ -211,6 +245,7 @@ All fixes implement proper error recovery:
 ## Security Considerations
 
 ✅ Security improvements:
+
 - Prevents crashes that could expose system state
 - Proper cleanup of resources prevents leaks
 - No new attack vectors introduced
@@ -218,6 +253,7 @@ All fixes implement proper error recovery:
 ## Future Enhancements
 
 Potential improvements identified but not implemented (out of scope):
+
 1. Apply `safeSend` to other handlers (github_handlers.ts, neon_handlers.ts)
 2. Add more granular chunking metrics
 3. Implement chunk delivery progress indicators in UI
@@ -228,6 +264,7 @@ Potential improvements identified but not implemented (out of scope):
 These minimal, surgical fixes address critical stability issues in the streaming system while maintaining full backwards compatibility. The changes prevent crashes during normal user interactions (window closure, stream cancellation) and improve type safety throughout the codebase.
 
 All fixes follow the existing patterns in the codebase:
+
 - Using `safeSend` (already used in 11 other locations)
 - Using `as const` for literal types (pattern established in original code)
 - Checking abort signals (pattern used throughout)

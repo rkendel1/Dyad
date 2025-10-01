@@ -22,7 +22,9 @@ export async function executeAddDependency({
   let command: string;
   try {
     // Use smart package manager detection
-    command = await generateCommandWithFallbacks(appPath, "addDependency", { packages });
+    command = await generateCommandWithFallbacks(appPath, "addDependency", {
+      packages,
+    });
   } catch {
     // Fallback to the old command if detection fails
     command = `(pnpm add ${packageStr}) || (npm install --legacy-peer-deps ${packageStr})`;

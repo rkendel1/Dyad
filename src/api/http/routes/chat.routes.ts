@@ -1,12 +1,12 @@
 /**
  * Chat Routes
- * 
+ *
  * Chat and message management endpoints
  */
 
-import { Router } from 'express';
-import * as chatController from '../controllers/chat.controller';
-import { validateBody } from '../middleware/validation';
+import { Router } from "express";
+import * as chatController from "../controllers/chat.controller";
+import { validateBody } from "../middleware/validation";
 
 const router = Router();
 
@@ -17,34 +17,34 @@ const router = Router();
 /**
  * GET /api/chats/:id - Get chat by ID
  */
-router.get('/:id', chatController.getChat);
+router.get("/:id", chatController.getChat);
 
 /**
  * PUT /api/chats/:id - Update chat
  */
 router.put(
-  '/:id',
+  "/:id",
   validateBody(chatController.updateChatSchema),
-  chatController.updateChat
+  chatController.updateChat,
 );
 
 /**
  * DELETE /api/chats/:id - Delete chat
  */
-router.delete('/:id', chatController.deleteChat);
+router.delete("/:id", chatController.deleteChat);
 
 /**
  * GET /api/chats/:id/messages - Get chat messages
  */
-router.get('/:id/messages', chatController.getChatMessages);
+router.get("/:id/messages", chatController.getChatMessages);
 
 /**
  * POST /api/chats/:id/messages - Create message
  */
 router.post(
-  '/:id/messages',
+  "/:id/messages",
   validateBody(chatController.createMessageSchema),
-  chatController.createMessage
+  chatController.createMessage,
 );
 
 /**

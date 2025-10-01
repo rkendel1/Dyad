@@ -19,6 +19,7 @@ This document identifies specific opportunities to improve the stability and sca
 ### 1. Complete Service Layer Implementation
 
 **Current State:**
+
 - ✅ **IMPLEMENTED** - Service layer created with 3 fully functional services
 - ✅ NeonService implemented for database project management
 - ✅ ProService implemented for Pro/billing operations
@@ -27,6 +28,7 @@ This document identifies specific opportunities to improve the stability and sca
 - ⚠️ AppService and ChatService still have stub implementations
 
 **Completed Actions:**
+
 1. ✅ Implemented NeonService, ProService, and PortalService
 2. ✅ Moved business logic from IPC handlers to services
 3. ✅ Made services usable from multiple transports (IPC, HTTP, CLI)
@@ -34,12 +36,14 @@ This document identifies specific opportunities to improve the stability and sca
 5. ✅ Reduced handler code by ~85% through service extraction
 
 **Results:**
+
 - Better testability - services tested independently of Electron
 - Code reuse across different interfaces
 - Easier to add new features (HTTP API, CLI tools, etc.)
 - Improved maintainability with clear separation of concerns
 
 **Remaining Work:**
+
 - Complete AppService implementation (currently stub)
 - Complete ChatService implementation (currently stub)
 
@@ -50,27 +54,29 @@ This document identifies specific opportunities to improve the stability and sca
 ### 2. Add Comprehensive Error Handling
 
 **Current State:**
+
 - Error handling is inconsistent across handlers
 - Some errors are not user-friendly
 - Stack traces may leak implementation details
 
 **Recommended Actions:**
+
 1. Create standardized error types and codes
 2. Implement error boundary pattern
 3. Add context to errors for better debugging
 4. Return user-friendly error messages
 
 **Example:**
+
 ```typescript
 // Before
 throw new Error("Something went wrong");
 
 // After
-throw new AppError(
-  ErrorCode.APP_NOT_FOUND,
-  `App with ID ${appId} not found`,
-  { appId, userId }
-);
+throw new AppError(ErrorCode.APP_NOT_FOUND, `App with ID ${appId} not found`, {
+  appId,
+  userId,
+});
 ```
 
 **Priority:** High
@@ -80,18 +86,21 @@ throw new AppError(
 ### 3. Implement Request Validation
 
 **Current State:**
+
 - Zod schema exists but is underutilized
 - Input validation is manual and inconsistent
 - Type safety is not enforced at runtime
 
 **Recommended Actions:**
+
 1. Define Zod schemas for all IPC parameters
 2. Validate inputs before processing
 3. Return specific validation errors to users
 
 **Example:**
+
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const CreateAppSchema = z.object({
   name: z.string().min(1).max(100),
@@ -111,16 +120,19 @@ handle("create-app", async (_, params) => {
 ### 4. Add Database Transactions
 
 **Current State:**
+
 - Multi-step database operations may leave inconsistent state
 - No rollback on partial failures
 - Race conditions possible
 
 **Recommended Actions:**
+
 1. Wrap multi-step operations in transactions
 2. Use optimistic locking where appropriate
 3. Handle concurrent access properly
 
 **Example:**
+
 ```typescript
 await db.transaction(async (tx) => {
   const app = await tx.insert(apps).values(newApp).returning();
@@ -136,17 +148,20 @@ await db.transaction(async (tx) => {
 ### 5. Implement Cache Invalidation Strategy
 
 **Current State:**
+
 - Cached external API data may become stale
 - No automatic refresh mechanism
 - Manual cache clearing required
 
 **Recommended Actions:**
+
 1. Add timestamp to cached data
 2. Implement TTL (Time To Live) for cache entries
 3. Add manual refresh capability
 4. Consider cache versioning
 
 **Example:**
+
 ```typescript
 // Add to schema
 export const apps = sqliteTable("apps", {
@@ -158,8 +173,10 @@ export const apps = sqliteTable("apps", {
 // In handler
 const CACHE_TTL = 3600000; // 1 hour
 const now = Date.now();
-if (!app.supabaseProjectName || 
-    (now - app.supabaseProjectNameCachedAt) > CACHE_TTL) {
+if (
+  !app.supabaseProjectName ||
+  now - app.supabaseProjectNameCachedAt > CACHE_TTL
+) {
   // Refresh cache
 }
 ```
@@ -171,17 +188,20 @@ if (!app.supabaseProjectName ||
 ### 6. Add Comprehensive Logging
 
 **Current State:**
+
 - Logging is inconsistent
 - Missing context in many log entries
 - No structured logging
 
 **Recommended Actions:**
+
 1. Standardize log levels (debug, info, warn, error)
 2. Add request IDs for tracing
 3. Include relevant context in logs
 4. Consider structured logging (JSON format)
 
 **Example:**
+
 ```typescript
 logger.info("Creating app", {
   requestId: uuid(),
@@ -198,11 +218,13 @@ logger.info("Creating app", {
 ### 7. Implement Rate Limiting
 
 **Current State:**
+
 - No rate limiting on external API calls
 - Possible to hit rate limits on Vercel/Supabase/Neon APIs
 - No retry logic with backoff
 
 **Recommended Actions:**
+
 1. Add rate limiting for external API calls
 2. Implement exponential backoff for retries
 3. Queue requests when approaching limits
@@ -215,11 +237,13 @@ logger.info("Creating app", {
 ### 8. Add Monitoring and Metrics
 
 **Current State:**
+
 - No visibility into application performance
 - Hard to identify bottlenecks
 - No usage analytics
 
 **Recommended Actions:**
+
 1. Add performance metrics (request duration, database query time)
 2. Track feature usage
 3. Monitor error rates
@@ -232,23 +256,26 @@ logger.info("Creating app", {
 ### 9. Optimize Database Queries
 
 **Current State:**
+
 - Some N+1 query patterns
 - Missing indexes on commonly queried fields
 - No query result caching
 
 **Recommended Actions:**
+
 1. Add indexes for foreign keys and frequently queried columns
 2. Use Drizzle's `with` for eager loading
 3. Implement query result caching for read-heavy operations
 4. Profile slow queries
 
 **Example:**
+
 ```typescript
 // Before (N+1)
 const apps = await db.query.apps.findMany();
 for (const app of apps) {
   const chats = await db.query.chats.findMany({
-    where: eq(chats.appId, app.id)
+    where: eq(chats.appId, app.id),
   });
 }
 
@@ -267,11 +294,13 @@ const apps = await db.query.apps.findMany({
 ### 10. Implement Backup and Recovery
 
 **Current State:**
+
 - No automated backup mechanism
 - Users can lose data if database corrupts
 - No point-in-time recovery
 
 **Recommended Actions:**
+
 1. Implement automatic periodic backups
 2. Add export/import functionality
 3. Validate backup integrity
@@ -284,18 +313,21 @@ const apps = await db.query.apps.findMany({
 ## Implementation Roadmap
 
 ### Phase 1 (Immediate - High Priority)
+
 1. Complete service layer implementation
 2. Add comprehensive error handling
 3. Implement request validation
 4. Implement backup and recovery
 
 ### Phase 2 (Short-term - Medium Priority)
+
 1. Add database transactions
 2. Implement cache invalidation strategy
 3. Add comprehensive logging
 4. Optimize database queries
 
 ### Phase 3 (Long-term - Nice to Have)
+
 1. Implement rate limiting
 2. Add monitoring and metrics
 

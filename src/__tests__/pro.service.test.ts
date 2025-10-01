@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 /**
  * Integration tests for ProService
- * 
+ *
  * These tests verify the service layer exists and has the correct interface.
  * Full unit testing would require mocking Electron dependencies which is complex.
  * The service layer provides:
@@ -31,4 +31,3 @@ describe("ProService", () => {
     expect(service.getUserBudget.length).toBe(0); // No parameters
   });
 });
-

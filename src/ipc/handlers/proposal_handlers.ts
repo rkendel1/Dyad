@@ -222,11 +222,13 @@ const getProposalHandler = async (
       const actions: ActionProposal["actions"] = [];
       if (latestAssistantMessage?.content) {
         const writeTags = getDyadWriteTags(latestAssistantMessage.content);
-        
+
         // Enhanced refactoring detection using autonomous refactoring engine
-        const { enhanceProposalWithRefactoring } = await import('../../refactoring/autonomous-refactoring');
+        const { enhanceProposalWithRefactoring } = await import(
+          "../../refactoring/autonomous-refactoring"
+        );
         const refactoringAction = enhanceProposalWithRefactoring(writeTags);
-        
+
         if (refactoringAction) {
           actions.push({
             id: "refactor-file",

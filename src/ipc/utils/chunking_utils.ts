@@ -51,8 +51,9 @@ function findBestSplitPosition(
   if (options.preserveCodeBlocks !== false) {
     const beforeIdeal = content.substring(0, idealPosition);
     const codeBlockMatches = beforeIdeal.match(/```/g);
-    const isInsideCodeBlock = codeBlockMatches && codeBlockMatches.length % 2 === 1;
-    
+    const isInsideCodeBlock =
+      codeBlockMatches && codeBlockMatches.length % 2 === 1;
+
     if (isInsideCodeBlock) {
       // Find the end of the code block
       const codeBlockEnd = content.indexOf("```", idealPosition);
@@ -67,10 +68,13 @@ function findBestSplitPosition(
     const beforeIdeal = content.substring(0, idealPosition);
     const lastOpenTag = beforeIdeal.lastIndexOf("<dyad-");
     const lastCloseTag = beforeIdeal.lastIndexOf("</dyad-");
-    
+
     if (lastOpenTag > lastCloseTag) {
       // We're inside a dyad tag, find its end
-      const tagEnd = content.indexOf(">", content.indexOf("</dyad-", idealPosition));
+      const tagEnd = content.indexOf(
+        ">",
+        content.indexOf("</dyad-", idealPosition),
+      );
       if (tagEnd !== -1 && tagEnd < searchEnd) {
         return tagEnd + 1;
       }
@@ -79,13 +83,13 @@ function findBestSplitPosition(
 
   // Look for good natural split points
   const searchContent = content.substring(searchStart, searchEnd);
-  
+
   // Priority order: period + newline, period + space, double newline, single newline
   const splitPatterns = [
-    /\.\s*\n/g,      // Period followed by newline
-    /\.\s+/g,        // Period followed by space(s)
-    /\n\s*\n/g,      // Double newline (paragraph break)
-    /\n/g,           // Single newline
+    /\.\s*\n/g, // Period followed by newline
+    /\.\s+/g, // Period followed by space(s)
+    /\n\s*\n/g, // Double newline (paragraph break)
+    /\n/g, // Single newline
   ];
 
   for (const pattern of splitPatterns) {
@@ -124,17 +128,19 @@ export function chunkResponse(
   const overlapSize = options.overlapSize ?? CHUNK_OVERLAP_CHARS;
 
   if (!shouldChunkResponse(content, options)) {
-    return [{
-      content,
-      index: 0,
-      isComplete: true,
-      metadata: {
-        chunkIndex: 0,
-        totalChunks: 1,
-        isChunked: false,
-        chunkDeliveryStatus: "completed",
+    return [
+      {
+        content,
+        index: 0,
+        isComplete: true,
+        metadata: {
+          chunkIndex: 0,
+          totalChunks: 1,
+          isChunked: false,
+          chunkDeliveryStatus: "completed",
+        },
       },
-    }];
+    ];
   }
 
   const chunks: TextChunk[] = [];
@@ -152,7 +158,7 @@ export function chunkResponse(
       // Find the best position to split
       const idealEnd = currentPosition + maxChunkSize - overlapSize;
       chunkEnd = findBestSplitPosition(content, idealEnd, options);
-      
+
       // Ensure chunk isn't too small
       if (chunkEnd - currentPosition < minChunkSize && chunks.length === 0) {
         chunkEnd = Math.min(content.length, currentPosition + maxChunkSize);
@@ -160,7 +166,7 @@ export function chunkResponse(
     }
 
     const chunkContent = content.substring(currentPosition, chunkEnd);
-    
+
     chunks.push({
       content: chunkContent,
       index: chunkIndex,
@@ -179,7 +185,7 @@ export function chunkResponse(
   }
 
   // Update total chunks count in all chunks
-  chunks.forEach(chunk => {
+  chunks.forEach((chunk) => {
     chunk.metadata.totalChunks = chunks.length;
   });
 
@@ -196,14 +202,19 @@ export function calculateOptimalChunkSize(
 ): number {
   // Reduce chunk size if error rate is high
   const errorAdjustment = Math.max(0.5, 1 - errorRate * 2);
-  
+
   // Adjust based on response time (slower = smaller chunks)
   const timeAdjustment = avgResponseTime > 30000 ? 0.8 : 1.0;
-  
-  const adjustedSize = Math.round(baseChunkSize * errorAdjustment * timeAdjustment);
-  
+
+  const adjustedSize = Math.round(
+    baseChunkSize * errorAdjustment * timeAdjustment,
+  );
+
   // Ensure it stays within bounds
-  return Math.max(MIN_CHUNK_SIZE_CHARS, Math.min(MAX_CHUNK_SIZE_CHARS, adjustedSize));
+  return Math.max(
+    MIN_CHUNK_SIZE_CHARS,
+    Math.min(MAX_CHUNK_SIZE_CHARS, adjustedSize),
+  );
 }
 
 /**
@@ -215,19 +226,19 @@ export function mergeChunks(chunks: TextChunk[]): string {
 
   // Sort chunks by index to ensure correct order
   const sortedChunks = [...chunks].sort((a, b) => a.index - b.index);
-  
+
   let mergedContent = sortedChunks[0].content;
-  
+
   for (let i = 1; i < sortedChunks.length; i++) {
     const currentChunk = sortedChunks[i];
     const overlapSize = CHUNK_OVERLAP_CHARS;
-    
+
     // Remove overlap from the beginning of the current chunk
     const chunkContent = currentChunk.content;
     const deduplicatedContent = chunkContent.substring(
-      Math.min(overlapSize, chunkContent.length)
+      Math.min(overlapSize, chunkContent.length),
     );
-    
+
     mergedContent += deduplicatedContent;
   }
 

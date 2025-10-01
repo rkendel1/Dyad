@@ -3,7 +3,7 @@ import type { App, AppSettings } from "@/types";
 
 /**
  * Unit tests for AppService
- * 
+ *
  * These tests verify the service layer's business logic with proper mocking.
  * The service layer provides:
  * - Separation of business logic from IPC handlers
@@ -56,12 +56,12 @@ describe("AppService", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Import after mocks are set up
     const module = await import("@/api/services/app.service");
     AppService = module.AppService;
     appService = module.appService;
-    
+
     const dbModule = await import("@/db");
     db = dbModule.db;
   });
@@ -141,7 +141,7 @@ describe("AppService", () => {
       db.query.apps.findFirst.mockResolvedValue(null);
 
       await expect(appService.getApp(999)).rejects.toThrow(
-        "App with ID 999 not found"
+        "App with ID 999 not found",
       );
     });
 
@@ -154,7 +154,7 @@ describe("AppService", () => {
       };
 
       db.query.apps.findFirst.mockResolvedValue(mockApp);
-      
+
       // Mock file reading to throw error
       const { getFilesRecursively } = await import("@/ipc/utils/file_utils");
       vi.mocked(getFilesRecursively).mockImplementation(() => {
@@ -185,8 +185,8 @@ describe("AppService", () => {
       };
 
       db.query.apps.findFirst
-        .mockResolvedValueOnce(mockApp)  // Initial check
-        .mockResolvedValueOnce(updatedApp);  // After update
+        .mockResolvedValueOnce(mockApp) // Initial check
+        .mockResolvedValueOnce(updatedApp); // After update
 
       const mockUpdate = vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
@@ -213,7 +213,7 @@ describe("AppService", () => {
       db.query.apps.findFirst.mockResolvedValue(null);
 
       await expect(
-        appService.updateAppSettings(999, { previewUrl: "http://test.com" })
+        appService.updateAppSettings(999, { previewUrl: "http://test.com" }),
       ).rejects.toThrow("App with ID 999 not found");
     });
 
@@ -227,7 +227,10 @@ describe("AppService", () => {
 
       db.query.apps.findFirst
         .mockResolvedValueOnce(mockApp)
-        .mockResolvedValueOnce({ ...mockApp, previewUrl: "http://localhost:3000" });
+        .mockResolvedValueOnce({
+          ...mockApp,
+          previewUrl: "http://localhost:3000",
+        });
 
       const mockUpdate = vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
@@ -265,16 +268,16 @@ describe("AppService", () => {
       db.query.apps.findFirst.mockResolvedValue(null);
 
       await expect(appService.deleteApp(999)).rejects.toThrow(
-        "App with ID 999 not found"
+        "App with ID 999 not found",
       );
     });
   });
 
   describe("createApp", () => {
     it("should throw error indicating to use IPC handler", async () => {
-      await expect(
-        appService.createApp({ name: "TestApp" })
-      ).rejects.toThrow(/Use IPC handler "create-app"/);
+      await expect(appService.createApp({ name: "TestApp" })).rejects.toThrow(
+        /Use IPC handler "create-app"/,
+      );
     });
   });
 
@@ -284,7 +287,7 @@ describe("AppService", () => {
         appService.importApp({
           path: "/test/path",
           appName: "TestApp",
-        })
+        }),
       ).rejects.toThrow(/Use IPC handler "import-app"/);
     });
   });

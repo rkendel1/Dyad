@@ -1,6 +1,6 @@
 /**
  * Pro Service
- * 
+ *
  * Business logic for Pro/billing operations.
  * This service provides a clean abstraction layer for managing
  * Dyad Pro features and user budget information.

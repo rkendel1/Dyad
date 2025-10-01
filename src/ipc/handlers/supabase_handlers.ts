@@ -36,17 +36,19 @@ function getAppSupabaseConfig(appId: number) {
   const postgresPort = 5432 + appId * 100;
   const apiPort = 8000 + appId * 100;
   const dashboardPort = 3001 + appId * 100;
-  
+
   // Generate unique secrets for this app
   // Use a deterministic approach based on appId for consistency
   const jwtSecret = `your-super-secret-jwt-token-with-at-least-32-characters-long-app-${appId}`;
   const dbPassword = `your-super-secret-and-long-postgres-password-app-${appId}`;
-  
+
   // Use the standard Supabase demo tokens for local development
   // These are safe to use in local development as they're well-known test tokens
-  const anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
-  const serviceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
-  
+  const anonKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+  const serviceRoleKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+
   return {
     url: `http://localhost:${apiPort}`,
     anonKey,
@@ -153,7 +155,7 @@ async function startLocalSupabase(): Promise<void> {
       stdio: "inherit",
       cwd: process.cwd(),
     });
-    
+
     logger.info("✅ Docker containers started, initializing services...");
 
     // Wait for services to be ready with better validation
@@ -168,8 +170,12 @@ async function startLocalSupabase(): Promise<void> {
     logger.info(`🗄️  Database:         localhost:5432`);
     logger.info("═══════════════════════════════════════════════════════");
     logger.info("📝 Connection details:");
-    logger.info(`   Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`);
-    logger.info(`   Database: ${LOCAL_SUPABASE_CONFIG.postgresUrl.split('@')[0]}@...`);
+    logger.info(
+      `   Anon Key: ${LOCAL_SUPABASE_CONFIG.anonKey.substring(0, 50)}...`,
+    );
+    logger.info(
+      `   Database: ${LOCAL_SUPABASE_CONFIG.postgresUrl.split("@")[0]}@...`,
+    );
     logger.info("═══════════════════════════════════════════════════════");
   } catch (error) {
     logger.error("❌ Failed to start local Supabase:", error);
@@ -182,14 +188,14 @@ async function startLocalSupabase(): Promise<void> {
     if (String(error).includes("timeout") || String(error).includes("ready")) {
       throw new Error(
         `⏱️  Local Supabase startup timed out. This could be due to:\n\n` +
-        `• Docker containers taking longer than expected to start\n` +
-        `• Port conflicts (check if ports 5432, 8000, 3001 are in use)\n` +
-        `• Insufficient system resources\n\n` +
-        `💡 Troubleshooting:\n` +
-        `1. Stop existing containers: npm run supabase:stop\n` +
-        `2. Check port availability: lsof -i :5432 -i :8000 -i :3001\n` +
-        `3. Restart Docker Desktop\n` +
-        `4. Try again: npm run supabase:start`,
+          `• Docker containers taking longer than expected to start\n` +
+          `• Port conflicts (check if ports 5432, 8000, 3001 are in use)\n` +
+          `• Insufficient system resources\n\n` +
+          `💡 Troubleshooting:\n` +
+          `1. Stop existing containers: npm run supabase:stop\n` +
+          `2. Check port availability: lsof -i :5432 -i :8000 -i :3001\n` +
+          `3. Restart Docker Desktop\n` +
+          `4. Try again: npm run supabase:start`,
       );
     } else if (
       String(error).includes("permission") ||
@@ -197,18 +203,18 @@ async function startLocalSupabase(): Promise<void> {
     ) {
       throw new Error(
         `🔒 Permission denied starting Docker containers.\n\n` +
-        `Please ensure:\n` +
-        `• Docker Desktop is running\n` +
-        `• You have permission to run Docker commands\n` +
-        `• No other processes are using the required ports\n\n` +
-        `💡 On macOS/Linux, you may need to add your user to the docker group:\n` +
-        `   sudo usermod -aG docker $USER`,
+          `Please ensure:\n` +
+          `• Docker Desktop is running\n` +
+          `• You have permission to run Docker commands\n` +
+          `• No other processes are using the required ports\n\n` +
+          `💡 On macOS/Linux, you may need to add your user to the docker group:\n` +
+          `   sudo usermod -aG docker $USER`,
       );
     } else {
       throw new Error(
         `❌ Failed to start local Supabase: ${error}\n\n` +
-        `💡 Check Docker logs for more details:\n` +
-        `   docker-compose -f docker-compose.supabase.yml logs`,
+          `💡 Check Docker logs for more details:\n` +
+          `   docker-compose -f docker-compose.supabase.yml logs`,
       );
     }
   }
@@ -223,7 +229,7 @@ async function startAppSupabase(appId: number): Promise<void> {
 
   const config = getAppSupabaseConfig(appId);
   const projectName = `dyad-supabase-${appId}`;
-  
+
   try {
     logger.info(`🚀 Starting Supabase containers for app ${appId}...`);
     logger.info("📦 Pulling and starting services:");
@@ -237,7 +243,7 @@ async function startAppSupabase(appId: number): Promise<void> {
 
     // Use docker-compose with project-name to create isolated containers
     const composeCmd = `docker-compose -f docker-compose.supabase.yml -p ${projectName} up -d`;
-    
+
     // Set environment variables for this specific instance
     const env = {
       ...process.env,
@@ -247,13 +253,13 @@ async function startAppSupabase(appId: number): Promise<void> {
       POSTGRES_PASSWORD: config.dbPassword,
       JWT_SECRET: config.jwtSecret,
     };
-    
+
     execSync(composeCmd, {
       stdio: "inherit",
       cwd: process.cwd(),
       env,
     });
-    
+
     logger.info("✅ Docker containers started, initializing services...");
 
     // Wait for services to be ready
@@ -271,8 +277,8 @@ async function startAppSupabase(appId: number): Promise<void> {
     logger.error(`❌ Failed to start Supabase for app ${appId}:`, error);
     throw new Error(
       `Failed to start Supabase for app ${appId}: ${error}\n\n` +
-      `💡 Check Docker logs for more details:\n` +
-      `   docker-compose -p dyad-supabase-${appId} logs`,
+        `💡 Check Docker logs for more details:\n` +
+        `   docker-compose -p dyad-supabase-${appId} logs`,
     );
   }
 }
@@ -338,7 +344,7 @@ async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
 
         if (studioReady) {
           logger.info("✅ Supabase Studio ready");
-          
+
           // Check PostgreSQL directly
           try {
             const postgresCheck = execSync(
@@ -380,13 +386,17 @@ async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
 
   throw new Error(
     `⏱️  Timeout waiting for local Supabase to be ready (waited ${maxWaitTime / 1000}s).\n\n` +
-    `Services may have failed to start properly.\n\n` +
-    `💡 Check Docker logs for more details:\n` +
-    `   docker-compose -f docker-compose.supabase.yml logs`,
+      `Services may have failed to start properly.\n\n` +
+      `💡 Check Docker logs for more details:\n` +
+      `   docker-compose -f docker-compose.supabase.yml logs`,
   );
 }
 
-async function waitForAppSupabaseReady(appId: number, config: ReturnType<typeof getAppSupabaseConfig>, maxWaitTime = 60000): Promise<void> {
+async function waitForAppSupabaseReady(
+  appId: number,
+  config: ReturnType<typeof getAppSupabaseConfig>,
+  maxWaitTime = 60000,
+): Promise<void> {
   const startTime = Date.now();
   const checkInterval = 2000;
   let lastStatus = "";
@@ -447,7 +457,7 @@ async function waitForAppSupabaseReady(appId: number, config: ReturnType<typeof 
 
         if (studioReady) {
           logger.info("✅ Supabase Studio ready");
-          
+
           // Brief final wait to ensure everything is stable
           await new Promise((resolve) => setTimeout(resolve, 2000));
           return;
@@ -467,7 +477,10 @@ async function waitForAppSupabaseReady(appId: number, config: ReturnType<typeof 
         }
       }
     } catch (error) {
-      logger.debug(`Still waiting for app ${appId} Supabase to be ready:`, error);
+      logger.debug(
+        `Still waiting for app ${appId} Supabase to be ready:`,
+        error,
+      );
     }
 
     await new Promise((resolve) => setTimeout(resolve, checkInterval));
@@ -475,9 +488,9 @@ async function waitForAppSupabaseReady(appId: number, config: ReturnType<typeof 
 
   throw new Error(
     `⏱️  Timeout waiting for app ${appId} Supabase to be ready (waited ${maxWaitTime / 1000}s).\n\n` +
-    `Services may have failed to start properly.\n\n` +
-    `💡 Check Docker logs for more details:\n` +
-    `   docker-compose -p dyad-supabase-${appId} logs`,
+      `Services may have failed to start properly.\n\n` +
+      `💡 Check Docker logs for more details:\n` +
+      `   docker-compose -p dyad-supabase-${appId} logs`,
   );
 }
 
@@ -493,8 +506,8 @@ async function stopLocalSupabase(): Promise<void> {
     logger.error("❌ Failed to stop local Supabase:", error);
     throw new Error(
       `Failed to stop local Supabase: ${error}\n\n` +
-      `💡 You can manually stop containers with:\n` +
-      `   docker-compose -f docker-compose.supabase.yml down`,
+        `💡 You can manually stop containers with:\n` +
+        `   docker-compose -f docker-compose.supabase.yml down`,
     );
   }
 }
@@ -503,17 +516,20 @@ async function stopAppSupabase(appId: number): Promise<void> {
   try {
     const projectName = `dyad-supabase-${appId}`;
     logger.info(`🛑 Stopping Supabase containers for app ${appId}...`);
-    execSync(`docker-compose -f docker-compose.supabase.yml -p ${projectName} down`, {
-      stdio: "inherit",
-      cwd: process.cwd(),
-    });
+    execSync(
+      `docker-compose -f docker-compose.supabase.yml -p ${projectName} down`,
+      {
+        stdio: "inherit",
+        cwd: process.cwd(),
+      },
+    );
     logger.info(`✅ Supabase containers for app ${appId} stopped`);
   } catch (error) {
     logger.error(`❌ Failed to stop Supabase for app ${appId}:`, error);
     throw new Error(
       `Failed to stop Supabase for app ${appId}: ${error}\n\n` +
-      `💡 You can manually stop containers with:\n` +
-      `   docker-compose -p dyad-supabase-${appId} down`,
+        `💡 You can manually stop containers with:\n` +
+        `   docker-compose -p dyad-supabase-${appId} down`,
     );
   }
 }
@@ -546,7 +562,7 @@ export function registerSupabaseHandlers() {
     async (_, { project, app }: { project: string; app: number }) => {
       await db
         .update(apps)
-        .set({ 
+        .set({
           supabaseProjectId: project,
           supabaseProjectName: null, // Will be fetched and cached on next getApp call
         })
@@ -560,7 +576,7 @@ export function registerSupabaseHandlers() {
   handle("supabase:unset-app-project", async (_, { app }: { app: number }) => {
     await db
       .update(apps)
-      .set({ 
+      .set({
         supabaseProjectId: null,
         supabaseProjectName: null, // Clear cached name
       })
@@ -625,7 +641,9 @@ export function registerSupabaseHandlers() {
         await startAppSupabase(appId);
       } else {
         // Even if running, wait a bit to ensure it's fully ready
-        logger.info(`♻️  Supabase for app ${appId} is already running, checking readiness...`);
+        logger.info(
+          `♻️  Supabase for app ${appId} is already running, checking readiness...`,
+        );
         const config = getAppSupabaseConfig(appId);
         await waitForAppSupabaseReady(appId, config, 10000); // Shorter wait if already running
       }
@@ -680,7 +698,9 @@ export function registerSupabaseHandlers() {
       logger.info("💡 Next steps:");
       logger.info("   1. Your app now has its own isolated Supabase instance");
       logger.info("   2. Use the dashboard to manage your database");
-      logger.info("   3. When ready for production, use 'Promote to Production'");
+      logger.info(
+        "   3. When ready for production, use 'Promote to Production'",
+      );
       logger.info("═══════════════════════════════════════════════════════");
     },
   );
@@ -706,17 +726,20 @@ export function registerSupabaseHandlers() {
   );
 
   // Stop local Supabase
-  handle("supabase:stop-local", async (_, { appId }: StopLocalSupabaseParams) => {
-    logger.info(`🛑 Stopping Supabase for app ${appId}...`);
-    await stopAppSupabase(appId);
-    logger.info("═══════════════════════════════════════════════════════");
-    logger.info(`✅ Supabase for app ${appId} stopped successfully`);
-    logger.info("═══════════════════════════════════════════════════════");
-    logger.info("💡 Container stopped");
-    logger.info("   Data is preserved in Docker volumes");
-    logger.info("   Restart by setting up local Supabase again");
-    logger.info("═══════════════════════════════════════════════════════");
-  });
+  handle(
+    "supabase:stop-local",
+    async (_, { appId }: StopLocalSupabaseParams) => {
+      logger.info(`🛑 Stopping Supabase for app ${appId}...`);
+      await stopAppSupabase(appId);
+      logger.info("═══════════════════════════════════════════════════════");
+      logger.info(`✅ Supabase for app ${appId} stopped successfully`);
+      logger.info("═══════════════════════════════════════════════════════");
+      logger.info("💡 Container stopped");
+      logger.info("   Data is preserved in Docker volumes");
+      logger.info("   Restart by setting up local Supabase again");
+      logger.info("═══════════════════════════════════════════════════════");
+    },
+  );
 
   // Promote to production
   handle(
@@ -802,7 +825,9 @@ export function registerSupabaseHandlers() {
         logger.info("✅ Environment variables updated");
 
         logger.info("═══════════════════════════════════════════════════════");
-        logger.info(`✅ Successfully promoted app ${params.appId} to production`);
+        logger.info(
+          `✅ Successfully promoted app ${params.appId} to production`,
+        );
         logger.info("═══════════════════════════════════════════════════════");
         logger.info("📝 Summary:");
         logger.info(`   Project: ${params.productionProjectRef}`);

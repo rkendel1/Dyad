@@ -9,6 +9,7 @@ Dyad now supports running multiple isolated Supabase instances, one for each app
 ### Container Naming
 
 Each app's Supabase instance uses a unique Docker Compose project name:
+
 - Project name: `dyad-supabase-{appId}`
 - Example containers: `dyad-supabase-1-db-1`, `dyad-supabase-1-kong-1`, etc.
 
@@ -16,13 +17,14 @@ Each app's Supabase instance uses a unique Docker Compose project name:
 
 Ports are automatically allocated based on the app ID to avoid conflicts:
 
-| Service | Base Port | App Port Formula | Example (App ID 1) |
-|---------|-----------|------------------|-------------------|
-| PostgreSQL | 5432 | 5432 + (appId × 100) | 5532 |
-| API (Kong) | 8000 | 8000 + (appId × 100) | 8100 |
-| Dashboard | 3001 | 3001 + (appId × 100) | 3101 |
+| Service    | Base Port | App Port Formula     | Example (App ID 1) |
+| ---------- | --------- | -------------------- | ------------------ |
+| PostgreSQL | 5432      | 5432 + (appId × 100) | 5532               |
+| API (Kong) | 8000      | 8000 + (appId × 100) | 8100               |
+| Dashboard  | 3001      | 3001 + (appId × 100) | 3101               |
 
 **Example Port Assignments:**
+
 - App 1: PostgreSQL=5532, API=8100, Dashboard=3101
 - App 2: PostgreSQL=5632, API=8200, Dashboard=3201
 - App 3: PostgreSQL=5732, API=8300, Dashboard=3301
@@ -30,6 +32,7 @@ Ports are automatically allocated based on the app ID to avoid conflicts:
 ### Credentials
 
 Each app instance gets unique credentials:
+
 - **JWT Secret**: `your-super-secret-jwt-token-with-at-least-32-characters-long-app-{appId}`
 - **Database Password**: `your-super-secret-and-long-postgres-password-app-{appId}`
 - **Anon Key**: Standard Supabase demo token (safe for local development)
@@ -50,6 +53,7 @@ These credentials are automatically configured in the app's `.env.local` file.
 ### Accessing the Dashboard
 
 Each app has its own dashboard URL:
+
 - App 1: http://localhost:3101
 - App 2: http://localhost:3201
 - App 3: http://localhost:3301
@@ -82,6 +86,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY={anon-key}
 ### Docker Compose Project Isolation
 
 Docker Compose's `-p` (project name) flag creates isolated:
+
 - Container names
 - Network names
 - Volume names
@@ -91,6 +96,7 @@ This ensures complete separation between apps' Supabase instances.
 ### Shared Configuration Files
 
 The following files are shared across all instances (read-only):
+
 - `volumes/api/kong.yml` - API Gateway configuration
 - `volumes/db/*.sql` - Database initialization scripts
 
@@ -99,6 +105,7 @@ These are read-only mounts and don't cause conflicts between instances.
 ### Database Storage
 
 Each app's database data is stored in a separate Docker volume:
+
 - Volume name pattern: `dyad-supabase-{appId}_db-data`
 - Data persists even when containers are stopped
 - To completely remove an app's data, remove the Docker volume
@@ -108,6 +115,7 @@ Each app's database data is stored in a separate Docker volume:
 ### Port Already in Use
 
 If you see port conflict errors:
+
 1. Check which app IDs are already running
 2. Ensure no other services are using the allocated ports
 3. Each app uses a 100-port range, so plan accordingly
@@ -165,17 +173,18 @@ If you were previously using a shared Supabase instance (before this update):
 ✅ **Independent Development**: Work on multiple projects without interference  
 ✅ **Easy Cleanup**: Stop or remove instances independently  
 ✅ **Automatic Configuration**: Credentials sync automatically to `.env.local`  
-✅ **Persistent Data**: Each app's data is preserved in separate volumes  
+✅ **Persistent Data**: Each app's data is preserved in separate volumes
 
 ## Limitations
 
 ⚠️ **Port Range**: Apps use sequential 100-port ranges. Very large app IDs (>900) may conflict with system ports  
 ⚠️ **Resource Usage**: Each instance runs full Supabase stack (multiple containers)  
-⚠️ **Shared Init Scripts**: Database initialization scripts are shared across instances  
+⚠️ **Shared Init Scripts**: Database initialization scripts are shared across instances
 
 ## Future Improvements
 
 Potential enhancements being considered:
+
 - Dynamic port allocation with conflict detection
 - Port range configuration
 - Resource limits per instance

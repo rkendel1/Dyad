@@ -3,6 +3,7 @@
 This script demonstrates the new features added to the Dyad VS Code extension.
 
 ## Prerequisites
+
 - VS Code installed
 - Dyad Desktop running on `http://localhost:3000`
 - Dyad VS Code extension installed
@@ -25,6 +26,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 4. **Review Suggested Templates**
    - The extension analyzes your description
    - Shows ranked templates:
+
      ```
      1. Stripe E-commerce Template
         Next.js e-commerce store with Stripe payments, product catalog, shopping cart, and checkout flow.
@@ -54,22 +56,27 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 ### Other Example Descriptions to Try
 
 **Blog/Content**
+
 - "I need a blog for writing articles with markdown support"
 - Result: MDX Blog Template
 
 **Dashboard**
+
 - "admin dashboard with charts and analytics"
 - Result: Admin Dashboard Template
 
 **Authentication**
+
 - "app with user login and role-based access"
 - Result: Authentication Template
 
 **SaaS**
+
 - "SaaS application with subscription billing"
 - Result: SaaS Starter Template
 
 **Simple App**
+
 - "basic React app to get started"
 - Result: React.js Template
 
@@ -110,6 +117,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
    - Dashboard available at: http://localhost:3001
 
 ### What You Can Do Now
+
 - Open Supabase dashboard: http://localhost:3001
 - Create database tables
 - Set up authentication
@@ -121,6 +129,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 ### Scenario: Deploy your app to production
 
 **Prerequisites:**
+
 - Local Supabase setup completed
 - Production Supabase project created at https://supabase.com
 - Production credentials ready
@@ -176,6 +185,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
       ```
 
 ### Next Steps After Promotion
+
 1. Review and apply database schema in production Supabase dashboard
 2. Configure Row Level Security (RLS) policies
 3. Test your app with production Supabase
@@ -184,17 +194,20 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 ## Tips and Best Practices
 
 ### Template Selection
+
 - Be specific in your description: "e-commerce with Stripe" vs "online store"
 - Mention key features: "authentication", "payments", "blog", "dashboard"
 - Use industry terms: "SaaS", "CMS", "admin panel"
 
 ### Supabase Setup
+
 - Always test locally before promoting to production
 - Keep your production credentials secure
 - Use different Supabase projects for dev/staging/prod
 - Back up your production database regularly
 
 ### Troubleshooting
+
 - If commands don't work, check that Dyad Desktop is running
 - View logs in VS Code Output panel (View → Output → Dyad)
 - Use "Dyad: Check Connection to Dyad Desktop" to verify connectivity
@@ -202,12 +215,14 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 ## Video Demo (Conceptual Storyboard)
 
 ### Scene 1: Template Selection (0:00-0:30)
+
 - User opens Command Palette
 - Types description: "blog with markdown"
 - Sees MDX Blog Template suggested
 - Creates app with one click
 
 ### Scene 2: Supabase Setup (0:30-1:00)
+
 - User runs "Setup Local Supabase"
 - Selects app from list
 - Containers start automatically
@@ -215,6 +230,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 - Dashboard opens in browser
 
 ### Scene 3: Production Promotion (1:00-1:30)
+
 - User runs "Promote to Production"
 - Enters Supabase credentials
 - Migration happens automatically
@@ -224,6 +240,7 @@ This script demonstrates the new features added to the Dyad VS Code extension.
 ## Conclusion
 
 These features make Dyad app development faster and more intuitive:
+
 - **AI Template Selection**: Get the right template based on natural language
 - **One-Click Supabase**: No manual configuration needed
 - **Easy Production**: Seamless transition from local to production

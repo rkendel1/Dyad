@@ -14,12 +14,9 @@ export const selectedVersionIdAtom = atom<string | null>(null);
 export const appOutputAtom = atom<AppOutput[]>([]);
 
 // Atom for clearing app output
-export const clearAppOutputAtom = atom(
-  null,
-  (get, set) => {
-    set(appOutputAtom, []);
-  }
-);
+export const clearAppOutputAtom = atom(null, (get, set) => {
+  set(appOutputAtom, []);
+});
 export const appUrlAtom = atom<
   | { appUrl: string; appId: number; originalUrl: string }
   | { appUrl: null; appId: null; originalUrl: null }

@@ -7,6 +7,7 @@ This document describes the type system refactoring and architectural improvemen
 ## Centralized Type System
 
 ### Location
+
 All type definitions are now centralized in `src/types/` and organized by domain:
 
 ```
@@ -37,6 +38,7 @@ Previously, types were scattered across the codebase with heavy duplication in `
 3. Preserve Zod validation schemas that need to stay with IPC handlers
 
 **Old approach (duplicated):**
+
 ```typescript
 // src/ipc/ipc_types.ts
 export interface App {
@@ -54,6 +56,7 @@ export interface App {
 ```
 
 **New approach (centralized):**
+
 ```typescript
 // src/types/app.types.ts
 export interface App {
@@ -63,19 +66,21 @@ export interface App {
 }
 
 // src/ipc/ipc_types.ts
-export * from '../types'; // Re-export everything
+export * from "../types"; // Re-export everything
 ```
 
 ### Import Guidelines
 
 **Recommended (new code):**
+
 ```typescript
-import type { App, Chat, Message } from '@/types';
+import type { App, Chat, Message } from "@/types";
 ```
 
 **Deprecated (legacy code):**
+
 ```typescript
-import type { App, Chat, Message } from '../ipc/ipc_types';
+import type { App, Chat, Message } from "../ipc/ipc_types";
 ```
 
 The `@/types` import is shorter and makes it clear you're using the centralized type system.
@@ -85,6 +90,7 @@ The `@/types` import is shorter and makes it clear you're using the centralized 
 ### Naming Conventions
 
 The database schema follows a consistent naming convention:
+
 - **Database columns**: `snake_case` (e.g., `supabase_project_id`, `vercel_team_slug`)
 - **TypeScript properties**: `camelCase` (e.g., `supabaseProjectId`, `vercelTeamSlug`)
 - **Drizzle ORM**: Automatically maps between these conventions
@@ -104,7 +110,7 @@ const app = await db.query.apps.findFirst({
   where: eq(apps.id, appId),
 });
 console.log(app.supabaseProjectId); // camelCase in TypeScript
-console.log(app.vercelTeamSlug);    // camelCase in TypeScript
+console.log(app.vercelTeamSlug); // camelCase in TypeScript
 ```
 
 ## External API Data Caching
@@ -112,6 +118,7 @@ console.log(app.vercelTeamSlug);    // camelCase in TypeScript
 ### Problem
 
 Previously, external API data (e.g., Supabase project names, Vercel team slugs) was fetched on every request from the Supabase/Vercel APIs. This caused:
+
 1. Unnecessary API calls
 2. Slower response times
 3. Potential rate limiting issues
@@ -121,6 +128,7 @@ Previously, external API data (e.g., Supabase project names, Vercel team slugs) 
 We now cache external API data in the database:
 
 #### New Fields Added
+
 - `supabase_project_name` - Cached name from Supabase API
 - `vercel_team_slug` - Cached slug from Vercel API
 
@@ -153,6 +161,7 @@ if (app.supabaseProjectId && settings.supabase?.accessToken?.value) {
 #### When Cached Values Are Cleared
 
 Cached values are automatically cleared when:
+
 1. The integration is disconnected (`supabaseProjectId` set to `null`)
 2. The integration ID changes (switching to a different project)
 3. This ensures stale data is never served
@@ -220,6 +229,7 @@ Cached values are automatically cleared when:
 ### Current State
 
 The API layer has been implemented in `src/api/` with the following structure:
+
 - `services/` - Implemented service layer for business logic
   - `app.service.ts` - Stub for application management (to be fully implemented)
   - `chat.service.ts` - Stub for chat operations (to be fully implemented)
@@ -252,10 +262,8 @@ ipcMain.handle("neon:create-project", async (_, params) => {
 1. **NeonService** - Manages Neon database projects
    - `createProject()` - Creates projects with dev/preview branches
    - `getProject()` - Retrieves project info with branch details
-   
 2. **ProService** - Manages Pro features and billing
    - `getUserBudget()` - Fetches user budget from LLM Gateway
-   
 3. **PortalService** - Manages database migrations
    - `createMigration()` - Creates migrations with git integration
 

@@ -1,17 +1,17 @@
 /**
  * HTTP API Server Tests
- * 
+ *
  * Integration tests for HTTP REST API endpoints
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import request from 'supertest';
-import { HttpApiServer } from '../api/http/server';
-import { db } from '../db';
-import { apps, chats, messages } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import request from "supertest";
+import { HttpApiServer } from "../api/http/server";
+import { db } from "../db";
+import { apps, chats, messages } from "../db/schema";
+import { eq } from "drizzle-orm";
 
-describe('HTTP API Server', () => {
+describe("HTTP API Server", () => {
   let server: HttpApiServer;
   let testAppId: number;
   let testChatId: number;
@@ -21,7 +21,7 @@ describe('HTTP API Server', () => {
     server = new HttpApiServer({
       enabled: true,
       port: 3001, // Use different port for testing
-      host: 'localhost',
+      host: "localhost",
     });
 
     // Start the server
@@ -41,56 +41,56 @@ describe('HTTP API Server', () => {
     await server.stop();
   });
 
-  describe('Health Endpoints', () => {
-    it('GET /api/health should return 200', async () => {
+  describe("Health Endpoints", () => {
+    it("GET /api/health should return 200", async () => {
       const response = await request(server.getApp())
-        .get('/api/health')
+        .get("/api/health")
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
-      expect(response.body.data.status).toBe('ok');
+      expect(response.body.data.status).toBe("ok");
       expect(response.body.data.version).toBeDefined();
     });
 
-    it('GET /api/version should return version info', async () => {
+    it("GET /api/version should return version info", async () => {
       const response = await request(server.getApp())
-        .get('/api/version')
+        .get("/api/version")
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.version).toBeDefined();
-      expect(response.body.data.name).toBe('dyad');
+      expect(response.body.data.name).toBe("dyad");
     });
 
-    it('GET /api/status should return system status', async () => {
+    it("GET /api/status should return system status", async () => {
       const response = await request(server.getApp())
-        .get('/api/status')
+        .get("/api/status")
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.status).toBe('running');
+      expect(response.body.data.status).toBe("running");
       expect(response.body.data.platform).toBeDefined();
     });
   });
 
-  describe('App Endpoints', () => {
+  describe("App Endpoints", () => {
     beforeEach(async () => {
       // Create a test app
       const [app] = await db
         .insert(apps)
         .values({
-          name: 'Test App for HTTP API',
-          path: 'test-http-api-app',
-          description: 'Test app for HTTP API testing',
+          name: "Test App for HTTP API",
+          path: "test-http-api-app",
+          description: "Test app for HTTP API testing",
         })
         .returning();
       testAppId = app.id;
     });
 
-    it('GET /api/apps should list all apps', async () => {
+    it("GET /api/apps should list all apps", async () => {
       const response = await request(server.getApp())
-        .get('/api/apps')
+        .get("/api/apps")
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -98,26 +98,26 @@ describe('HTTP API Server', () => {
       expect(Array.isArray(response.body.data.apps)).toBe(true);
     });
 
-    it('GET /api/apps/:id should return specific app', async () => {
+    it("GET /api/apps/:id should return specific app", async () => {
       const response = await request(server.getApp())
         .get(`/api/apps/${testAppId}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.id).toBe(testAppId);
-      expect(response.body.data.name).toBe('Test App for HTTP API');
+      expect(response.body.data.name).toBe("Test App for HTTP API");
     });
 
-    it('GET /api/apps/:id with invalid ID should return 404', async () => {
+    it("GET /api/apps/:id with invalid ID should return 404", async () => {
       const response = await request(server.getApp())
-        .get('/api/apps/999999')
+        .get("/api/apps/999999")
         .expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toBeDefined();
     });
 
-    it('GET /api/apps/:id/settings should return app settings', async () => {
+    it("GET /api/apps/:id/settings should return app settings", async () => {
       const response = await request(server.getApp())
         .get(`/api/apps/${testAppId}/settings`)
         .expect(200);
@@ -127,21 +127,21 @@ describe('HTTP API Server', () => {
     });
   });
 
-  describe('Chat Endpoints', () => {
+  describe("Chat Endpoints", () => {
     beforeEach(async () => {
       // Create a test app
       const [app] = await db
         .insert(apps)
         .values({
-          name: 'Test App for Chat API',
-          path: 'test-chat-api-app',
-          description: 'Test app for chat API testing',
+          name: "Test App for Chat API",
+          path: "test-chat-api-app",
+          description: "Test app for chat API testing",
         })
         .returning();
       testAppId = app.id;
     });
 
-    it('POST /api/apps/:appId/chats should create a new chat', async () => {
+    it("POST /api/apps/:appId/chats should create a new chat", async () => {
       const response = await request(server.getApp())
         .post(`/api/apps/${testAppId}/chats`)
         .expect(201);
@@ -151,7 +151,7 @@ describe('HTTP API Server', () => {
       testChatId = response.body.data.id;
     });
 
-    it('GET /api/apps/:appId/chats should list chats for app', async () => {
+    it("GET /api/apps/:appId/chats should list chats for app", async () => {
       // Create a chat first
       const [chat] = await db
         .insert(chats)
@@ -170,7 +170,7 @@ describe('HTTP API Server', () => {
       expect(Array.isArray(response.body.data.chats)).toBe(true);
     });
 
-    it('GET /api/chats/:id should return specific chat', async () => {
+    it("GET /api/chats/:id should return specific chat", async () => {
       // Create a chat first
       const [chat] = await db
         .insert(chats)
@@ -188,7 +188,7 @@ describe('HTTP API Server', () => {
       expect(response.body.data.id).toBe(testChatId);
     });
 
-    it('PUT /api/chats/:id should update chat title', async () => {
+    it("PUT /api/chats/:id should update chat title", async () => {
       // Create a chat first
       const [chat] = await db
         .insert(chats)
@@ -200,14 +200,14 @@ describe('HTTP API Server', () => {
 
       const response = await request(server.getApp())
         .put(`/api/chats/${testChatId}`)
-        .send({ title: 'Updated Chat Title' })
+        .send({ title: "Updated Chat Title" })
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.title).toBe('Updated Chat Title');
+      expect(response.body.data.title).toBe("Updated Chat Title");
     });
 
-    it('POST /api/chats/:id/messages should create a message', async () => {
+    it("POST /api/chats/:id/messages should create a message", async () => {
       // Create a chat first
       const [chat] = await db
         .insert(chats)
@@ -220,17 +220,17 @@ describe('HTTP API Server', () => {
       const response = await request(server.getApp())
         .post(`/api/chats/${testChatId}/messages`)
         .send({
-          content: 'Test message content',
-          role: 'user',
+          content: "Test message content",
+          role: "user",
         })
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.content).toBe('Test message content');
-      expect(response.body.data.role).toBe('user');
+      expect(response.body.data.content).toBe("Test message content");
+      expect(response.body.data.role).toBe("user");
     });
 
-    it('GET /api/chats/:id/messages should list chat messages', async () => {
+    it("GET /api/chats/:id/messages should list chat messages", async () => {
       // Create a chat first
       const [chat] = await db
         .insert(chats)
@@ -241,13 +241,11 @@ describe('HTTP API Server', () => {
       testChatId = chat.id;
 
       // Create a message
-      await db
-        .insert(messages)
-        .values({
-          chatId: testChatId,
-          content: 'Test message',
-          role: 'user',
-        });
+      await db.insert(messages).values({
+        chatId: testChatId,
+        content: "Test message",
+        role: "user",
+      });
 
       const response = await request(server.getApp())
         .get(`/api/chats/${testChatId}/messages`)
@@ -259,25 +257,25 @@ describe('HTTP API Server', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should return 404 for non-existent routes', async () => {
+  describe("Error Handling", () => {
+    it("should return 404 for non-existent routes", async () => {
       const response = await request(server.getApp())
-        .get('/api/nonexistent')
+        .get("/api/nonexistent")
         .expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.error).toBeDefined();
     });
 
-    it('should handle validation errors', async () => {
+    it("should handle validation errors", async () => {
       // Try to update chat with invalid data
       const response = await request(server.getApp())
-        .put('/api/chats/1')
-        .send({ title: '' }) // Empty title should fail validation
+        .put("/api/chats/1")
+        .send({ title: "" }) // Empty title should fail validation
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.code).toBe("VALIDATION_ERROR");
     });
   });
 });

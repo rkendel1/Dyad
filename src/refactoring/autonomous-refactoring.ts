@@ -1,18 +1,26 @@
 /**
  * Autonomous Refactoring Engine
- * 
+ *
  * Intelligent refactoring system that can automatically detect and suggest
  * code improvements based on patterns and metrics.
  */
 
-import type { FileMetrics, ProjectMetrics, RefactoringOpportunity } from './code-metrics';
-import { analyzeProject, generateRefactoringReport } from './code-metrics';
+import type {
+  FileMetrics,
+  ProjectMetrics,
+  RefactoringOpportunity,
+} from "./code-metrics";
+import { analyzeProject, generateRefactoringReport } from "./code-metrics";
 
 /**
  * Refactoring action that can be executed
  */
 export interface RefactoringAction {
-  type: 'split-file' | 'extract-function' | 'remove-duplicate' | 'simplify-complexity';
+  type:
+    | "split-file"
+    | "extract-function"
+    | "remove-duplicate"
+    | "simplify-complexity";
   targetFile: string;
   description: string;
   automated: boolean;
@@ -25,7 +33,7 @@ export interface RefactoringAction {
 export interface RefactoringStrategy {
   enableAutomatedRefactoring: boolean;
   enableSuggestions: boolean;
-  aggressiveness: 'conservative' | 'balanced' | 'aggressive';
+  aggressiveness: "conservative" | "balanced" | "aggressive";
 }
 
 /**
@@ -34,7 +42,7 @@ export interface RefactoringStrategy {
 const DEFAULT_STRATEGY: RefactoringStrategy = {
   enableAutomatedRefactoring: false,
   enableSuggestions: true,
-  aggressiveness: 'balanced',
+  aggressiveness: "balanced",
 };
 
 /**
@@ -65,16 +73,20 @@ export class RefactoringEngine {
   /**
    * Generate refactoring actions from opportunities
    */
-  private generateRefactoringActions(metrics: ProjectMetrics): RefactoringAction[] {
+  private generateRefactoringActions(
+    metrics: ProjectMetrics,
+  ): RefactoringAction[] {
     const actions: RefactoringAction[] = [];
 
     for (const opportunity of metrics.refactoringOpportunities) {
-      if (opportunity.type === 'large-file') {
+      if (opportunity.type === "large-file") {
         actions.push({
-          type: 'split-file',
+          type: "split-file",
           targetFile: opportunity.filePath,
           description: opportunity.description,
-          automated: this.strategy.enableAutomatedRefactoring && opportunity.severity === 'high',
+          automated:
+            this.strategy.enableAutomatedRefactoring &&
+            opportunity.severity === "high",
           prompt: this.generateSplitFilePrompt(opportunity),
         });
       }
@@ -116,11 +128,11 @@ Suggestion: ${opportunity.suggestion}`;
    */
   private getThresholdForStrategy(): number {
     switch (this.strategy.aggressiveness) {
-      case 'conservative':
+      case "conservative":
         return 500;
-      case 'balanced':
+      case "balanced":
         return 300;
-      case 'aggressive':
+      case "aggressive":
         return 200;
       default:
         return 300;
@@ -131,8 +143,8 @@ Suggestion: ${opportunity.suggestion}`;
    * Generate refactoring prompt for the AI
    */
   generateRefactoringPrompt(filePath: string, metrics: FileMetrics): string {
-    const reasons = metrics.refactoringReasons.join('\n- ');
-    
+    const reasons = metrics.refactoringReasons.join("\n- ");
+
     return `The file ${filePath} needs refactoring due to:
 - ${reasons}
 
@@ -162,15 +174,15 @@ export const refactoringEngine = new RefactoringEngine();
  */
 export function enhanceProposalWithRefactoring(
   writeTags: Array<{ path: string; content: string }>,
-  engine: RefactoringEngine = refactoringEngine
+  engine: RefactoringEngine = refactoringEngine,
 ): RefactoringAction | null {
   // Find large files that were just written
   for (const tag of writeTags) {
-    const lineCount = tag.content.split('\n').length;
-    
+    const lineCount = tag.content.split("\n").length;
+
     if (engine.shouldRefactorFile(tag.path, lineCount)) {
       return {
-        type: 'split-file',
+        type: "split-file",
         targetFile: tag.path,
         description: `File has ${lineCount} lines and should be refactored`,
         automated: false,

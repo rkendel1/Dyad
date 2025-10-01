@@ -88,7 +88,9 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     selectedComponentPreviewAtom,
   );
   const { checkProblems } = useCheckProblems(appId);
-  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(null);
+  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(
+    null,
+  );
 
   // Use the attachments hook
   const {
@@ -137,13 +139,13 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     }
 
     let currentInput = inputValue;
-    
+
     // Apply adaptive prompt based on emotion state if detected
     if (currentEmotionState && currentEmotionState !== "neutral") {
       const emotionState = currentEmotionState as any;
       currentInput = emotionDetectionService.generateAdaptivePrompt(
         currentInput,
-        emotionState
+        emotionState,
       );
     }
 

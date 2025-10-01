@@ -46,7 +46,10 @@ const handleGetSystemPlatform = () => {
 };
 
 // Handler for opening external preview window
-const handleOpenExternalPreview = async (event: Electron.IpcMainInvokeEvent, url: string) => {
+const handleOpenExternalPreview = async (
+  event: Electron.IpcMainInvokeEvent,
+  url: string,
+) => {
   try {
     if (!url) {
       throw new Error("No URL provided for external preview.");
@@ -72,7 +75,9 @@ const handleOpenExternalPreview = async (event: Electron.IpcMainInvokeEvent, url
 
     // Load the preview HTML that includes the selector functionality
     const previewHtml = await createPreviewHtml(url);
-    previewWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(previewHtml)}`);
+    previewWindow.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(previewHtml)}`,
+    );
 
     // Open dev tools for debugging if needed
     if (process.env.NODE_ENV === "development") {

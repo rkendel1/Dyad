@@ -156,21 +156,27 @@ export function countFileOperations(fullResponse: string): {
   const incompleteWrites = allOpeningWrites - completeWrites;
 
   // Count complete dyad-rename tags
-  const completeRenameRegex = /<dyad-rename from="([^"]+)" to="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-rename>/g;
-  const completeRenames = (fullResponse.match(completeRenameRegex) || []).length;
+  const completeRenameRegex =
+    /<dyad-rename from="([^"]+)" to="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-rename>/g;
+  const completeRenames = (fullResponse.match(completeRenameRegex) || [])
+    .length;
 
   // Count incomplete dyad-rename tags
   const openingRenameRegex = /<dyad-rename/gi;
-  const allOpeningRenames = (fullResponse.match(openingRenameRegex) || []).length;
+  const allOpeningRenames = (fullResponse.match(openingRenameRegex) || [])
+    .length;
   const incompleteRenames = allOpeningRenames - completeRenames;
 
   // Count complete dyad-delete tags
-  const completeDeleteRegex = /<dyad-delete path="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-delete>/g;
-  const completeDeletes = (fullResponse.match(completeDeleteRegex) || []).length;
+  const completeDeleteRegex =
+    /<dyad-delete path="([^"]+)"[^>]*>([\s\S]*?)<\/dyad-delete>/g;
+  const completeDeletes = (fullResponse.match(completeDeleteRegex) || [])
+    .length;
 
   // Count incomplete dyad-delete tags
   const openingDeleteRegex = /<dyad-delete/gi;
-  const allOpeningDeletes = (fullResponse.match(openingDeleteRegex) || []).length;
+  const allOpeningDeletes = (fullResponse.match(openingDeleteRegex) || [])
+    .length;
   const incompleteDeletes = allOpeningDeletes - completeDeletes;
 
   return {

@@ -7,6 +7,7 @@
 ## Context
 
 The Dyad API lacks formal documentation:
+
 - No standard API specification
 - Developers must read code to understand endpoints
 - No automated API testing based on spec
@@ -14,6 +15,7 @@ The Dyad API lacks formal documentation:
 - Third-party integrations require manual API discovery
 
 Problems:
+
 1. **Lack of Documentation**: API behavior not formally documented
 2. **Type Mismatches**: VSCode extension types can drift from main app
 3. **No Contract Testing**: Changes can break integrations silently
@@ -30,12 +32,14 @@ src/api/docs/
 ```
 
 **Features**:
+
 1. Programmatic OpenAPI spec generation
 2. Automatic schema sync with TypeScript types
 3. Documentation generation from JSDoc
 4. API testing based on spec
 
 **Workflow**:
+
 ```typescript
 // 1. Define types in src/types/
 export interface CreateAppParams {
@@ -65,6 +69,7 @@ paths: {
 ## Consequences
 
 ### Positive
+
 - **Single Source of Truth**: Types → OpenAPI → Documentation
 - **Better DX**: Developers can explore API via Swagger UI
 - **Contract Testing**: Validate requests/responses against spec
@@ -72,11 +77,13 @@ paths: {
 - **VSCode Extension**: Can import spec instead of duplicating types
 
 ### Negative
+
 - **Maintenance Overhead**: Must keep spec in sync with code
 - **Build Step**: Need to generate spec during build
 - **Learning Curve**: Team needs to learn OpenAPI
 
 ### Mitigation
+
 - Generate spec programmatically from types
 - Add pre-commit hook to verify spec is up-to-date
 - Provide comprehensive examples in spec
@@ -84,13 +91,14 @@ paths: {
 ## Implementation
 
 ### 1. Generate Spec from Types
+
 ```typescript
 export function generateOpenApiSpec(): OpenAPIV3.Document {
   return {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Dyad API',
-      version: '1.0.0',
+      title: "Dyad API",
+      version: "1.0.0",
     },
     paths: {
       // Auto-generated from service methods
@@ -98,13 +106,14 @@ export function generateOpenApiSpec(): OpenAPIV3.Document {
     components: {
       schemas: {
         // Auto-generated from types
-      }
-    }
+      },
+    },
   };
 }
 ```
 
 ### 2. Build Integration
+
 ```json
 {
   "scripts": {
@@ -116,28 +125,32 @@ export function generateOpenApiSpec(): OpenAPIV3.Document {
 ```
 
 ### 3. Documentation Serving
+
 ```typescript
 // In development mode, serve Swagger UI
-if (process.env.NODE_ENV === 'development') {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+if (process.env.NODE_ENV === "development") {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 }
 ```
 
 ## Alternatives Considered
 
 ### 1. Manual OpenAPI File
+
 **Pros**: Full control, no tooling needed
 **Cons**: Hard to keep in sync, prone to errors
 
 **Rejected**: Too error-prone, doesn't scale
 
 ### 2. JSDoc to OpenAPI
+
 **Pros**: Documentation in code
 **Cons**: Limited type safety, verbose
 
 **Rejected**: TypeScript types are better source of truth
 
 ### 3. GraphQL Instead
+
 **Pros**: Better type system, introspection
 **Cons**: Requires rewriting API, learning curve
 
@@ -146,6 +159,7 @@ if (process.env.NODE_ENV === 'development') {
 ## Integration with VSCode Extension
 
 The VSCode extension can now:
+
 1. Import OpenAPI spec instead of duplicating types
 2. Generate TypeScript client from spec
 3. Validate requests against spec
@@ -153,14 +167,14 @@ The VSCode extension can now:
 
 ```typescript
 // vscode-extension/src/api-client.ts
-import { OpenAPIClientAxios } from 'openapi-client-axios';
-import spec from './openapi.json';
+import { OpenAPIClientAxios } from "openapi-client-axios";
+import spec from "./openapi.json";
 
 const api = new OpenAPIClientAxios({ definition: spec });
 const client = await api.init();
 
 // Fully typed API calls
-const result = await client.createApp({ name: 'my-app' });
+const result = await client.createApp({ name: "my-app" });
 ```
 
 ## Future Enhancements

@@ -37,10 +37,11 @@ const ConsoleHeader = ({
   errorCount,
   onOpenCliPopout,
 }: ConsoleHeaderProps) => (
-  <div
-    className="flex items-start gap-2 px-4 py-1.5 border-t border-border hover:bg-[var(--background-darkest)] transition-colors"
-  >
-    <div className="flex items-start gap-2 flex-1 cursor-pointer" onClick={onToggle}>
+  <div className="flex items-start gap-2 px-4 py-1.5 border-t border-border hover:bg-[var(--background-darkest)] transition-colors">
+    <div
+      className="flex items-start gap-2 flex-1 cursor-pointer"
+      onClick={onToggle}
+    >
       <Logs size={16} className="mt-0.5" />
       <div className="flex flex-col">
         <div className="flex items-center gap-2">
@@ -96,11 +97,14 @@ export function PreviewPanel() {
   const appOutput = useAtomValue(appOutputAtom);
 
   const messageCount = appOutput.length;
-  const errorCount = appOutput.filter(output => 
-    output.type === "stderr" || 
-    output.type === "client-error" ||
-    // Enhanced error detection patterns
-    /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message)
+  const errorCount = appOutput.filter(
+    (output) =>
+      output.type === "stderr" ||
+      output.type === "client-error" ||
+      // Enhanced error detection patterns
+      /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(
+        output.message,
+      ),
   ).length;
   const latestMessage =
     messageCount > 0 ? appOutput[messageCount - 1]?.message : undefined;
@@ -200,13 +204,15 @@ export function PreviewPanel() {
           />
         )}
       </div>
-      
+
       {/* CLI Popout */}
       {isCliPopoutOpen && (
         <CliPopout
           onClose={() => setIsCliPopoutOpen(false)}
           isMinimized={isCliPopoutMinimized}
-          onToggleMinimize={() => setIsCliPopoutMinimized(!isCliPopoutMinimized)}
+          onToggleMinimize={() =>
+            setIsCliPopoutMinimized(!isCliPopoutMinimized)
+          }
         />
       )}
     </>

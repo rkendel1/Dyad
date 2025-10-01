@@ -5,6 +5,7 @@
 This is the Dyad VS Code extension that allows users to interact with Dyad Desktop directly from VS Code, with a sidebar for quick actions.
 
 **Important Architecture Notes:**
+
 - Dyad is an **Electron desktop application**, not a CLI tool
 - The extension connects to Dyad Desktop via HTTP API (default: `http://localhost:3000`)
 - CLI commands are available only if Dyad provides them; otherwise, the extension gracefully handles their absence
@@ -33,7 +34,9 @@ vscode-extension/
 ## Components
 
 ### 1. extension.ts
+
 The main entry point for the VS Code extension. It:
+
 - Activates the extension on startup
 - Registers all commands (create app, run app, stop app, etc.)
 - Initializes the sidebar view
@@ -43,13 +46,16 @@ The main entry point for the VS Code extension. It:
 - Creates an output channel for debugging
 
 **Key Features:**
+
 - Input validation for all user inputs
 - Detailed error messages with actionable guidance
 - Automatic health check on activation
 - Helper dialogs for connection issues
 
 ### 2. dyadCli.ts
+
 Provides wrapper functions for Dyad CLI commands:
+
 - `checkCliAvailability()` - Check if CLI is available
 - `createApp()` - Create a new Dyad app
 - `runApp()` - Run a Dyad app
@@ -61,6 +67,7 @@ Provides wrapper functions for Dyad CLI commands:
 - `clearConsole()` - Clear console output
 
 **Error Handling:**
+
 - Each method checks CLI availability before execution
 - Provides clear error messages when CLI is not available
 - Includes timeout protection (30 seconds for most operations)
@@ -69,7 +76,9 @@ Provides wrapper functions for Dyad CLI commands:
 **Important Note:** Dyad is primarily a desktop application. CLI commands may not be available, and the extension is designed to gracefully handle this scenario.
 
 ### 3. dyadApi.ts
+
 Handles API interactions with the Dyad Desktop backend:
+
 - `checkHealth()` - Verify API connectivity
 - `getApps()` - Fetch all apps
 - `getApp()` - Get a specific app
@@ -83,12 +92,14 @@ Handles API interactions with the Dyad Desktop backend:
 - `getAppStatus()` - Get app running status
 
 **Error Handling:**
+
 - Response interceptor for connection errors (ECONNREFUSED, ETIMEDOUT)
 - Health check caching (30-second TTL) to reduce unnecessary requests
 - Detailed error logging with context
 - Graceful fallbacks for all operations
 
 **API Endpoints:** The extension expects Dyad Desktop to provide REST endpoints like:
+
 - `GET /api/apps` - List apps
 - `GET /api/apps/:id` - Get app details
 - `POST /api/apps` - Create app
@@ -97,7 +108,9 @@ Handles API interactions with the Dyad Desktop backend:
 - etc.
 
 ### 4. sidebar.ts
+
 Implements the sidebar tree view provider:
+
 - Displays apps in a hierarchical view with status indicators
 - Shows quick action buttons
 - Updates dynamically when apps change
@@ -106,6 +119,7 @@ Implements the sidebar tree view provider:
 - Includes tooltips with app details
 
 **Error Handling:**
+
 - Gracefully handles API connection failures
 - Shows actionable error messages in the tree view
 - Provides "Check Connection" and "Retry" options
@@ -131,7 +145,6 @@ The extension adds a new activity bar item "Dyad" with two tree views:
    - Green icon (🟢) = Running
    - White icon (⚪) = Stopped
    - Includes tooltips with path and creation date
-   
 2. **Quick Actions** - Provides shortcuts to common actions
    - Create New App
    - Run App
@@ -191,6 +204,7 @@ This creates a `.vsix` file that can be installed in VS Code.
 ## Configuration
 
 The extension currently uses default values:
+
 - Dyad CLI path: `dyad` (assumed to be in PATH)
 - API base URL: `http://localhost:3000`
 
@@ -201,6 +215,7 @@ These can be made configurable in future versions through VS Code settings.
 ### Dyad Desktop Communication
 
 The extension communicates with Dyad Desktop through:
+
 1. **HTTP API** (primary method)
    - RESTful endpoints on `http://localhost:3000`
    - JSON request/response format
@@ -213,7 +228,7 @@ The extension communicates with Dyad Desktop through:
 
 ### Error Handling Strategy
 
-1. **Connection Errors**: 
+1. **Connection Errors**:
    - Detect ECONNREFUSED and ETIMEDOUT
    - Show user-friendly messages
    - Provide "Check Connection" action
@@ -249,11 +264,13 @@ The extension communicates with Dyad Desktop through:
 For testing collaboration without Dyad Desktop:
 
 1. **Install socket.io** (if not already installed):
+
    ```bash
    npm install socket.io
    ```
 
 2. **Start the mock server**:
+
    ```bash
    npm run mock-server
    ```
@@ -312,6 +329,7 @@ src/
 ## Future Enhancements
 
 Potential improvements:
+
 - Configuration settings for Dyad path and API URL
 - ✅ Real-time status updates via WebSocket (Implemented)
 - Integrated terminal for CLI output

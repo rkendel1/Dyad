@@ -26,7 +26,13 @@ export function registerAppSettingsHandlers() {
         }
 
         return {
-          preferredPackageManager: (app.preferredPackageManager as "npm" | "yarn" | "pnpm" | "bun" | null) || null,
+          preferredPackageManager:
+            (app.preferredPackageManager as
+              | "npm"
+              | "yarn"
+              | "pnpm"
+              | "bun"
+              | null) || null,
           previewUrl: app.previewUrl || null,
         };
       } catch (error) {
@@ -74,7 +80,13 @@ export function registerAppSettingsHandlers() {
         });
 
         return {
-          preferredPackageManager: (updatedApp?.preferredPackageManager as "npm" | "yarn" | "pnpm" | "bun" | null) || null,
+          preferredPackageManager:
+            (updatedApp?.preferredPackageManager as
+              | "npm"
+              | "yarn"
+              | "pnpm"
+              | "bun"
+              | null) || null,
           previewUrl: updatedApp?.previewUrl || null,
         };
       } catch (error) {

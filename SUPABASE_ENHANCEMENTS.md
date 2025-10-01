@@ -30,6 +30,7 @@ The Supabase integration now provides a much better user experience with:
 ### 🔧 Technical Improvements
 
 1. **Structured Environment Files** - `.env.local` now has clear sections:
+
    ```bash
    # ============================================
    # LOCAL SUPABASE (Development)
@@ -37,7 +38,7 @@ The Supabase integration now provides a much better user experience with:
    POSTGRES_URL=...
    SUPABASE_URL=http://localhost:8000
    # ... more local vars
-   
+
    # ============================================
    # HOSTED SUPABASE (Production/Staging)
    # ============================================
@@ -112,11 +113,13 @@ Display all local Supabase configuration details.
 ### Existing Projects
 
 Your existing `.env.local` files will continue to work! The new structured format is created automatically when you:
+
 - Set up a new local Supabase connection
 - Promote to production
 - Use the environment switcher
 
 If you want to upgrade to the structured format manually:
+
 1. Run `npm run supabase:switch <your-app> local` (creates structured format)
 2. Then add your hosted credentials to the HOSTED section
 
@@ -180,6 +183,7 @@ Yes! The structured format is designed to be human-readable and editable. The sw
 ### What if I have multiple apps?
 
 Each app can use a different environment independently:
+
 ```bash
 npm run supabase:switch ./app1 local
 npm run supabase:switch ./app2 hosted
@@ -189,6 +193,7 @@ npm run supabase:switch ./app3 local
 ### How do I see all the new features?
 
 Try these commands to see the enhanced output:
+
 ```bash
 npm run supabase:start    # See beautiful startup logs
 npm run supabase:status   # See formatted status display
@@ -198,11 +203,13 @@ npm run supabase:config   # See configuration details
 ## Support
 
 For more information:
+
 - [ENVIRONMENT_SWITCHING.md](./ENVIRONMENT_SWITCHING.md) - Detailed environment switching guide
 - [LOCAL_SUPABASE.md](./LOCAL_SUPABASE.md) - Complete local Supabase guide
 - [PRODUCTION_PROMOTION.md](./PRODUCTION_PROMOTION.md) - Production promotion guide
 
 If you encounter issues, open an issue on the Dyad repository with:
+
 - The command you ran
 - The error message (with the helpful troubleshooting info)
 - Your environment (OS, Docker version, etc.)

@@ -20,6 +20,7 @@ npm run mock-server
 ```
 
 You should see:
+
 ```
 ================================================
   Dyad Mock Collaboration Server
@@ -70,6 +71,7 @@ Waiting for connections...
 #### Verify in Both Windows:
 
 Check the mock server logs - you should see:
+
 ```
 ✓ Session created: session-xxxxx for app: MyApp
 ✓ User Alice joined session session-xxxxx
@@ -83,6 +85,7 @@ Check the mock server logs - you should see:
 **What to Test**: Live cursor and selection tracking
 
 **Steps**:
+
 1. In Window 1, open a file and move the cursor
 2. In Window 2, you should see cursor decorations from Window 1
 3. In Window 1, select some text
@@ -95,6 +98,7 @@ Check the mock server logs - you should see:
 **What to Test**: Integrated chat functionality
 
 **Steps**:
+
 1. In either window, run `Dyad: Show Collaboration Panel`
 2. Switch to the "Chat" tab
 3. Type a message and click "Send"
@@ -108,6 +112,7 @@ Check the mock server logs - you should see:
 **What to Test**: Adding and resolving comments
 
 **Steps**:
+
 1. In Window 1, place cursor on a specific line
 2. Run `Dyad: Add Inline Comment`
 3. Enter comment text: "This needs review"
@@ -123,6 +128,7 @@ Check the mock server logs - you should see:
 **What to Test**: Role-based access control
 
 **Steps**:
+
 1. In the Collaboration Panel → Users tab
 2. View the list of users with their roles
 3. Session owner can change roles (if implemented in UI)
@@ -134,6 +140,7 @@ Check the mock server logs - you should see:
 **What to Test**: Joining and leaving sessions
 
 **Steps**:
+
 1. Start a session in Window 1
 2. Join from Window 2
 3. In Window 2, run `Dyad: Leave Collaboration Session`
@@ -147,6 +154,7 @@ Check the mock server logs - you should see:
 **What to Test**: Graceful disconnect handling
 
 **Steps**:
+
 1. Start a session in Window 1
 2. Join from Window 2
 3. Close Window 2 abruptly
@@ -219,6 +227,7 @@ Comment added in session session-xxxxx on line 42
 **Symptoms**: "Failed to connect to collaboration server" error
 
 **Solutions**:
+
 1. Verify mock server is running: `npm run mock-server`
 2. Check port 3000 is available: `lsof -i :3000`
 3. Check VS Code Output panel → Dyad for errors
@@ -228,6 +237,7 @@ Comment added in session session-xxxxx on line 42
 **Symptoms**: "Session not found" when joining
 
 **Solutions**:
+
 1. Verify Session ID is correct (copy-paste recommended)
 2. Ensure the session creator's window is still active
 3. Check mock server logs for session creation
@@ -237,6 +247,7 @@ Comment added in session session-xxxxx on line 42
 **Symptoms**: Can't see other users' cursors
 
 **Solutions**:
+
 1. Ensure same file is open in both windows
 2. Check if decorations are enabled in VS Code
 3. Try refreshing the window
@@ -246,6 +257,7 @@ Comment added in session session-xxxxx on line 42
 **Symptoms**: Messages not appearing
 
 **Solutions**:
+
 1. Ensure Collaboration Panel is open
 2. Switch to Chat tab
 3. Check WebSocket connection in Output panel
@@ -278,12 +290,14 @@ Comment added in session session-xxxxx on line 42
 Once Dyad Desktop has WebSocket support:
 
 ### Setup
+
 1. Stop mock server
 2. Start Dyad Desktop
 3. Verify WebSocket server on port 3000
 4. Test extension with real backend
 
 ### Additional Tests
+
 1. Verify app data syncs between extension and desktop
 2. Test session persistence across restarts
 3. Validate authentication flow (if implemented)
@@ -293,22 +307,22 @@ Once Dyad Desktop has WebSocket support:
 Example unit test structure:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CollaborationService } from './collaborationService';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { CollaborationService } from "./collaborationService";
 
-describe('CollaborationService', () => {
+describe("CollaborationService", () => {
   let service: CollaborationService;
-  
+
   beforeEach(() => {
     service = new CollaborationService(mockOutputChannel);
   });
-  
-  it('should create a session', async () => {
-    const session = await service.startSession(1, 'TestApp', 'Alice');
+
+  it("should create a session", async () => {
+    const session = await service.startSession(1, "TestApp", "Alice");
     expect(session.id).toBeDefined();
-    expect(session.appName).toBe('TestApp');
+    expect(session.appName).toBe("TestApp");
   });
-  
+
   // More tests...
 });
 ```

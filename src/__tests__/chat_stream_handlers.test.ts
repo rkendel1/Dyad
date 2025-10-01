@@ -1215,13 +1215,15 @@ describe("countFileOperations", () => {
   });
 
   it("should count a single complete write tag", () => {
-    const text = '<dyad-write path="src/App.tsx" description="Main app">export default function App() {}</dyad-write>';
+    const text =
+      '<dyad-write path="src/App.tsx" description="Main app">export default function App() {}</dyad-write>';
     const result = countFileOperations(text);
     expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
   });
 
   it("should count a single incomplete write tag", () => {
-    const text = '<dyad-write path="src/App.tsx" description="Main app">export default function App() {';
+    const text =
+      '<dyad-write path="src/App.tsx" description="Main app">export default function App() {';
     const result = countFileOperations(text);
     expect(result).toEqual({ completedFiles: 0, incompleteFiles: 1 });
   });
@@ -1245,7 +1247,8 @@ describe("countFileOperations", () => {
   });
 
   it("should count complete rename tags", () => {
-    const text = '<dyad-rename from="old.tsx" to="new.tsx">Renaming file</dyad-rename>';
+    const text =
+      '<dyad-rename from="old.tsx" to="new.tsx">Renaming file</dyad-rename>';
     const result = countFileOperations(text);
     expect(result).toEqual({ completedFiles: 1, incompleteFiles: 0 });
   });

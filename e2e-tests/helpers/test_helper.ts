@@ -1092,8 +1092,12 @@ export const test = base.extend<{
       process.env.DYAD_GATEWAY_URL = "http://localhost:3500/gateway/v1";
       process.env.E2E_TEST_BUILD = "true";
       // Increase memory limit for e2e tests
-      if (!process.env.NODE_OPTIONS || !process.env.NODE_OPTIONS.includes('--max-old-space-size')) {
-        process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --max-old-space-size=4096';
+      if (
+        !process.env.NODE_OPTIONS ||
+        !process.env.NODE_OPTIONS.includes("--max-old-space-size")
+      ) {
+        process.env.NODE_OPTIONS =
+          (process.env.NODE_OPTIONS || "") + " --max-old-space-size=4096";
       }
       if (!electronConfig.showSetupScreen) {
         // This is just a hack to avoid the AI setup screen.

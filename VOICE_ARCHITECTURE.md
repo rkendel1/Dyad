@@ -171,9 +171,10 @@ Prompt sent to AI with context
 ## Key Integration Points
 
 ### 1. Voice Input → Chat
+
 ```typescript
 // VoiceInputButton captures transcript
-onTranscriptChange(transcript) → 
+onTranscriptChange(transcript) →
   // Updates chat input value
   setInputValue(transcript) →
     // User submits or edits
@@ -181,6 +182,7 @@ onTranscriptChange(transcript) →
 ```
 
 ### 2. Emotion Detection → Adaptive Prompts
+
 ```typescript
 // Analyze each message
 emotionDetectionService.analyzeMessage(message) →
@@ -193,6 +195,7 @@ emotionDetectionService.analyzeMessage(message) →
 ```
 
 ### 3. Settings Persistence
+
 ```typescript
 // Load settings
 IpcClient.getVoiceSettings() →
@@ -205,6 +208,7 @@ IpcClient.getVoiceSettings() →
 ```
 
 ### 4. VS Code Integration
+
 ```typescript
 // User activates voice command
 Command Palette → "Dyad: Start Voice Input" →

@@ -114,7 +114,9 @@ export function VoiceInputButton({
 
     if (voiceState.frustrationLevel > 0.6) {
       return (
-        <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${color} animate-pulse`} />
+        <div
+          className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${color} animate-pulse`}
+        />
       );
     }
 
@@ -149,8 +151,11 @@ export function VoiceInputButton({
                   <p className="font-medium">Detected Emotion:</p>
                   <p className="capitalize">
                     {voiceState.emotionState}
-                    {voiceState.frustrationLevel > 0.6 && " (High frustration detected)"}
-                    {voiceState.frustrationLevel > 0.3 && voiceState.frustrationLevel <= 0.6 && " (Some frustration detected)"}
+                    {voiceState.frustrationLevel > 0.6 &&
+                      " (High frustration detected)"}
+                    {voiceState.frustrationLevel > 0.3 &&
+                      voiceState.frustrationLevel <= 0.6 &&
+                      " (Some frustration detected)"}
                   </p>
                 </div>
               )}

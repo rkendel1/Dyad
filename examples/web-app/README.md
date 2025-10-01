@@ -56,30 +56,30 @@ The web application uses the Dyad HTTP REST API to:
 Here's a simple example of how the web app interacts with the API:
 
 ```javascript
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = "http://localhost:3000";
 
 // Check if API is available
 async function checkHealth() {
-    const response = await fetch(`${API_BASE_URL}/api/health`);
-    const data = await response.json();
-    return data.success;
+  const response = await fetch(`${API_BASE_URL}/api/health`);
+  const data = await response.json();
+  return data.success;
 }
 
 // Load all applications
 async function loadApps() {
-    const response = await fetch(`${API_BASE_URL}/api/apps`);
-    const data = await response.json();
-    return data.data.apps;
+  const response = await fetch(`${API_BASE_URL}/api/apps`);
+  const data = await response.json();
+  return data.data.apps;
 }
 
 // Create a new chat
 async function createChat(appId) {
-    const response = await fetch(`${API_BASE_URL}/api/apps/${appId}/chats`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    });
-    const data = await response.json();
-    return data.data;
+  const response = await fetch(`${API_BASE_URL}/api/apps/${appId}/chats`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await response.json();
+  return data.data;
 }
 ```
 

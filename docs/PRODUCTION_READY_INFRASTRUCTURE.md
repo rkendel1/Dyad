@@ -3,6 +3,7 @@
 This document describes the production-ready enhancements added to Dyad for improved code quality, maintainability, and scalability.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Centralized Type System](#centralized-type-system)
 - [API Layer Architecture](#api-layer-architecture)
@@ -25,6 +26,7 @@ The following enhancements have been implemented to make Dyad production-ready:
 ## Centralized Type System
 
 ### Location
+
 ```
 src/types/
 ├── index.ts              # Central export
@@ -37,18 +39,17 @@ src/types/
 ```
 
 ### Usage
+
 ```typescript
 // Import from centralized location
-import type { App, Chat, Message } from '@/types';
+import type { App, Chat, Message } from "@/types";
 
 // Types are organized by domain
-import type { 
-  CreateAppParams,
-  CreateAppResult 
-} from '@/types';
+import type { CreateAppParams, CreateAppResult } from "@/types";
 ```
 
 ### Benefits
+
 - Single source of truth for all types
 - Prevents type duplication
 - Easier refactoring
@@ -57,6 +58,7 @@ import type {
 ## API Layer Architecture
 
 ### Structure
+
 ```
 src/api/
 ├── services/             # Business logic layer
@@ -69,6 +71,7 @@ src/api/
 ```
 
 ### Service Pattern
+
 ```typescript
 // Service encapsulates business logic
 export class AppService {
@@ -78,12 +81,13 @@ export class AppService {
 }
 
 // Handler delegates to service
-ipcMain.handle('create-app', async (event, params) => {
+ipcMain.handle("create-app", async (event, params) => {
   return await appService.createApp(params);
 });
 ```
 
 ### Benefits
+
 - Testable business logic
 - Reusable across transports (IPC, HTTP, CLI)
 - Clear separation of concerns
@@ -92,6 +96,7 @@ ipcMain.handle('create-app', async (event, params) => {
 ## OpenAPI Documentation
 
 ### Generation
+
 ```bash
 # Generate OpenAPI spec
 npm run openapi:generate
@@ -100,28 +105,33 @@ npm run openapi:generate
 This creates `openapi.json` with the complete API specification.
 
 ### Features
+
 - Programmatic spec generation from types
 - Swagger UI integration (future)
 - API client generation
 - Contract testing
 
 ### Specification
+
 The OpenAPI spec includes:
+
 - All API endpoints
 - Request/response schemas
 - Type definitions
 - Examples and descriptions
 
 ### Integration
+
 ```typescript
 // VSCode extension can use the spec
-import spec from './openapi.json';
+import spec from "./openapi.json";
 const client = new OpenAPIClient(spec);
 ```
 
 ## Autonomous Refactoring
 
 ### Code Metrics
+
 ```bash
 # Analyze code quality
 npm run quality:analyze
@@ -131,6 +141,7 @@ npm run quality:report
 ```
 
 ### Features
+
 1. **Automated Quality Metrics**
    - Lines of code per file
    - Cyclomatic complexity
@@ -149,6 +160,7 @@ npm run quality:report
    - Quality-aware code generation
 
 ### Configuration
+
 ```typescript
 // Default thresholds
 const config = {
@@ -160,14 +172,16 @@ const config = {
 ```
 
 ### Enhanced Proposal System
+
 The refactoring engine is integrated with the proposal system:
+
 ```typescript
 // Automatically suggests refactoring for large files
 if (fileLines > 300) {
   actions.push({
-    id: 'refactor-file',
+    id: "refactor-file",
     path: filePath,
-    description: 'File is too large and should be refactored',
+    description: "File is too large and should be refactored",
   });
 }
 ```
@@ -175,7 +189,9 @@ if (fileLines > 300) {
 ## Coding Standards
 
 ### Documentation
+
 Comprehensive coding standards are available in:
+
 - [Coding Standards](./docs/guidelines/CODING_STANDARDS.md)
 - [Architecture Overview](./docs/architecture/ARCHITECTURE.md)
 - [ADRs](./docs/adr/) - Architecture Decision Records
@@ -205,23 +221,32 @@ Comprehensive coding standards are available in:
 ### Patterns to Follow
 
 **Service Pattern**
+
 ```typescript
 export class UserService {
-  async getUser(id: number): Promise<User> { /* ... */ }
+  async getUser(id: number): Promise<User> {
+    /* ... */
+  }
 }
 ```
 
 **Repository Pattern**
+
 ```typescript
 export class AppRepository {
-  async findById(id: number): Promise<App | null> { /* ... */ }
+  async findById(id: number): Promise<App | null> {
+    /* ... */
+  }
 }
 ```
 
 **Factory Pattern**
+
 ```typescript
 export class ChatFactory {
-  static create(appId: number): Chat { /* ... */ }
+  static create(appId: number): Chat {
+    /* ... */
+  }
 }
 ```
 
@@ -230,18 +255,20 @@ export class ChatFactory {
 ### For Developers
 
 1. **Adding New Types**
+
    ```typescript
    // Add to appropriate file in src/types/
    export interface NewFeature {
      id: number;
      name: string;
    }
-   
+
    // Export from index.ts
-   export * from './new-feature.types';
+   export * from "./new-feature.types";
    ```
 
 2. **Creating Services**
+
    ```typescript
    // Create service in src/api/services/
    export class FeatureService {
@@ -252,6 +279,7 @@ export class ChatFactory {
    ```
 
 3. **Checking Code Quality**
+
    ```bash
    npm run quality:analyze
    ```
@@ -264,6 +292,7 @@ export class ChatFactory {
 ### For Code Reviews
 
 Check for:
+
 - [ ] Types defined in `src/types/`
 - [ ] Services used for business logic
 - [ ] Files under 300 lines
@@ -302,6 +331,7 @@ All architectural decisions are documented in [docs/adr/](./docs/adr/):
 ## Future Enhancements
 
 ### Planned Features
+
 1. **HTTP API Server** - Expose services via HTTP
 2. **Swagger UI** - Interactive API documentation
 3. **API Versioning** - Support multiple API versions
@@ -312,6 +342,7 @@ All architectural decisions are documented in [docs/adr/](./docs/adr/):
 ### Contributing
 
 When adding new features:
+
 1. Follow the coding standards
 2. Add types to `src/types/`
 3. Use service layer for business logic
@@ -332,6 +363,7 @@ The new infrastructure is designed for gradual adoption:
 ### Backward Compatibility
 
 Existing code continues to work:
+
 - Old import paths still function
 - Handlers can gradually move to services
 - No breaking changes required
@@ -360,6 +392,7 @@ npm run test:watch          # Watch mode
 ## Support
 
 For questions or issues:
+
 - Check [Coding Standards](./docs/guidelines/CODING_STANDARDS.md)
 - Review [Architecture Docs](./docs/architecture/ARCHITECTURE.md)
 - Read relevant [ADRs](./docs/adr/)

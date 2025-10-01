@@ -7,13 +7,15 @@ This guide helps developers migrate their code to use the new centralized type s
 ## Quick Reference
 
 ### Before (Old)
+
 ```typescript
-import type { App, Chat, Message } from '../ipc/ipc_types';
+import type { App, Chat, Message } from "../ipc/ipc_types";
 ```
 
 ### After (New)
+
 ```typescript
-import type { App, Chat, Message } from '@/types';
+import type { App, Chat, Message } from "@/types";
 ```
 
 ## Breaking Changes
@@ -46,30 +48,33 @@ grep -r "from.*ipc_types" --include="*.ts" --include="*.tsx" src/
 ### 2. Examples by File Location
 
 #### In `src/components/`
+
 ```typescript
 // Before
-import type { App, Chat } from '../../ipc/ipc_types';
+import type { App, Chat } from "../../ipc/ipc_types";
 
 // After
-import type { App, Chat } from '@/types';
+import type { App, Chat } from "@/types";
 ```
 
 #### In `src/hooks/`
+
 ```typescript
 // Before
-import type { Message } from '../ipc/ipc_types';
+import type { Message } from "../ipc/ipc_types";
 
 // After
-import type { Message } from '@/types';
+import type { Message } from "@/types";
 ```
 
 #### In `src/ipc/handlers/`
+
 ```typescript
 // Before
-import type { App, CreateAppParams } from '../ipc_types';
+import type { App, CreateAppParams } from "../ipc_types";
 
 // After
-import type { App, CreateAppParams } from '@/types';
+import type { App, CreateAppParams } from "@/types";
 ```
 
 ### 3. Benefits of Updating
@@ -127,6 +132,7 @@ type AppFromDB = {
 A few types were updated to match the actual implementation:
 
 #### LanguageModel
+
 ```typescript
 // Before
 export interface LanguageModel {
@@ -153,6 +159,7 @@ export type LanguageModel =
 **Impact**: If you were creating LanguageModel objects, ensure custom models include `id`.
 
 #### CreateCustomLanguageModelProviderParams
+
 ```typescript
 // Before
 export interface CreateCustomLanguageModelProviderParams {
@@ -173,6 +180,7 @@ export interface CreateCustomLanguageModelProviderParams {
 **Impact**: Provide an `id` when creating custom providers.
 
 #### CopyAppParams
+
 ```typescript
 // Before
 export interface CopyAppParams {
@@ -197,6 +205,7 @@ export interface CopyAppParams {
 The `get-app` handler now caches external API data:
 
 #### What Changed
+
 - First call to `get-app`: Fetches from external API and caches in database
 - Subsequent calls: Returns cached value from database
 - When integration ID changes: Cache is cleared and will be re-fetched
@@ -204,17 +213,20 @@ The `get-app` handler now caches external API data:
 #### What This Means for You
 
 **Benefits:**
+
 - Faster response times (no external API call)
 - Works offline once cached
 - Reduces risk of hitting rate limits
 
 **Potential Issues:**
+
 - Cached names may be slightly out of date
 - If you need fresh data, you'll need to manually clear cache (future enhancement)
 
 #### How to Force Refresh (if needed)
 
 Currently, to force a refresh:
+
 1. Disconnect and reconnect the integration, OR
 2. Manually set the cached field to `null` in database
 
@@ -250,6 +262,7 @@ npm test
 ### 4. Integration Tests
 
 Test the app manually:
+
 1. Create a new app
 2. Connect to Vercel/Supabase
 3. Verify project names display correctly
@@ -273,7 +286,8 @@ Test the app manually:
 
 ### Issue: Import errors after migration
 
-**Solution**: 
+**Solution**:
+
 1. Clear TypeScript cache: `rm -rf node_modules/.cache`
 2. Restart IDE/editor
 3. Rebuild: `npm run ts:main`
@@ -281,6 +295,7 @@ Test the app manually:
 ### Issue: Cached data is stale
 
 **Solution**: Currently, you can:
+
 1. Disconnect and reconnect the integration
 2. Or wait for future enhancement to add manual refresh
 
@@ -289,14 +304,17 @@ Test the app manually:
 You don't need to migrate everything at once. We recommend:
 
 ### Phase 1: New Code
+
 - All new code uses `@/types` imports
 - Add to code review checklist
 
 ### Phase 2: Modified Files
+
 - When editing a file, update imports to `@/types`
 - No separate migration PR needed
 
 ### Phase 3: Bulk Migration (Optional)
+
 - Run automated find/replace across codebase
 - Create separate PR for review
 - Only do this if you want to clean up completely

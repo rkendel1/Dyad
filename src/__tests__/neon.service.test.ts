@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 /**
  * Integration tests for NeonService
- * 
+ *
  * These tests verify the service layer exists and has the correct interface.
  * Full unit testing would require mocking Neon API and database dependencies.
  * The service layer provides:

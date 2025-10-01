@@ -23,26 +23,26 @@ export function registerVoiceSettingsHandlers() {
     "voice:get-settings",
     safeHandle(async () => {
       const settings = readSettings();
-      
+
       if (!settings.voiceSettings) {
         return DEFAULT_VOICE_SETTINGS;
       }
 
       return settings.voiceSettings as VoiceSettings;
-    })
+    }),
   );
 
   ipcMain.handle(
     "voice:update-settings",
     safeHandle(async (event, voiceSettings: VoiceSettings) => {
       const currentSettings = readSettings();
-      
+
       writeSettings({
         ...currentSettings,
         voiceSettings,
       });
 
       return voiceSettings;
-    })
+    }),
   );
 }

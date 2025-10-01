@@ -21,7 +21,7 @@ function parseGitHubUrl(repoUrl: string): { owner: string; repo: string } {
 function analyzeComplexity(
   language: string,
   fileCount: number,
-  dependencies: string[]
+  dependencies: string[],
 ): "simple" | "moderate" | "complex" {
   if (fileCount < 10 && dependencies.length < 5) return "simple";
   if (fileCount < 50 && dependencies.length < 20) return "moderate";
@@ -41,15 +41,21 @@ describe("GitHub Repository Analysis", () => {
     });
 
     it("should throw error for invalid URLs", () => {
-      expect(() => parseGitHubUrl("invalid-url")).toThrow("Invalid GitHub repository URL");
+      expect(() => parseGitHubUrl("invalid-url")).toThrow(
+        "Invalid GitHub repository URL",
+      );
     });
 
     it("should throw error for non-GitHub URLs", () => {
-      expect(() => parseGitHubUrl("https://gitlab.com/user/repo")).toThrow("Invalid GitHub repository URL");
+      expect(() => parseGitHubUrl("https://gitlab.com/user/repo")).toThrow(
+        "Invalid GitHub repository URL",
+      );
     });
 
     it("should throw error for URLs with insufficient path parts", () => {
-      expect(() => parseGitHubUrl("https://github.com/user")).toThrow("Invalid GitHub repository URL format");
+      expect(() => parseGitHubUrl("https://github.com/user")).toThrow(
+        "Invalid GitHub repository URL format",
+      );
     });
   });
 
@@ -60,18 +66,31 @@ describe("GitHub Repository Analysis", () => {
     });
 
     it("should classify medium repositories as moderate", () => {
-      const result = analyzeComplexity("JavaScript", 25, ["react", "redux", "axios", "lodash"]);
+      const result = analyzeComplexity("JavaScript", 25, [
+        "react",
+        "redux",
+        "axios",
+        "lodash",
+      ]);
       expect(result).toBe("moderate");
     });
 
     it("should classify large repositories as complex", () => {
-      const result = analyzeComplexity("TypeScript", 100, Array(30).fill(0).map((_, i) => `dep-${i}`));
+      const result = analyzeComplexity(
+        "TypeScript",
+        100,
+        Array(30)
+          .fill(0)
+          .map((_, i) => `dep-${i}`),
+      );
       expect(result).toBe("complex");
     });
 
     it("should handle edge cases correctly", () => {
       expect(analyzeComplexity("Python", 10, ["flask"])).toBe("moderate");
-      expect(analyzeComplexity("Go", 9, ["gin", "gorm", "testify", "cobra"])).toBe("simple");
+      expect(
+        analyzeComplexity("Go", 9, ["gin", "gorm", "testify", "cobra"]),
+      ).toBe("simple");
     });
   });
 });

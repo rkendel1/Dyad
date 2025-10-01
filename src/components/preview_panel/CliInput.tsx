@@ -27,9 +27,9 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
   // Handle command submission
   const handleSubmit = async () => {
     if (!command.trim() || isExecuting) return;
-    
+
     const trimmedCommand = command.trim();
-    
+
     // Handle built-in commands
     if (trimmedCommand === "help") {
       setShowHelp(true);
@@ -53,22 +53,24 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
 
     try {
       setIsExecuting(true);
-      
+
       // Send command to app's stdin
       await IpcClient.getInstance().respondToAppInput({
         appId: selectedAppId,
         response: trimmedCommand,
       });
-      
+
       addToHistory(trimmedCommand);
       setCommand("");
-      
+
       if (onCommandExecute) {
         onCommandExecute(trimmedCommand);
       }
     } catch (error) {
       console.error("Failed to execute command:", error);
-      toast.error(`Failed to execute command: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setIsExecuting(false);
     }
@@ -76,7 +78,7 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
 
   // Add command to history
   const addToHistory = (cmd: string) => {
-    setCommandHistory(prev => {
+    setCommandHistory((prev) => {
       const newHistory = [cmd, ...prev.filter((h: string) => h !== cmd)];
       return newHistory.slice(0, 50); // Keep last 50 commands
     });
@@ -133,16 +135,37 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
         <div>
           <p className="font-medium mb-1">Built-in Commands:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded">help</code> - Show this help message</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded">clear</code> - Clear console output</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded">help</code> - Show
+              this help message
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded">clear</code> -
+              Clear console output
+            </li>
           </ul>
         </div>
         <div>
           <p className="font-medium mb-1">Keyboard Shortcuts:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">Enter</kbd> - Execute command</li>
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑</kbd> / <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↓</kbd> - Navigate command history</li>
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">Esc</kbd> - Clear input or close help</li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                Enter
+              </kbd>{" "}
+              - Execute command
+            </li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑</kbd>{" "}
+              /{" "}
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↓</kbd>{" "}
+              - Navigate command history
+            </li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                Esc
+              </kbd>{" "}
+              - Clear input or close help
+            </li>
           </ul>
         </div>
         <div>
@@ -160,17 +183,21 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
   return (
     <div className="relative border-t border-border bg-background">
       {showHelp && helpContent}
-      
+
       <div className="flex items-center gap-2 px-4 py-2">
         <Terminal size={16} className="text-muted-foreground" />
-        
+
         <input
           ref={inputRef}
           type="text"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={selectedAppId ? "Enter command or app input..." : "No app running - start an app to send commands"}
+          placeholder={
+            selectedAppId
+              ? "Enter command or app input..."
+              : "No app running - start an app to send commands"
+          }
           disabled={isExecuting}
           className="flex-1 bg-transparent text-sm outline-none disabled:opacity-50"
         />

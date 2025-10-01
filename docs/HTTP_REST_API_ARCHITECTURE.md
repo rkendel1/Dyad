@@ -7,6 +7,7 @@ This document outlines the architecture and implementation plan for adding an HT
 ## Current Architecture
 
 ### Existing IPC Communication
+
 - **Protocol**: Electron IPC (Inter-Process Communication)
 - **Context**: Main process ↔ Renderer process
 - **Handlers**: Located in `src/ipc/handlers/`
@@ -14,7 +15,9 @@ This document outlines the architecture and implementation plan for adding an HT
 - **Service Layer**: Located in `src/api/services/` (recently implemented)
 
 ### Service Layer Foundation
+
 The service layer has been implemented to separate business logic from transport concerns:
+
 - `AppService` - Application management operations
 - `ChatService` - Chat and message operations
 - `NeonService` - Neon database integration
@@ -24,6 +27,7 @@ The service layer has been implemented to separate business logic from transport
 ## Proposed HTTP REST API Architecture
 
 ### Technology Stack
+
 1. **HTTP Framework**: Express.js (Node.js)
    - Well-established and widely used
    - Good TypeScript support
@@ -88,6 +92,7 @@ The service layer has been implemented to separate business logic from transport
 ### API Endpoints Structure
 
 #### Application Management
+
 - `GET /api/apps` - List all applications
 - `GET /api/apps/:id` - Get specific application
 - `POST /api/apps` - Create new application
@@ -100,6 +105,7 @@ The service layer has been implemented to separate business logic from transport
 - `GET /api/apps/:id/status` - Get application status
 
 #### Chat Management
+
 - `GET /api/apps/:appId/chats` - List chats for an app
 - `GET /api/chats/:id` - Get specific chat
 - `POST /api/apps/:appId/chats` - Create new chat
@@ -109,6 +115,7 @@ The service layer has been implemented to separate business logic from transport
 - `POST /api/chats/:id/messages` - Send message (with streaming support)
 
 #### Health & Status
+
 - `GET /api/health` - Health check endpoint
 - `GET /api/version` - Get application version
 - `GET /api/status` - Get system status
@@ -116,6 +123,7 @@ The service layer has been implemented to separate business logic from transport
 ### Implementation Plan
 
 #### Phase 1: Foundation (Week 1-2)
+
 1. Set up Express.js server in Electron main process
 2. Configure CORS and security middleware
 3. Implement basic health check endpoint
@@ -123,6 +131,7 @@ The service layer has been implemented to separate business logic from transport
 5. Create base controller and route structure
 
 **Files to Create:**
+
 - `src/api/http/server.ts` - HTTP server setup
 - `src/api/http/routes/` - Route definitions
 - `src/api/http/controllers/` - Controller implementations
@@ -130,6 +139,7 @@ The service layer has been implemented to separate business logic from transport
 - `src/api/http/docs/` - OpenAPI documentation
 
 #### Phase 2: Core Endpoints (Week 3-4)
+
 1. Implement application management endpoints
 2. Add chat management endpoints
 3. Implement authentication and authorization
@@ -137,6 +147,7 @@ The service layer has been implemented to separate business logic from transport
 5. Implement error handling
 
 **Key Tasks:**
+
 - Create AppController using AppService
 - Create ChatController using ChatService
 - Implement JWT authentication
@@ -144,6 +155,7 @@ The service layer has been implemented to separate business logic from transport
 - Implement consistent error responses
 
 #### Phase 3: Advanced Features (Week 5-6)
+
 1. Add streaming support for chat messages
 2. Implement WebSocket support for real-time updates
 3. Add rate limiting and throttling
@@ -151,6 +163,7 @@ The service layer has been implemented to separate business logic from transport
 5. Add request logging and monitoring
 
 **Key Tasks:**
+
 - Set up Server-Sent Events (SSE) for streaming
 - Configure Socket.IO for WebSocket support
 - Implement rate limiting middleware
@@ -158,6 +171,7 @@ The service layer has been implemented to separate business logic from transport
 - Add structured logging
 
 #### Phase 4: Testing & Documentation (Week 7-8)
+
 1. Write comprehensive API tests
 2. Complete OpenAPI documentation
 3. Generate client SDKs
@@ -165,6 +179,7 @@ The service layer has been implemented to separate business logic from transport
 5. Performance testing and optimization
 
 **Key Tasks:**
+
 - Unit tests for controllers
 - Integration tests for API endpoints
 - Complete API reference documentation
@@ -174,12 +189,14 @@ The service layer has been implemented to separate business logic from transport
 ### Security Considerations
 
 #### Authentication Options
+
 1. **Local Development**: No authentication required (localhost only)
 2. **Token-Based**: JWT tokens for programmatic access
 3. **API Keys**: For external integrations
 4. **OAuth**: For third-party app integration (future)
 
 #### Security Measures
+
 - CORS configuration for allowed origins
 - Rate limiting per IP/token
 - Input sanitization and validation
@@ -190,6 +207,7 @@ The service layer has been implemented to separate business logic from transport
 ### Configuration
 
 #### Server Configuration
+
 ```typescript
 interface HttpServerConfig {
   enabled: boolean;
@@ -213,7 +231,9 @@ interface HttpServerConfig {
 ```
 
 #### Settings UI
+
 Add HTTP API configuration to Dyad Desktop settings:
+
 - Enable/disable HTTP API
 - Configure port number
 - Manage API keys
@@ -222,6 +242,7 @@ Add HTTP API configuration to Dyad Desktop settings:
 ### Benefits
 
 #### For Users
+
 1. **External Tool Integration**: Connect Dyad to other tools and workflows
 2. **CLI Tools**: Build command-line interfaces for Dyad
 3. **Remote Access**: Access Dyad from other machines (with proper security)
@@ -229,6 +250,7 @@ Add HTTP API configuration to Dyad Desktop settings:
 5. **Monitoring**: Integrate with monitoring and alerting systems
 
 #### For Developers
+
 1. **Language Agnostic**: Use any programming language to interact with Dyad
 2. **Standard Protocol**: HTTP/REST is universally understood
 3. **Easy Testing**: Use tools like Postman, curl, or HTTPie
@@ -238,6 +260,7 @@ Add HTTP API configuration to Dyad Desktop settings:
 ### Backward Compatibility
 
 The HTTP REST API will be **additive** and will not affect existing functionality:
+
 - IPC handlers remain unchanged
 - Existing Dyad Desktop UI continues to use IPC
 - VS Code extension can continue using current API or migrate to HTTP
@@ -256,11 +279,13 @@ The HTTP REST API will be **additive** and will not affect existing functionalit
 The service layer already provides the abstraction needed:
 
 **Current:**
+
 ```typescript
 IPC Handler → Service Method → Database/Business Logic
 ```
 
 **After HTTP API:**
+
 ```typescript
 IPC Handler → Service Method → Database/Business Logic
 HTTP Controller → Service Method → Database/Business Logic

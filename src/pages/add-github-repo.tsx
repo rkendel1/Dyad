@@ -3,18 +3,24 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  ArrowLeft, 
-  Github, 
-  Info, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  ArrowLeft,
+  Github,
+  Info,
+  CheckCircle,
+  AlertCircle,
   Loader2,
   Sparkles,
   Code,
-  Settings
+  Settings,
 } from "lucide-react";
 import { IpcClient } from "@/ipc/ipc_client";
 import { useMutation } from "@tanstack/react-query";
@@ -37,39 +43,47 @@ interface RepoAnalysisResult {
     mainTechnology: string;
     framework: string;
     dependencies: string[];
-    complexity: 'simple' | 'moderate' | 'complex';
+    complexity: "simple" | "moderate" | "complex";
     integrationApproaches: {
       recreate: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
       integrate: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
       tailor: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
     };
-    recommendation: 'recreate' | 'integrate' | 'tailor';
+    recommendation: "recreate" | "integrate" | "tailor";
     reasoning: string;
   };
 }
 
-type IntegrationStep = 'input' | 'analyzing' | 'results' | 'processing' | 'complete';
+type IntegrationStep =
+  | "input"
+  | "analyzing"
+  | "results"
+  | "processing"
+  | "complete";
 
 export default function AddGitHubRepoPage() {
   const navigate = useNavigate();
   const [githubUrl, setGithubUrl] = useState("");
   const [githubUrlError, setGithubUrlError] = useState("");
-  const [currentStep, setCurrentStep] = useState<IntegrationStep>('input');
-  const [analysisResult, setAnalysisResult] = useState<RepoAnalysisResult | null>(null);
-  const [selectedApproach, setSelectedApproach] = useState<'recreate' | 'integrate' | 'tailor' | null>(null);
-  
+  const [currentStep, setCurrentStep] = useState<IntegrationStep>("input");
+  const [analysisResult, setAnalysisResult] =
+    useState<RepoAnalysisResult | null>(null);
+  const [selectedApproach, setSelectedApproach] = useState<
+    "recreate" | "integrate" | "tailor" | null
+  >(null);
+
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const { app } = useLoadApp(selectedAppId);
 
@@ -109,26 +123,28 @@ export default function AddGitHubRepoPage() {
   const analyzeRepoMutation = useMutation({
     mutationFn: async (repoUrl: string) => {
       if (!selectedAppId) {
-        throw new Error("No app selected. Please go back and select an app first.");
+        throw new Error(
+          "No app selected. Please go back and select an app first.",
+        );
       }
-      
-      setCurrentStep('analyzing');
-      
+
+      setCurrentStep("analyzing");
+
       // This will be implemented as a new IPC handler
       const result = await IpcClient.getInstance().analyzeGithubRepo({
         repoUrl,
         targetAppId: selectedAppId,
       });
-      
+
       return result;
     },
     onSuccess: (result) => {
       setAnalysisResult(result);
-      setCurrentStep('results');
+      setCurrentStep("results");
     },
     onError: (error: Error) => {
       showError(error.message);
-      setCurrentStep('input');
+      setCurrentStep("input");
     },
   });
 
@@ -138,7 +154,7 @@ export default function AddGitHubRepoPage() {
         throw new Error("Missing required data for integration");
       }
 
-      setCurrentStep('processing');
+      setCurrentStep("processing");
 
       // This will be implemented as a new IPC handler
       const result = await IpcClient.getInstance().integrateGithubRepo({
@@ -151,12 +167,12 @@ export default function AddGitHubRepoPage() {
       return result;
     },
     onSuccess: () => {
-      setCurrentStep('complete');
+      setCurrentStep("complete");
       showSuccess("GitHub repository integrated successfully!");
     },
     onError: (error: Error) => {
       showError(error.message);
-      setCurrentStep('results');
+      setCurrentStep("results");
     },
   });
 
@@ -177,71 +193,72 @@ export default function AddGitHubRepoPage() {
 
   const getStepIcon = (step: IntegrationStep) => {
     switch (step) {
-      case 'input':
+      case "input":
         return <Github className="h-5 w-5" />;
-      case 'analyzing':
+      case "analyzing":
         return <Loader2 className="h-5 w-5 animate-spin" />;
-      case 'results':
+      case "results":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'processing':
+      case "processing":
         return <Loader2 className="h-5 w-5 animate-spin" />;
-      case 'complete':
+      case "complete":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
     }
   };
 
-  const getApproachIcon = (approach: 'recreate' | 'integrate' | 'tailor') => {
+  const getApproachIcon = (approach: "recreate" | "integrate" | "tailor") => {
     switch (approach) {
-      case 'recreate':
+      case "recreate":
         return <Sparkles className="h-4 w-4" />;
-      case 'integrate':
+      case "integrate":
         return <Code className="h-4 w-4" />;
-      case 'tailor':
+      case "tailor":
         return <Settings className="h-4 w-4" />;
     }
   };
 
-  const getApproachTitle = (approach: 'recreate' | 'integrate' | 'tailor') => {
+  const getApproachTitle = (approach: "recreate" | "integrate" | "tailor") => {
     switch (approach) {
-      case 'recreate':
-        return 'Recreate Functionality';
-      case 'integrate':
-        return 'Integrate As-Is';
-      case 'tailor':
-        return 'Tailor Integration';
+      case "recreate":
+        return "Recreate Functionality";
+      case "integrate":
+        return "Integrate As-Is";
+      case "tailor":
+        return "Tailor Integration";
     }
   };
 
-  const getEffortColor = (effort: 'low' | 'medium' | 'high') => {
+  const getEffortColor = (effort: "low" | "medium" | "high") => {
     switch (effort) {
-      case 'low':
-        return 'text-green-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'high':
-        return 'text-red-600';
+      case "low":
+        return "text-green-600";
+      case "medium":
+        return "text-yellow-600";
+      case "high":
+        return "text-red-600";
     }
   };
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-6">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => navigate({ to: "/" })}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
         </Button>
-        
+
         <div className="flex items-center gap-3 mb-2">
           {getStepIcon(currentStep)}
           <h1 className="text-3xl font-bold">Add GitHub Repository</h1>
         </div>
-        
+
         <p className="text-muted-foreground">
-          Integrate a GitHub repository into your app with intelligent analysis and customized approaches.
+          Integrate a GitHub repository into your app with intelligent analysis
+          and customized approaches.
         </p>
       </div>
 
@@ -249,7 +266,8 @@ export default function AddGitHubRepoPage() {
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            No app selected. Please go back to the home page and select an app before adding a GitHub repository.
+            No app selected. Please go back to the home page and select an app
+            before adding a GitHub repository.
           </AlertDescription>
         </Alert>
       )}
@@ -263,12 +281,13 @@ export default function AddGitHubRepoPage() {
         </Alert>
       )}
 
-      {currentStep === 'input' && (
+      {currentStep === "input" && (
         <Card>
           <CardHeader>
             <CardTitle>Repository Information</CardTitle>
             <CardDescription>
-              Enter the GitHub repository URL you want to integrate into your app.
+              Enter the GitHub repository URL you want to integrate into your
+              app.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -285,18 +304,24 @@ export default function AddGitHubRepoPage() {
                 <p className="text-sm text-red-500">{githubUrlError}</p>
               )}
             </div>
-            
+
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                This feature will analyze the repository and suggest the best way to integrate it into your existing app, 
-                whether that's recreating the functionality, integrating it as-is, or tailoring it to your specific needs.
+                This feature will analyze the repository and suggest the best
+                way to integrate it into your existing app, whether that's
+                recreating the functionality, integrating it as-is, or tailoring
+                it to your specific needs.
               </AlertDescription>
             </Alert>
 
-            <Button 
+            <Button
               onClick={handleAnalyze}
-              disabled={!validateGithubUrl(githubUrl) || analyzeRepoMutation.isPending || !selectedAppId}
+              disabled={
+                !validateGithubUrl(githubUrl) ||
+                analyzeRepoMutation.isPending ||
+                !selectedAppId
+              }
               className="w-full"
             >
               {analyzeRepoMutation.isPending ? (
@@ -315,21 +340,22 @@ export default function AddGitHubRepoPage() {
         </Card>
       )}
 
-      {currentStep === 'analyzing' && (
+      {currentStep === "analyzing" && (
         <Card>
           <CardContent className="py-12">
             <div className="text-center space-y-4">
               <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-500" />
               <h3 className="text-lg font-semibold">Analyzing Repository</h3>
               <p className="text-muted-foreground">
-                Examining the repository structure, dependencies, and determining the best integration approach...
+                Examining the repository structure, dependencies, and
+                determining the best integration approach...
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {currentStep === 'results' && analysisResult && (
+      {currentStep === "results" && analysisResult && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -345,28 +371,39 @@ export default function AddGitHubRepoPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p className="font-medium">Language</p>
-                  <p className="text-muted-foreground">{analysisResult.repository.language}</p>
+                  <p className="text-muted-foreground">
+                    {analysisResult.repository.language}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium">Framework</p>
-                  <p className="text-muted-foreground">{analysisResult.analysis.framework}</p>
+                  <p className="text-muted-foreground">
+                    {analysisResult.analysis.framework}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium">Stars</p>
-                  <p className="text-muted-foreground">{analysisResult.repository.stars}</p>
+                  <p className="text-muted-foreground">
+                    {analysisResult.repository.stars}
+                  </p>
                 </div>
                 <div>
                   <p className="font-medium">Complexity</p>
-                  <p className="text-muted-foreground capitalize">{analysisResult.analysis.complexity}</p>
+                  <p className="text-muted-foreground capitalize">
+                    {analysisResult.analysis.complexity}
+                  </p>
                 </div>
               </div>
-              
+
               {analysisResult.repository.topics.length > 0 && (
                 <div>
                   <p className="font-medium mb-2">Topics</p>
                   <div className="flex flex-wrap gap-2">
                     {analysisResult.repository.topics.map((topic) => (
-                      <span key={topic} className="px-2 py-1 bg-secondary rounded-md text-xs">
+                      <span
+                        key={topic}
+                        className="px-2 py-1 bg-secondary rounded-md text-xs"
+                      >
                         {topic}
                       </span>
                     ))}
@@ -380,32 +417,40 @@ export default function AddGitHubRepoPage() {
             <CardHeader>
               <CardTitle>Integration Approaches</CardTitle>
               <CardDescription>
-                Choose how you'd like to integrate this repository into your app.
+                Choose how you'd like to integrate this repository into your
+                app.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(analysisResult.analysis.integrationApproaches).map(([key, approach]) => {
-                const approachKey = key as 'recreate' | 'integrate' | 'tailor';
-                const isRecommended = analysisResult.analysis.recommendation === approachKey;
-                
+              {Object.entries(
+                analysisResult.analysis.integrationApproaches,
+              ).map(([key, approach]) => {
+                const approachKey = key as "recreate" | "integrate" | "tailor";
+                const isRecommended =
+                  analysisResult.analysis.recommendation === approachKey;
+
                 return (
                   <div
                     key={key}
                     className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      selectedApproach === approachKey 
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20' 
-                        : approach.feasible 
-                          ? 'border-gray-200 hover:border-gray-300' 
-                          : 'border-gray-100 opacity-50 cursor-not-allowed'
-                    } ${isRecommended ? 'ring-2 ring-green-500/20' : ''}`}
-                    onClick={() => approach.feasible && setSelectedApproach(approachKey)}
+                      selectedApproach === approachKey
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
+                        : approach.feasible
+                          ? "border-gray-200 hover:border-gray-300"
+                          : "border-gray-100 opacity-50 cursor-not-allowed"
+                    } ${isRecommended ? "ring-2 ring-green-500/20" : ""}`}
+                    onClick={() =>
+                      approach.feasible && setSelectedApproach(approachKey)
+                    }
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         {getApproachIcon(approachKey)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{getApproachTitle(approachKey)}</h4>
+                            <h4 className="font-medium">
+                              {getApproachTitle(approachKey)}
+                            </h4>
                             {isRecommended && (
                               <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                                 Recommended
@@ -417,15 +462,20 @@ export default function AddGitHubRepoPage() {
                           </p>
                           <div className="flex items-center gap-4 text-xs">
                             <span>
-                              Effort: <span className={getEffortColor(approach.effort)}>
+                              Effort:{" "}
+                              <span className={getEffortColor(approach.effort)}>
                                 {approach.effort}
                               </span>
                             </span>
                             <span>
                               {approach.feasible ? (
-                                <span className="text-green-600">✓ Feasible</span>
+                                <span className="text-green-600">
+                                  ✓ Feasible
+                                </span>
                               ) : (
-                                <span className="text-red-600">✗ Not feasible</span>
+                                <span className="text-red-600">
+                                  ✗ Not feasible
+                                </span>
                               )}
                             </span>
                           </div>
@@ -442,16 +492,17 @@ export default function AddGitHubRepoPage() {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                <strong>Recommendation:</strong> {analysisResult.analysis.reasoning}
+                <strong>Recommendation:</strong>{" "}
+                {analysisResult.analysis.reasoning}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => setCurrentStep('input')}>
+            <Button variant="outline" onClick={() => setCurrentStep("input")}>
               Back
             </Button>
-            <Button 
+            <Button
               onClick={handleIntegrate}
               disabled={!selectedApproach || integrateRepoMutation.isPending}
             >
@@ -461,43 +512,48 @@ export default function AddGitHubRepoPage() {
                   Integrating...
                 </>
               ) : (
-                'Integrate Repository'
+                "Integrate Repository"
               )}
             </Button>
           </div>
         </div>
       )}
 
-      {currentStep === 'processing' && (
+      {currentStep === "processing" && (
         <Card>
           <CardContent className="py-12">
             <div className="text-center space-y-4">
               <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-500" />
               <h3 className="text-lg font-semibold">Integrating Repository</h3>
               <p className="text-muted-foreground">
-                Applying the selected integration approach. This may take a few minutes...
+                Applying the selected integration approach. This may take a few
+                minutes...
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {currentStep === 'complete' && (
+      {currentStep === "complete" && (
         <Card>
           <CardContent className="py-12">
             <div className="text-center space-y-4">
               <CheckCircle className="h-12 w-12 mx-auto text-green-500" />
               <h3 className="text-lg font-semibold">Integration Complete!</h3>
               <p className="text-muted-foreground">
-                The GitHub repository has been successfully integrated into your app.
+                The GitHub repository has been successfully integrated into your
+                app.
               </p>
               <div className="flex gap-3 justify-center">
-                <Button variant="outline" onClick={() => {
-                  setCurrentStep('input');
-                  setGithubUrl("");
-                  setAnalysisResult(null);
-                  setSelectedApproach(null);
-                }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCurrentStep("input");
+                    setGithubUrl("");
+                    setAnalysisResult(null);
+                    setSelectedApproach(null);
+                  }}
+                >
                   Add Another Repository
                 </Button>
                 <Button onClick={() => navigate({ to: "/" })}>

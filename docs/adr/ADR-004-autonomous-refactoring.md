@@ -7,18 +7,21 @@
 ## Context
 
 Code quality degrades over time without active maintenance:
+
 - Files grow beyond manageable size
 - Complexity increases unchecked
 - Duplicated code spreads
 - Technical debt accumulates
 
 Current state:
+
 - Manual refactoring prompts in system prompt
 - Basic file size detection (500 lines threshold)
 - No automated quality tracking
 - Reactive rather than proactive
 
 Problems:
+
 1. **Inconsistent Enforcement**: Developers must remember to refactor
 2. **No Metrics**: No objective measure of code quality
 3. **Late Detection**: Issues found after they're entrenched
@@ -38,7 +41,9 @@ src/refactoring/
 **Components**:
 
 ### 1. Code Metrics Analyzer
+
 Tracks quality metrics:
+
 - Lines of code per file
 - Cyclomatic complexity
 - Number of dependencies
@@ -46,13 +51,16 @@ Tracks quality metrics:
 - Code duplication
 
 ### 2. Refactoring Engine
+
 Generates intelligent suggestions:
+
 - Identifies refactoring opportunities
 - Suggests specific improvements
 - Creates AI prompts for refactoring
 - Tracks refactoring history
 
 ### 3. Integration Points
+
 - **During Chat**: Check files before committing
 - **On File Write**: Analyze new/modified files
 - **Periodic Scans**: Background quality monitoring
@@ -84,6 +92,7 @@ Generates intelligent suggestions:
 ## Consequences
 
 ### Positive
+
 - **Proactive Quality**: Issues caught early
 - **Consistent Standards**: Automated enforcement
 - **Better Codebase**: Continuous improvement
@@ -91,11 +100,13 @@ Generates intelligent suggestions:
 - **Reduced Technical Debt**: Prevents accumulation
 
 ### Negative
+
 - **Computational Overhead**: Metrics calculation takes time
 - **False Positives**: Not all large files need refactoring
 - **Interruptions**: Suggestions might distract developers
 
 ### Mitigation
+
 - Cache metrics to reduce computation
 - Configurable thresholds and rules
 - Suggestions are non-blocking
@@ -104,32 +115,35 @@ Generates intelligent suggestions:
 ## Implementation
 
 ### Metrics Configuration
+
 ```typescript
 export interface MetricsConfig {
-  maxFileLines: number;        // Default: 300
-  maxFunctionLines: number;    // Default: 50
-  maxComplexity: number;       // Default: 10
-  maxDependencies: number;     // Default: 10
+  maxFileLines: number; // Default: 300
+  maxFunctionLines: number; // Default: 50
+  maxComplexity: number; // Default: 10
+  maxDependencies: number; // Default: 10
 }
 ```
 
 ### Refactoring Strategies
+
 ```typescript
 export type RefactoringStrategy = {
-  enableAutomatedRefactoring: boolean;  // Auto-refactor critical issues
-  enableSuggestions: boolean;           // Show suggestions to user
-  aggressiveness: 'conservative' | 'balanced' | 'aggressive';
+  enableAutomatedRefactoring: boolean; // Auto-refactor critical issues
+  enableSuggestions: boolean; // Show suggestions to user
+  aggressiveness: "conservative" | "balanced" | "aggressive";
 };
 ```
 
 ### Integration Example
+
 ```typescript
 // In proposal handler
 const refactoringAction = enhanceProposalWithRefactoring(writeTags);
 
 if (refactoringAction) {
   actions.push({
-    id: 'refactor-file',
+    id: "refactor-file",
     path: refactoringAction.targetFile,
     description: refactoringAction.description,
     prompt: refactoringAction.prompt,
@@ -140,21 +154,25 @@ if (refactoringAction) {
 ## Refactoring Rules
 
 ### 1. Large File Rule
+
 **Trigger**: File > 300 lines
 **Action**: Suggest splitting into modules
 **Prompt**: Generated based on file analysis
 
 ### 2. Complex Function Rule
+
 **Trigger**: Function > 50 lines or complexity > 10
 **Action**: Suggest extracting helpers
 **Prompt**: Identify extraction opportunities
 
 ### 3. High Coupling Rule
+
 **Trigger**: File imports > 10 modules
 **Action**: Suggest dependency reduction
 **Prompt**: Identify unnecessary dependencies
 
 ### 4. Duplicate Code Rule
+
 **Trigger**: Similar code blocks detected
 **Action**: Suggest extraction to utility
 **Prompt**: Extract common functionality
@@ -162,6 +180,7 @@ if (refactoringAction) {
 ## Customization
 
 Users can customize via settings:
+
 ```typescript
 {
   "refactoring": {
@@ -184,6 +203,7 @@ Users can customize via settings:
 ## Metrics Dashboard
 
 Future enhancement: Visual quality dashboard
+
 - Quality score per file/module
 - Trends over time
 - Hot spots requiring attention
@@ -192,18 +212,21 @@ Future enhancement: Visual quality dashboard
 ## Alternatives Considered
 
 ### 1. Static Analysis Only (ESLint/TSLint)
+
 **Pros**: Established tools, fast
 **Cons**: Limited to syntax, no semantic analysis
 
 **Rejected**: Need deeper analysis for refactoring
 
 ### 2. Manual Code Reviews
+
 **Pros**: Human judgment, context-aware
 **Cons**: Slow, inconsistent, doesn't scale
 
 **Rejected**: Too slow for continuous improvement
 
 ### 3. Full AST Analysis
+
 **Pros**: Perfect accuracy
 **Cons**: Complex, slow, heavy dependencies
 
@@ -212,16 +235,19 @@ Future enhancement: Visual quality dashboard
 ## Migration Strategy
 
 ### Phase 1: Monitoring
+
 - Deploy metrics analyzer
 - Collect baseline data
 - No automated actions
 
 ### Phase 2: Suggestions
+
 - Enable suggestion system
 - Train on user responses
 - Refine thresholds
 
 ### Phase 3: Automation
+
 - Enable automatic refactoring for critical issues
 - User can opt-in per file
 - Gradual rollout
@@ -229,6 +255,7 @@ Future enhancement: Visual quality dashboard
 ## Success Metrics
 
 Track effectiveness:
+
 1. **Code Quality**: Average file size over time
 2. **Response Rate**: % of suggestions accepted
 3. **False Positives**: % of incorrect suggestions

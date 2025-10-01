@@ -5,12 +5,14 @@ This feature enhances the Dyad desktop app with voice input capabilities and emo
 ## Features
 
 ### 1. Voice Input
+
 - **Web Speech API Integration**: Uses the browser's built-in speech recognition for privacy and low latency
 - **Microphone Button**: Click the microphone icon in the chat input to start/stop voice input
 - **Visual Feedback**: The button shows recording status with animations and color changes
 - **Transcript Display**: Interim results appear as you speak, final results are inserted into the chat input
 
 ### 2. Emotion Detection
+
 - **Sentiment Analysis**: Detects positive, negative, neutral, and frustrated emotional states
 - **Frustration Detection**: Identifies frustration through:
   - Repeated similar messages
@@ -22,7 +24,9 @@ This feature enhances the Dyad desktop app with voice input capabilities and emo
   - More helpful responses
 
 ### 3. Adaptive Responses
+
 When frustration is detected, the system:
+
 - Adds context to the AI prompt indicating the user needs extra help
 - Suggests clearer, more structured solutions
 - Provides step-by-step guidance instead of complex explanations
@@ -58,6 +62,7 @@ When frustration is detected, the system:
 ## Browser Compatibility
 
 Voice input requires a browser with Web Speech API support:
+
 - ✅ Chrome/Chromium (best support)
 - ✅ Microsoft Edge
 - ✅ Safari (limited support)
@@ -122,6 +127,7 @@ Voice settings can be configured in User Settings:
 ### IPC Communication
 
 Voice settings are persisted via IPC handlers:
+
 - `voice:get-settings` - Retrieve current voice settings
 - `voice:update-settings` - Update voice settings
 
@@ -146,11 +152,13 @@ Voice settings are persisted via IPC handlers:
 ## Testing
 
 Run emotion detection tests:
+
 ```bash
 npm test -- src/__tests__/emotion_detection.test.ts
 ```
 
 Test coverage includes:
+
 - Emotion state detection (neutral, positive, negative, frustrated)
 - Frustration detection from repetition
 - Error tracking and frustration triggers
@@ -160,17 +168,20 @@ Test coverage includes:
 ## Troubleshooting
 
 ### Voice input not working
+
 - Check browser compatibility (use Chrome/Edge)
 - Ensure microphone permissions are granted
 - Check browser console for errors
 - Try refreshing the page
 
 ### Emotion detection not activating
+
 - Check that emotionDetection is enabled in settings
 - Try messages with clear emotional keywords
 - Frustration requires multiple similar messages or errors
 
 ### No transcription appearing
+
 - Speak clearly and at normal volume
 - Check microphone input levels in system settings
 - Ensure correct language is selected

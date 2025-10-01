@@ -25,17 +25,21 @@ The Dyad HTTP REST API allows you to access and control Dyad's functionality thr
 Check if the API is working:
 
 ### Using curl (Terminal/Command Prompt)
+
 ```bash
 curl http://localhost:3000/api/health
 ```
 
 ### Using browser
+
 Open in your web browser:
+
 ```
 http://localhost:3000/api/health
 ```
 
 ### Expected response
+
 ```json
 {
   "success": true,
@@ -55,11 +59,13 @@ If you see this, the API is working! 🎉
 ### 1. List All Applications
 
 **Request:**
+
 ```bash
 curl http://localhost:3000/api/apps
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -81,6 +87,7 @@ curl http://localhost:3000/api/apps
 ### 2. Get Specific Application
 
 **Request:**
+
 ```bash
 curl http://localhost:3000/api/apps/1
 ```
@@ -88,11 +95,13 @@ curl http://localhost:3000/api/apps/1
 ### 3. Create a New Chat
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3000/api/apps/1/chats
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -108,6 +117,7 @@ curl -X POST http://localhost:3000/api/apps/1/chats
 ### 4. Send a Message
 
 **Request:**
+
 ```bash
 curl -X POST http://localhost:3000/api/chats/5/messages \
   -H "Content-Type: application/json" \
@@ -120,6 +130,7 @@ curl -X POST http://localhost:3000/api/chats/5/messages \
 ### 5. List Chat Messages
 
 **Request:**
+
 ```bash
 curl http://localhost:3000/api/chats/5/messages
 ```
@@ -131,6 +142,7 @@ We've included a fully functional web interface!
 ### How to Run It
 
 #### Option 1: Python (Recommended)
+
 ```bash
 cd examples/web-app
 python3 -m http.server 8080
@@ -139,6 +151,7 @@ python3 -m http.server 8080
 Then open: http://localhost:8080
 
 #### Option 2: Node.js
+
 ```bash
 npm install -g http-server
 cd examples/web-app
@@ -159,6 +172,7 @@ Then open: http://localhost:8080
 ### Screenshot
 
 The web app has a beautiful gradient interface with:
+
 - Purple gradient header
 - Application cards in a grid layout
 - Chat list with management buttons
@@ -174,6 +188,7 @@ node examples/test-api.js
 ```
 
 This will:
+
 1. Check API health
 2. List all applications
 3. Create a test chat
@@ -186,7 +201,7 @@ This will:
 ### JavaScript/TypeScript
 
 ```javascript
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = "http://localhost:3000";
 
 // Fetch all apps
 async function getApps() {
@@ -198,8 +213,8 @@ async function getApps() {
 // Create a chat
 async function createChat(appId) {
   const response = await fetch(`${BASE_URL}/api/apps/${appId}/chats`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
   });
   const data = await response.json();
   return data.data;
@@ -207,10 +222,10 @@ async function createChat(appId) {
 
 // Usage
 const apps = await getApps();
-console.log('Apps:', apps);
+console.log("Apps:", apps);
 
 const chat = await createChat(1);
-console.log('Created chat:', chat);
+console.log("Created chat:", chat);
 ```
 
 ### Python
@@ -269,6 +284,7 @@ For the complete list of all endpoints, request/response formats, and error hand
 👉 **[docs/HTTP_API.md](docs/HTTP_API.md)**
 
 This includes:
+
 - All 15 API endpoints
 - Request/response examples
 - Error codes and handling
@@ -283,6 +299,7 @@ This includes:
 **Problem:** Can't reach the API at http://localhost:3000
 
 **Solution:**
+
 1. Make sure Dyad Desktop is running
 2. Check if another application is using port 3000
 3. Look at Dyad logs for errors
@@ -292,6 +309,7 @@ This includes:
 **Problem:** API returns empty app list
 
 **Solution:**
+
 - Create at least one app in Dyad Desktop first
 - The API accesses the same data as the desktop app
 
@@ -300,6 +318,7 @@ This includes:
 **Problem:** Web interface can't connect to API
 
 **Solution:**
+
 1. Check if Dyad Desktop is running
 2. Try accessing http://localhost:3000/api/health directly
 3. Make sure you're running the web app through a local server (not opening HTML directly)
@@ -309,17 +328,20 @@ This includes:
 **Problem:** Browser blocks API requests
 
 **Solution:**
+
 - Run the web app through a local server (python or http-server)
 - Don't open the HTML file directly in the browser
 
 ## 🔐 Security Note
 
 By default:
+
 - API only accepts connections from `localhost`
 - No authentication required for localhost
 - CORS enabled for localhost origins only
 
 For production deployments:
+
 - Enable JWT authentication
 - Configure allowed origins
 - Use HTTPS
@@ -354,6 +376,6 @@ See `docs/HTTP_API.md` for security configuration.
 ✅ RESTful design with JSON responses  
 ✅ Works with any programming language  
 ✅ Example web app included  
-✅ Comprehensive documentation  
+✅ Comprehensive documentation
 
 **Start building with Dyad today!** 🚀

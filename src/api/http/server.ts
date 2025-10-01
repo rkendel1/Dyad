@@ -1,24 +1,27 @@
 /**
  * HTTP REST API Server
- * 
+ *
  * Express server for HTTP API alongside existing IPC mechanism
  */
 
-import express from 'express';
-import cors from 'cors';
-import type { Server } from 'http';
-import log from 'electron-log';
+import express from "express";
+import cors from "cors";
+import type { Server } from "http";
+import log from "electron-log";
 
 // Routes
-import healthRoutes from './routes/health.routes';
-import appRoutes from './routes/app.routes';
-import chatRoutes, { listChatsForApp, createChatForApp } from './routes/chat.routes';
+import healthRoutes from "./routes/health.routes";
+import appRoutes from "./routes/app.routes";
+import chatRoutes, {
+  listChatsForApp,
+  createChatForApp,
+} from "./routes/chat.routes";
 
 // Middleware
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { optionalAuth } from './middleware/auth';
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { optionalAuth } from "./middleware/auth";
 
-const logger = log.scope('http-server');
+const logger = log.scope("http-server");
 
 /**
  * HTTP Server Configuration
@@ -39,10 +42,10 @@ export interface HttpServerConfig {
 const DEFAULT_CONFIG: HttpServerConfig = {
   enabled: true,
   port: 3000,
-  host: 'localhost',
+  host: "localhost",
   cors: {
     enabled: true,
-    origins: ['http://localhost:*', 'http://127.0.0.1:*'],
+    origins: ["http://localhost:*", "http://127.0.0.1:*"],
   },
 };
 
@@ -68,36 +71,40 @@ export class HttpApiServer {
   private setupMiddleware(): void {
     // CORS
     if (this.config.cors.enabled) {
-      this.app.use(cors({
-        origin: (origin, callback) => {
-          // Allow requests with no origin (like mobile apps or curl requests)
-          if (!origin) {
-            return callback(null, true);
-          }
-
-          // Check if origin matches allowed patterns
-          const allowed = this.config.cors.origins.some(pattern => {
-            if (pattern.includes('*')) {
-              const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-              return regex.test(origin);
+      this.app.use(
+        cors({
+          origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) {
+              return callback(null, true);
             }
-            return pattern === origin;
-          });
 
-          if (allowed) {
-            callback(null, true);
-          } else {
-            logger.warn(`CORS: Origin ${origin} not allowed`);
-            callback(new Error('Not allowed by CORS'));
-          }
-        },
-        credentials: true,
-      }));
+            // Check if origin matches allowed patterns
+            const allowed = this.config.cors.origins.some((pattern) => {
+              if (pattern.includes("*")) {
+                const regex = new RegExp(
+                  "^" + pattern.replace(/\*/g, ".*") + "$",
+                );
+                return regex.test(origin);
+              }
+              return pattern === origin;
+            });
+
+            if (allowed) {
+              callback(null, true);
+            } else {
+              logger.warn(`CORS: Origin ${origin} not allowed`);
+              callback(new Error("Not allowed by CORS"));
+            }
+          },
+          credentials: true,
+        }),
+      );
     }
 
     // Body parsing
-    this.app.use(express.json({ limit: '50mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+    this.app.use(express.json({ limit: "50mb" }));
+    this.app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
     // Optional authentication (can be enabled per route)
     this.app.use(optionalAuth);
@@ -114,24 +121,24 @@ export class HttpApiServer {
    */
   private setupRoutes(): void {
     // Health check routes (no /api prefix for quick access)
-    this.app.use('/', healthRoutes);
+    this.app.use("/", healthRoutes);
 
     // API routes with /api prefix
     const apiRouter = express.Router();
 
     // Mount route modules
-    apiRouter.use('/apps', appRoutes);
-    apiRouter.use('/chats', chatRoutes);
+    apiRouter.use("/apps", appRoutes);
+    apiRouter.use("/chats", chatRoutes);
 
     // App-specific chat routes
-    apiRouter.get('/apps/:appId/chats', listChatsForApp);
-    apiRouter.post('/apps/:appId/chats', createChatForApp);
+    apiRouter.get("/apps/:appId/chats", listChatsForApp);
+    apiRouter.post("/apps/:appId/chats", createChatForApp);
 
     // Mount API router
-    this.app.use('/api', apiRouter);
+    this.app.use("/api", apiRouter);
 
     // Also mount health routes at /api for consistency
-    this.app.use('/api', healthRoutes);
+    this.app.use("/api", healthRoutes);
   }
 
   /**
@@ -150,30 +157,36 @@ export class HttpApiServer {
    */
   async start(): Promise<void> {
     if (!this.config.enabled) {
-      logger.info('HTTP API server is disabled');
+      logger.info("HTTP API server is disabled");
       return;
     }
 
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(this.config.port, this.config.host, () => {
-          logger.info(
-            `HTTP API server listening on http://${this.config.host}:${this.config.port}`
-          );
-          logger.info(`API endpoints available at http://${this.config.host}:${this.config.port}/api`);
-          resolve();
-        });
+        this.server = this.app.listen(
+          this.config.port,
+          this.config.host,
+          () => {
+            logger.info(
+              `HTTP API server listening on http://${this.config.host}:${this.config.port}`,
+            );
+            logger.info(
+              `API endpoints available at http://${this.config.host}:${this.config.port}/api`,
+            );
+            resolve();
+          },
+        );
 
-        this.server.on('error', (error: NodeJS.ErrnoException) => {
-          if (error.code === 'EADDRINUSE') {
+        this.server.on("error", (error: NodeJS.ErrnoException) => {
+          if (error.code === "EADDRINUSE") {
             logger.error(`Port ${this.config.port} is already in use`);
           } else {
-            logger.error('Server error:', error);
+            logger.error("Server error:", error);
           }
           reject(error);
         });
       } catch (error) {
-        logger.error('Failed to start HTTP server:', error);
+        logger.error("Failed to start HTTP server:", error);
         reject(error);
       }
     });
@@ -190,10 +203,10 @@ export class HttpApiServer {
     return new Promise((resolve, reject) => {
       this.server!.close((error) => {
         if (error) {
-          logger.error('Error stopping HTTP server:', error);
+          logger.error("Error stopping HTTP server:", error);
           reject(error);
         } else {
-          logger.info('HTTP API server stopped');
+          logger.info("HTTP API server stopped");
           this.server = null;
           resolve();
         }
@@ -222,7 +235,9 @@ let serverInstance: HttpApiServer | null = null;
 /**
  * Get or create the HTTP API server instance
  */
-export function getHttpApiServer(config?: Partial<HttpServerConfig>): HttpApiServer {
+export function getHttpApiServer(
+  config?: Partial<HttpServerConfig>,
+): HttpApiServer {
   if (!serverInstance) {
     serverInstance = new HttpApiServer(config);
   }
@@ -232,7 +247,9 @@ export function getHttpApiServer(config?: Partial<HttpServerConfig>): HttpApiSer
 /**
  * Start the HTTP API server
  */
-export async function startHttpApiServer(config?: Partial<HttpServerConfig>): Promise<HttpApiServer> {
+export async function startHttpApiServer(
+  config?: Partial<HttpServerConfig>,
+): Promise<HttpApiServer> {
   const server = getHttpApiServer(config);
   await server.start();
   return server;

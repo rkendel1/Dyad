@@ -7,7 +7,10 @@ interface ChunkIndicatorProps {
   className?: string;
 }
 
-export function ChunkIndicator({ chunkMetadata, className = "" }: ChunkIndicatorProps) {
+export function ChunkIndicator({
+  chunkMetadata,
+  className = "",
+}: ChunkIndicatorProps) {
   const { chunkIndex, totalChunks, chunkDeliveryStatus } = chunkMetadata;
 
   const getStatusIcon = () => {
@@ -68,9 +71,9 @@ interface ChunkedMessageIndicatorProps {
   className?: string;
 }
 
-export function ChunkedMessageIndicator({ 
-  chunkMetadata, 
-  className = "" 
+export function ChunkedMessageIndicator({
+  chunkMetadata,
+  className = "",
 }: ChunkedMessageIndicatorProps) {
   const { totalChunks, chunkDeliveryStatus, chunkIndex } = chunkMetadata;
 
@@ -131,10 +134,12 @@ export function ChunkedMessageIndicator({
   };
 
   const getStatusMessage = () => {
-    const fileInfo = chunkMetadata.filesDelivered !== undefined || chunkMetadata.filesPending !== undefined
-      ? ` (${chunkMetadata.filesDelivered || 0} file${(chunkMetadata.filesDelivered || 0) !== 1 ? 's' : ''} delivered${chunkMetadata.filesPending ? `, ${chunkMetadata.filesPending} pending` : ''})`
-      : '';
-    
+    const fileInfo =
+      chunkMetadata.filesDelivered !== undefined ||
+      chunkMetadata.filesPending !== undefined
+        ? ` (${chunkMetadata.filesDelivered || 0} file${(chunkMetadata.filesDelivered || 0) !== 1 ? "s" : ""} delivered${chunkMetadata.filesPending ? `, ${chunkMetadata.filesPending} pending` : ""})`
+        : "";
+
     switch (chunkDeliveryStatus) {
       case "delivering":
         return `Chunk ${chunkIndex + 1} of ${totalChunks} is being delivered...${fileInfo}`;
@@ -148,35 +153,44 @@ export function ChunkedMessageIndicator({
   };
 
   return (
-    <div className={`border rounded-md p-3 mb-2 ${getIndicatorColor()} ${className}`}>
+    <div
+      className={`border rounded-md p-3 mb-2 ${getIndicatorColor()} ${className}`}
+    >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5">
-          {getIndicatorIcon()}
-        </div>
+        <div className="flex-shrink-0 mt-0.5">{getIndicatorIcon()}</div>
         <div className="flex-1 min-w-0">
           <div className={`text-sm font-medium ${getTextColor()}`}>
-            {chunkDeliveryStatus === "failed" 
-              ? "Chunk Delivery Failed" 
-              : "Long Response - Chunked Delivery"
-            }
+            {chunkDeliveryStatus === "failed"
+              ? "Chunk Delivery Failed"
+              : "Long Response - Chunked Delivery"}
           </div>
           <div className={`text-xs mt-1 ${getSubtextColor()}`}>
             {getStatusMessage()}
           </div>
-          {chunkDeliveryStatus === "delivering" && chunkMetadata.filesPending && chunkMetadata.filesPending > 0 && (
-            <div className="text-xs mt-2 text-blue-700 bg-blue-100 rounded px-2 py-1">
-              <strong>More files incoming:</strong> {chunkMetadata.filesPending} file{chunkMetadata.filesPending !== 1 ? 's are' : ' is'} still being delivered. Please wait...
-            </div>
-          )}
-          {chunkDeliveryStatus === "completed" && chunkMetadata.filesDelivered && chunkMetadata.filesDelivered > 0 && (
-            <div className="text-xs mt-2 text-green-700 bg-green-100 rounded px-2 py-1">
-              ✓ All files delivered successfully ({chunkMetadata.filesDelivered} file{chunkMetadata.filesDelivered !== 1 ? 's' : ''})
-            </div>
-          )}
+          {chunkDeliveryStatus === "delivering" &&
+            chunkMetadata.filesPending &&
+            chunkMetadata.filesPending > 0 && (
+              <div className="text-xs mt-2 text-blue-700 bg-blue-100 rounded px-2 py-1">
+                <strong>More files incoming:</strong>{" "}
+                {chunkMetadata.filesPending} file
+                {chunkMetadata.filesPending !== 1 ? "s are" : " is"} still being
+                delivered. Please wait...
+              </div>
+            )}
+          {chunkDeliveryStatus === "completed" &&
+            chunkMetadata.filesDelivered &&
+            chunkMetadata.filesDelivered > 0 && (
+              <div className="text-xs mt-2 text-green-700 bg-green-100 rounded px-2 py-1">
+                ✓ All files delivered successfully (
+                {chunkMetadata.filesDelivered} file
+                {chunkMetadata.filesDelivered !== 1 ? "s" : ""})
+              </div>
+            )}
           {chunkDeliveryStatus === "failed" && (
             <div className="text-xs mt-2 text-red-600">
-              <strong>Troubleshooting:</strong> Try refreshing the page or retrying your request. 
-              If the issue persists, consider breaking your request into smaller parts.
+              <strong>Troubleshooting:</strong> Try refreshing the page or
+              retrying your request. If the issue persists, consider breaking
+              your request into smaller parts.
             </div>
           )}
         </div>
@@ -192,9 +206,14 @@ interface ProgressBarProps {
   className?: string;
 }
 
-export function ChunkProgressBar({ current, total, status, className = "" }: ProgressBarProps) {
+export function ChunkProgressBar({
+  current,
+  total,
+  status,
+  className = "",
+}: ProgressBarProps) {
   const percentage = Math.round((current / total) * 100);
-  
+
   const getBarColor = () => {
     switch (status) {
       case "delivering":
@@ -212,10 +231,12 @@ export function ChunkProgressBar({ current, total, status, className = "" }: Pro
     <div className={`w-full ${className}`}>
       <div className="flex justify-between text-xs text-gray-600 mb-1">
         <span>Chunk Progress</span>
-        <span>{current}/{total} ({percentage}%)</span>
+        <span>
+          {current}/{total} ({percentage}%)
+        </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
+        <div
           className={`h-2 rounded-full transition-all duration-300 ${getBarColor()}`}
           style={{ width: `${percentage}%` }}
         />

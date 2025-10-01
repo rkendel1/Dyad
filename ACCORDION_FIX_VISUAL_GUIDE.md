@@ -3,6 +3,7 @@
 ## The Problem
 
 ### Before the Fix
+
 ```
 User clicks on accordion trigger
          ↓
@@ -18,6 +19,7 @@ User clicks on accordion trigger
 ```
 
 ### Issue Symptoms
+
 1. **Accordion doesn't expand/collapse**: Instead of toggling inline, it behaves like a link
 2. **Opens as full window**: Browser navigation is triggered instead of accordion state change
 3. **Responses interrupted**: Streaming AI responses stop mid-generation
@@ -26,6 +28,7 @@ User clicks on accordion trigger
 ## The Solution
 
 ### After the Fix
+
 ```
 User clicks on accordion trigger
          ↓
@@ -43,6 +46,7 @@ User clicks on accordion trigger
 ## Code Comparison
 
 ### Before (Broken)
+
 ```tsx
 // ❌ Plain function - no ref forwarding
 function AccordionTrigger({
@@ -67,6 +71,7 @@ function AccordionTrigger({
 ```
 
 ### After (Fixed)
+
 ```tsx
 // ✅ Using React.forwardRef - proper ref forwarding
 const AccordionTrigger = React.forwardRef<
@@ -106,47 +111,51 @@ Accordion (Root)
 ## Expected Behavior (After Fix)
 
 ### In ImportAppDialog
+
 ```tsx
 <Accordion type="single" collapsible>
   <AccordionItem value="advanced-options">
-    <AccordionTrigger>  {/* ✅ Renders as <button> */}
+    <AccordionTrigger>
+      {" "}
+      {/* ✅ Renders as <button> */}
       Advanced options
     </AccordionTrigger>
-    <AccordionContent>
-      {/* Install and start commands */}
-    </AccordionContent>
-  </AccordionItem>
-</Accordion>
-```
-
-**Expected Result**: 
-- Click trigger → Content expands inline
-- Click again → Content collapses
-- No navigation, no window opening
-
-### In Settings (ApiKeyConfiguration)
-```tsx
-<Accordion type="multiple" defaultValue={["settings-key"]}>
-  <AccordionItem value="settings-key">
-    <AccordionTrigger>  {/* ✅ Renders as <button> */}
-      API Key from Settings
-    </AccordionTrigger>
-    <AccordionContent>
-      {/* API key input form */}
-    </AccordionContent>
-  </AccordionItem>
-  <AccordionItem value="env-key">
-    <AccordionTrigger>  {/* ✅ Renders as <button> */}
-      API Key from Environment
-    </AccordionTrigger>
-    <AccordionContent>
-      {/* Environment variable display */}
-    </AccordionContent>
+    <AccordionContent>{/* Install and start commands */}</AccordionContent>
   </AccordionItem>
 </Accordion>
 ```
 
 **Expected Result**:
+
+- Click trigger → Content expands inline
+- Click again → Content collapses
+- No navigation, no window opening
+
+### In Settings (ApiKeyConfiguration)
+
+```tsx
+<Accordion type="multiple" defaultValue={["settings-key"]}>
+  <AccordionItem value="settings-key">
+    <AccordionTrigger>
+      {" "}
+      {/* ✅ Renders as <button> */}
+      API Key from Settings
+    </AccordionTrigger>
+    <AccordionContent>{/* API key input form */}</AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="env-key">
+    <AccordionTrigger>
+      {" "}
+      {/* ✅ Renders as <button> */}
+      API Key from Environment
+    </AccordionTrigger>
+    <AccordionContent>{/* Environment variable display */}</AccordionContent>
+  </AccordionItem>
+</Accordion>
+```
+
+**Expected Result**:
+
 - Multiple sections can be open at once
 - Each trigger controls only its own section
 - No interference with ongoing operations
@@ -154,6 +163,7 @@ Accordion (Root)
 ## Testing Verification
 
 ### Test Coverage
+
 ```
 ✅ Accordion renders trigger and content
 ✅ Accordion expands/collapses on trigger click
@@ -163,43 +173,50 @@ Accordion (Root)
 ```
 
 ### Browser Behavior
-| Before Fix | After Fix |
-|------------|-----------|
-| ❌ Trigger acts like link | ✅ Trigger is button |
-| ❌ Opens new window/tab | ✅ Expands inline |
-| ❌ Interrupts responses | ✅ No interruption |
-| ❌ CLI becomes inaccessible | ✅ CLI remains accessible |
-| ❌ Navigation history affected | ✅ No navigation |
+
+| Before Fix                     | After Fix                 |
+| ------------------------------ | ------------------------- |
+| ❌ Trigger acts like link      | ✅ Trigger is button      |
+| ❌ Opens new window/tab        | ✅ Expands inline         |
+| ❌ Interrupts responses        | ✅ No interruption        |
+| ❌ CLI becomes inaccessible    | ✅ CLI remains accessible |
+| ❌ Navigation history affected | ✅ No navigation          |
 
 ## Impact on User Experience
 
 ### Scenario 1: Setting up API Keys
+
 **Before**: User clicks "API Key from Settings" accordion → Browser navigates away → Settings lost
 **After**: User clicks accordion → Section expands inline → Can enter API key smoothly
 
 ### Scenario 2: Importing an App
+
 **Before**: User clicks "Advanced options" → New window opens → Import dialog lost
 **After**: User clicks "Advanced options" → Options expand inline → Can customize install/start commands
 
 ### Scenario 3: AI Response Generation
+
 **Before**: While AI is responding, user clicks accordion → Response interrupted → Must restart
 **After**: While AI is responding, user clicks accordion → Response continues → User can view events/settings
 
 ## Technical Validation
 
 ### TypeScript Compilation
+
 ```bash
 $ npx tsc --noEmit
 # ✅ No errors
 ```
 
 ### Test Suite
+
 ```bash
 $ npm run test -- accordion
 # ✅ All 5 tests passing
 ```
 
 ### Component API
+
 ```typescript
 // ✅ Fully backward compatible
 // All existing props work exactly the same
@@ -215,17 +232,18 @@ $ npm run test -- accordion
 ```
 Modified:
   src/components/ui/accordion.tsx          (46 additions, 54 deletions)
-  
+
 Added:
   src/components/ui/__tests__/accordion.test.tsx  (107 additions)
   ACCORDION_FIX_SUMMARY.md                        (127 additions)
-  
+
 Total: 280 additions, 54 deletions
 ```
 
 ## Conclusion
 
 The fix is minimal, surgical, and addresses the root cause:
+
 - ✅ Uses proper React patterns (forwardRef)
 - ✅ Maintains backward compatibility
 - ✅ Comprehensive test coverage

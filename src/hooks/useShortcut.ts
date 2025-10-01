@@ -63,8 +63,10 @@ export function useShortcut(
       }
 
       // Handle both component and CSS selector shortcuts from iframe
-      if (event.data?.type === "dyad-select-component-shortcut" || 
-          event.data?.type === "dyad-css-selector-shortcut") {
+      if (
+        event.data?.type === "dyad-select-component-shortcut" ||
+        event.data?.type === "dyad-css-selector-shortcut"
+      ) {
         if (isSelectorInitialized) {
           callback();
         }

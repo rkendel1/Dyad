@@ -1,199 +1,205 @@
-import * as vscode from 'vscode';
-import { CollaborationService } from './collaborationService';
-import {
-    ChatMessage,
-    InlineComment,
-    CollaborationEventType
-} from './types';
+import * as vscode from "vscode";
+import { CollaborationService } from "./collaborationService";
+import { ChatMessage, InlineComment, CollaborationEventType } from "./types";
 
 /**
  * CollaborationPanel manages the webview panel for collaboration UI
  */
 export class CollaborationPanel {
-    private panel: vscode.WebviewPanel | undefined;
-    private collaborationService: CollaborationService;
-    private chatMessages: ChatMessage[] = [];
-    private inlineComments: InlineComment[] = [];
-    private disposables: vscode.Disposable[] = [];
+  private panel: vscode.WebviewPanel | undefined;
+  private collaborationService: CollaborationService;
+  private chatMessages: ChatMessage[] = [];
+  private inlineComments: InlineComment[] = [];
+  private disposables: vscode.Disposable[] = [];
 
-    constructor(
-        private context: vscode.ExtensionContext,
-        collaborationService: CollaborationService
-    ) {
-        this.collaborationService = collaborationService;
-        this.setupEventHandlers();
+  constructor(
+    private context: vscode.ExtensionContext,
+    collaborationService: CollaborationService,
+  ) {
+    this.collaborationService = collaborationService;
+    this.setupEventHandlers();
+  }
+
+  /**
+   * Show the collaboration panel
+   */
+  show(): void {
+    if (this.panel) {
+      this.panel.reveal(vscode.ViewColumn.Two);
+      return;
     }
 
-    /**
-     * Show the collaboration panel
-     */
-    show(): void {
-        if (this.panel) {
-            this.panel.reveal(vscode.ViewColumn.Two);
-            return;
+    this.panel = vscode.window.createWebviewPanel(
+      "dyadCollaboration",
+      "Dyad Collaboration",
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+      },
+    );
+
+    this.panel.webview.html = this.getWebviewContent();
+    this.setupWebviewMessageHandling();
+
+    this.panel.onDidDispose(
+      () => {
+        this.panel = undefined;
+      },
+      null,
+      this.disposables,
+    );
+
+    this.updateView();
+  }
+
+  /**
+   * Update the view with current session data
+   */
+  private updateView(): void {
+    if (!this.panel) {
+      return;
+    }
+
+    const session = this.collaborationService.getCurrentSession();
+    const currentUser = this.collaborationService.getCurrentUser();
+
+    this.panel.webview.postMessage({
+      command: "update",
+      session,
+      currentUser,
+      chatMessages: this.chatMessages,
+      inlineComments: this.inlineComments,
+    });
+  }
+
+  /**
+   * Setup event handlers for collaboration events
+   */
+  private setupEventHandlers(): void {
+    this.disposables.push(
+      this.collaborationService.onEvent((event) => {
+        switch (event.type) {
+          case CollaborationEventType.USER_JOINED:
+            this.handleUserJoined(event.data);
+            break;
+          case CollaborationEventType.USER_LEFT:
+            this.handleUserLeft(event.data);
+            break;
+          case CollaborationEventType.CHAT_MESSAGE:
+            this.handleChatMessage(event.data);
+            break;
+          case CollaborationEventType.INLINE_COMMENT_ADD:
+            this.handleInlineCommentAdd(event.data);
+            break;
+          case CollaborationEventType.INLINE_COMMENT_RESOLVE:
+            this.handleInlineCommentResolve(event.data);
+            break;
+          case CollaborationEventType.ROLE_CHANGED:
+            this.handleRoleChanged(event.data);
+            break;
         }
-
-        this.panel = vscode.window.createWebviewPanel(
-            'dyadCollaboration',
-            'Dyad Collaboration',
-            vscode.ViewColumn.Two,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            }
-        );
-
-        this.panel.webview.html = this.getWebviewContent();
-        this.setupWebviewMessageHandling();
-
-        this.panel.onDidDispose(
-            () => {
-                this.panel = undefined;
-            },
-            null,
-            this.disposables
-        );
-
         this.updateView();
+      }),
+    );
+  }
+
+  /**
+   * Setup webview message handling
+   */
+  private setupWebviewMessageHandling(): void {
+    if (!this.panel) {
+      return;
     }
 
-    /**
-     * Update the view with current session data
-     */
-    private updateView(): void {
-        if (!this.panel) {
-            return;
+    this.panel.webview.onDidReceiveMessage(
+      (message) => {
+        switch (message.command) {
+          case "sendChatMessage":
+            this.collaborationService.sendChatMessage(message.text);
+            break;
+          case "addInlineComment":
+            this.collaborationService.addInlineComment(
+              message.line,
+              message.text,
+            );
+            break;
+          case "resolveComment":
+            this.collaborationService.resolveInlineComment(message.commentId);
+            break;
+          case "changeUserRole":
+            this.collaborationService.changeUserRole(
+              message.userId,
+              message.role,
+            );
+            break;
         }
+      },
+      null,
+      this.disposables,
+    );
+  }
 
-        const session = this.collaborationService.getCurrentSession();
-        const currentUser = this.collaborationService.getCurrentUser();
+  /**
+   * Handle user joined event
+   */
+  private handleUserJoined(data: Record<string, unknown>): void {
+    const user = data.user as { name: string };
+    vscode.window.showInformationMessage(
+      `${user.name} joined the collaboration session`,
+    );
+  }
 
-        this.panel.webview.postMessage({
-            command: 'update',
-            session,
-            currentUser,
-            chatMessages: this.chatMessages,
-            inlineComments: this.inlineComments
-        });
+  /**
+   * Handle user left event
+   */
+  private handleUserLeft(data: Record<string, unknown>): void {
+    const userName = data.userName as string;
+    vscode.window.showInformationMessage(
+      `${userName} left the collaboration session`,
+    );
+  }
+
+  /**
+   * Handle chat message event
+   */
+  private handleChatMessage(data: Record<string, unknown>): void {
+    const message = data.message as ChatMessage;
+    this.chatMessages.push(message);
+  }
+
+  /**
+   * Handle inline comment add event
+   */
+  private handleInlineCommentAdd(data: Record<string, unknown>): void {
+    const comment = data.comment as InlineComment;
+    this.inlineComments.push(comment);
+  }
+
+  /**
+   * Handle inline comment resolve event
+   */
+  private handleInlineCommentResolve(data: Record<string, unknown>): void {
+    const commentId = data.commentId as string;
+    const comment = this.inlineComments.find((c) => c.id === commentId);
+    if (comment) {
+      comment.resolved = true;
     }
+  }
 
-    /**
-     * Setup event handlers for collaboration events
-     */
-    private setupEventHandlers(): void {
-        this.disposables.push(
-            this.collaborationService.onEvent((event) => {
-                switch (event.type) {
-                    case CollaborationEventType.USER_JOINED:
-                        this.handleUserJoined(event.data);
-                        break;
-                    case CollaborationEventType.USER_LEFT:
-                        this.handleUserLeft(event.data);
-                        break;
-                    case CollaborationEventType.CHAT_MESSAGE:
-                        this.handleChatMessage(event.data);
-                        break;
-                    case CollaborationEventType.INLINE_COMMENT_ADD:
-                        this.handleInlineCommentAdd(event.data);
-                        break;
-                    case CollaborationEventType.INLINE_COMMENT_RESOLVE:
-                        this.handleInlineCommentResolve(event.data);
-                        break;
-                    case CollaborationEventType.ROLE_CHANGED:
-                        this.handleRoleChanged(event.data);
-                        break;
-                }
-                this.updateView();
-            })
-        );
-    }
+  /**
+   * Handle role changed event
+   */
+  private handleRoleChanged(data: Record<string, unknown>): void {
+    const role = data.role as string;
+    vscode.window.showInformationMessage(`User role changed to ${role}`);
+  }
 
-    /**
-     * Setup webview message handling
-     */
-    private setupWebviewMessageHandling(): void {
-        if (!this.panel) {
-            return;
-        }
-
-        this.panel.webview.onDidReceiveMessage(
-            (message) => {
-                switch (message.command) {
-                    case 'sendChatMessage':
-                        this.collaborationService.sendChatMessage(message.text);
-                        break;
-                    case 'addInlineComment':
-                        this.collaborationService.addInlineComment(message.line, message.text);
-                        break;
-                    case 'resolveComment':
-                        this.collaborationService.resolveInlineComment(message.commentId);
-                        break;
-                    case 'changeUserRole':
-                        this.collaborationService.changeUserRole(message.userId, message.role);
-                        break;
-                }
-            },
-            null,
-            this.disposables
-        );
-    }
-
-    /**
-     * Handle user joined event
-     */
-    private handleUserJoined(data: Record<string, unknown>): void {
-        const user = data.user as { name: string };
-        vscode.window.showInformationMessage(`${user.name} joined the collaboration session`);
-    }
-
-    /**
-     * Handle user left event
-     */
-    private handleUserLeft(data: Record<string, unknown>): void {
-        const userName = data.userName as string;
-        vscode.window.showInformationMessage(`${userName} left the collaboration session`);
-    }
-
-    /**
-     * Handle chat message event
-     */
-    private handleChatMessage(data: Record<string, unknown>): void {
-        const message = data.message as ChatMessage;
-        this.chatMessages.push(message);
-    }
-
-    /**
-     * Handle inline comment add event
-     */
-    private handleInlineCommentAdd(data: Record<string, unknown>): void {
-        const comment = data.comment as InlineComment;
-        this.inlineComments.push(comment);
-    }
-
-    /**
-     * Handle inline comment resolve event
-     */
-    private handleInlineCommentResolve(data: Record<string, unknown>): void {
-        const commentId = data.commentId as string;
-        const comment = this.inlineComments.find(c => c.id === commentId);
-        if (comment) {
-            comment.resolved = true;
-        }
-    }
-
-    /**
-     * Handle role changed event
-     */
-    private handleRoleChanged(data: Record<string, unknown>): void {
-        const role = data.role as string;
-        vscode.window.showInformationMessage(`User role changed to ${role}`);
-    }
-
-    /**
-     * Get the webview HTML content
-     */
-    private getWebviewContent(): string {
-        return `<!DOCTYPE html>
+  /**
+   * Get the webview HTML content
+   */
+  private getWebviewContent(): string {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -515,13 +521,13 @@ export class CollaborationPanel {
     </script>
 </body>
 </html>`;
-    }
+  }
 
-    /**
-     * Dispose resources
-     */
-    dispose(): void {
-        this.panel?.dispose();
-        this.disposables.forEach(d => d.dispose());
-    }
+  /**
+   * Dispose resources
+   */
+  dispose(): void {
+    this.panel?.dispose();
+    this.disposables.forEach((d) => d.dispose());
+  }
 }

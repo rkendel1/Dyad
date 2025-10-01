@@ -40,7 +40,7 @@ function parseGitHubUrl(repoUrl: string): { owner: string; repo: string } {
 function analyzeComplexity(
   language: string,
   fileCount: number,
-  dependencies: string[]
+  dependencies: string[],
 ): "simple" | "moderate" | "complex" {
   if (fileCount < 10 && dependencies.length < 5) return "simple";
   if (fileCount < 50 && dependencies.length < 20) return "moderate";
@@ -51,23 +51,36 @@ function analyzeComplexity(
 function determineIntegrationApproaches(
   repoInfo: any,
   targetAppPath: string,
-  complexity: "simple" | "moderate" | "complex"
+  complexity: "simple" | "moderate" | "complex",
 ) {
   const approaches = {
     recreate: {
       feasible: true,
-      effort: complexity === "simple" ? "low" : complexity === "moderate" ? "medium" : "high",
-      description: "Analyze the repository and recreate similar functionality using your app's existing technology stack.",
+      effort:
+        complexity === "simple"
+          ? "low"
+          : complexity === "moderate"
+            ? "medium"
+            : "high",
+      description:
+        "Analyze the repository and recreate similar functionality using your app's existing technology stack.",
     },
     integrate: {
       feasible: true,
-      effort: complexity === "simple" ? "low" : complexity === "moderate" ? "medium" : "high", 
-      description: "Add the repository as a dependency or submodule and integrate it directly into your app.",
+      effort:
+        complexity === "simple"
+          ? "low"
+          : complexity === "moderate"
+            ? "medium"
+            : "high",
+      description:
+        "Add the repository as a dependency or submodule and integrate it directly into your app.",
     },
     tailor: {
       feasible: true,
       effort: complexity === "simple" ? "medium" : "high",
-      description: "Extract specific components or features from the repository and adapt them to fit your app's architecture.",
+      description:
+        "Extract specific components or features from the repository and adapt them to fit your app's architecture.",
     },
   } as const;
 
@@ -89,9 +102,11 @@ export function registerGithubRepoHandlers() {
     "analyze-github-repo",
     async (
       _,
-      { repoUrl, targetAppId }: AnalyzeGithubRepoParams
+      { repoUrl, targetAppId }: AnalyzeGithubRepoParams,
     ): Promise<AnalyzeGithubRepoResult> => {
-      logger.info(`Analyzing GitHub repository: ${repoUrl} for app ${targetAppId}`);
+      logger.info(
+        `Analyzing GitHub repository: ${repoUrl} for app ${targetAppId}`,
+      );
 
       // Get GitHub access token
       const settings = readSettings();
@@ -114,7 +129,7 @@ export function registerGithubRepoHandlers() {
       // Fetch repository information from GitHub API
       try {
         const headers: Record<string, string> = {
-          "Accept": "application/vnd.github.v3+json",
+          Accept: "application/vnd.github.v3+json",
           "User-Agent": "Dyad-App",
         };
 
@@ -125,14 +140,16 @@ export function registerGithubRepoHandlers() {
         // Get repository basic info
         const repoResponse = await fetch(
           `${GITHUB_API_BASE}/repos/${owner}/${repo}`,
-          { headers }
+          { headers },
         );
 
         if (!repoResponse.ok) {
           if (repoResponse.status === 404) {
             throw new Error("Repository not found or private");
           } else if (repoResponse.status === 403) {
-            throw new Error("Access denied. You may need to authenticate with GitHub.");
+            throw new Error(
+              "Access denied. You may need to authenticate with GitHub.",
+            );
           } else {
             throw new Error(`GitHub API error: ${repoResponse.status}`);
           }
@@ -143,7 +160,7 @@ export function registerGithubRepoHandlers() {
         // Get repository contents to analyze structure
         const contentsResponse = await fetch(
           `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents`,
-          { headers }
+          { headers },
         );
 
         let fileCount = 0;
@@ -156,23 +173,34 @@ export function registerGithubRepoHandlers() {
           fileCount = Array.isArray(contents) ? contents.length : 0;
 
           // Look for package.json, requirements.txt, etc. to identify dependencies
-          const packageFiles = Array.isArray(contents) 
-            ? contents.filter((file: any) => 
-                ["package.json", "requirements.txt", "Gemfile", "pom.xml", "build.gradle"].includes(file.name)
+          const packageFiles = Array.isArray(contents)
+            ? contents.filter((file: any) =>
+                [
+                  "package.json",
+                  "requirements.txt",
+                  "Gemfile",
+                  "pom.xml",
+                  "build.gradle",
+                ].includes(file.name),
               )
             : [];
 
           // Try to fetch and parse package.json for more details
           if (packageFiles.length > 0) {
             try {
-              const packageFile = packageFiles.find((f: any) => f.name === "package.json");
+              const packageFile = packageFiles.find(
+                (f: any) => f.name === "package.json",
+              );
               if (packageFile) {
                 const packageResponse = await fetch(packageFile.download_url);
                 if (packageResponse.ok) {
                   const packageData = await packageResponse.json();
-                  const deps = { ...packageData.dependencies, ...packageData.devDependencies };
+                  const deps = {
+                    ...packageData.dependencies,
+                    ...packageData.devDependencies,
+                  };
                   dependencies = Object.keys(deps || {});
-                  
+
                   // Try to detect framework
                   if (deps.react) framework = "React";
                   else if (deps.vue) framework = "Vue";
@@ -189,19 +217,23 @@ export function registerGithubRepoHandlers() {
           }
         }
 
-        const complexity = analyzeComplexity(mainTechnology, fileCount, dependencies);
+        const complexity = analyzeComplexity(
+          mainTechnology,
+          fileCount,
+          dependencies,
+        );
         const { approaches, recommendation } = determineIntegrationApproaches(
           repoData,
           targetAppPath,
-          complexity
+          complexity,
         );
 
         const reasoning = `Based on the repository's ${complexity} complexity and ${mainTechnology} technology stack, ${
-          recommendation === "recreate" 
+          recommendation === "recreate"
             ? "recreating the functionality would give you the most control and ensure it fits perfectly with your existing codebase"
             : recommendation === "integrate"
-            ? "integrating the repository as-is would be the most efficient approach given its complexity"
-            : "tailoring specific components would balance customization with development effort"
+              ? "integrating the repository as-is would be the most efficient approach given its complexity"
+              : "tailoring specific components would balance customization with development effort"
         }.`;
 
         const result: AnalyzeGithubRepoResult = {
@@ -227,21 +259,27 @@ export function registerGithubRepoHandlers() {
 
         logger.info(`Successfully analyzed repository ${owner}/${repo}`);
         return result;
-
       } catch (error: any) {
         logger.error(`Failed to analyze repository ${owner}/${repo}:`, error);
         throw new Error(`Failed to analyze repository: ${error.message}`);
       }
-    }
+    },
   );
 
   handle(
     "integrate-github-repo",
     async (
       _,
-      { repoUrl, targetAppId, approach, analysisResult }: IntegrateGithubRepoParams
+      {
+        repoUrl,
+        targetAppId,
+        approach,
+        analysisResult,
+      }: IntegrateGithubRepoParams,
     ): Promise<IntegrateGithubRepoResult> => {
-      logger.info(`Integrating GitHub repository: ${repoUrl} into app ${targetAppId} using ${approach} approach`);
+      logger.info(
+        `Integrating GitHub repository: ${repoUrl} into app ${targetAppId} using ${approach} approach`,
+      );
 
       // Get target app info
       const targetApp = await db.query.apps.findFirst({
@@ -257,14 +295,17 @@ export function registerGithubRepoHandlers() {
       try {
         // For now, we'll create a placeholder implementation
         // In a real implementation, this would handle the different integration approaches
-        
+
         let message = "";
         const changedFiles: string[] = [];
 
         switch (approach) {
           case "recreate":
             // Create a markdown file documenting what should be recreated
-            const recreateDocPath = path.join(targetAppPath, "GITHUB_REPO_ANALYSIS.md");
+            const recreateDocPath = path.join(
+              targetAppPath,
+              "GITHUB_REPO_ANALYSIS.md",
+            );
             const recreateContent = `# GitHub Repository Analysis: ${analysisResult.repository.name}
 
 ## Original Repository
@@ -278,7 +319,7 @@ export function registerGithubRepoHandlers() {
 This repository has been analyzed for recreation in your app. The functionality should be recreated using your app's existing technology stack.
 
 ## Key Dependencies to Consider
-${analysisResult.analysis.dependencies.map(dep => `- ${dep}`).join('\n')}
+${analysisResult.analysis.dependencies.map((dep) => `- ${dep}`).join("\n")}
 
 ## Complexity Level
 ${analysisResult.analysis.complexity.toUpperCase()}
@@ -294,12 +335,16 @@ You can ask the AI to help implement specific features from this repository by r
 `;
             await fs.writeFile(recreateDocPath, recreateContent);
             changedFiles.push("GITHUB_REPO_ANALYSIS.md");
-            message = "Created analysis document. You can now ask the AI to help recreate specific functionality from the repository.";
+            message =
+              "Created analysis document. You can now ask the AI to help recreate specific functionality from the repository.";
             break;
 
           case "integrate":
             // Create integration notes and potentially modify package.json
-            const integrateDocPath = path.join(targetAppPath, "INTEGRATION_NOTES.md");
+            const integrateDocPath = path.join(
+              targetAppPath,
+              "INTEGRATION_NOTES.md",
+            );
             const integrateContent = `# Integration Notes: ${analysisResult.repository.name}
 
 ## Repository Integration
@@ -311,7 +356,10 @@ You can ask the AI to help implement specific features from this repository by r
 This repository will be integrated directly into your app. Consider the following:
 
 ## Dependencies Added
-${analysisResult.analysis.dependencies.slice(0, 5).map(dep => `- ${dep}`).join('\n')}
+${analysisResult.analysis.dependencies
+  .slice(0, 5)
+  .map((dep) => `- ${dep}`)
+  .join("\n")}
 
 ## Integration Steps Completed
 1. ✅ Repository analysis completed
@@ -331,12 +379,16 @@ ${analysisResult.analysis.dependencies.slice(0, 5).map(dep => `- ${dep}`).join('
 `;
             await fs.writeFile(integrateDocPath, integrateContent);
             changedFiles.push("INTEGRATION_NOTES.md");
-            message = "Created integration notes. Manual steps are required to complete the integration.";
+            message =
+              "Created integration notes. Manual steps are required to complete the integration.";
             break;
 
           case "tailor":
             // Create tailoring guidelines
-            const tailorDocPath = path.join(targetAppPath, "TAILORING_GUIDE.md");
+            const tailorDocPath = path.join(
+              targetAppPath,
+              "TAILORING_GUIDE.md",
+            );
             const tailorContent = `# Tailoring Guide: ${analysisResult.repository.name}
 
 ## Repository Overview
@@ -353,7 +405,10 @@ This guide helps you extract and adapt specific components from the repository t
 - **Complexity**: ${analysisResult.analysis.complexity}
 
 ## Key Components to Consider
-${analysisResult.analysis.dependencies.slice(0, 8).map(dep => `- ${dep} - Consider if this fits your app's architecture`).join('\n')}
+${analysisResult.analysis.dependencies
+  .slice(0, 8)
+  .map((dep) => `- ${dep} - Consider if this fits your app's architecture`)
+  .join("\n")}
 
 ## Recommended Tailoring Strategy
 1. **Review** the original repository structure
@@ -363,28 +418,30 @@ ${analysisResult.analysis.dependencies.slice(0, 8).map(dep => `- ${dep} - Consid
 5. **Integrate** gradually
 
 ## Topics and Features
-${analysisResult.repository.topics.map(topic => `- ${topic}`).join('\n')}
+${analysisResult.repository.topics.map((topic) => `- ${topic}`).join("\n")}
 
 ## AI Assistant Integration
 You can reference this guide when asking the AI to help implement specific features or adapt components from the original repository.
 `;
             await fs.writeFile(tailorDocPath, tailorContent);
             changedFiles.push("TAILORING_GUIDE.md");
-            message = "Created tailoring guide. You can now work with the AI to extract and adapt specific components.";
+            message =
+              "Created tailoring guide. You can now work with the AI to extract and adapt specific components.";
             break;
         }
 
-        logger.info(`Successfully integrated repository using ${approach} approach`);
+        logger.info(
+          `Successfully integrated repository using ${approach} approach`,
+        );
         return {
           success: true,
           message,
           changedFiles,
         };
-
       } catch (error: any) {
         logger.error(`Failed to integrate repository:`, error);
         throw new Error(`Integration failed: ${error.message}`);
       }
-    }
+    },
   );
 }
