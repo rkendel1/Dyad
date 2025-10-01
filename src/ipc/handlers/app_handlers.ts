@@ -182,11 +182,19 @@ async function executeAppLocalNode({
     port: dynamicPort, 
     appPath 
   });
+  
+  // Set up environment with increased memory limit for spawned processes
+  const env = { ...process.env };
+  if (!env.NODE_OPTIONS || !env.NODE_OPTIONS.includes('--max-old-space-size')) {
+    env.NODE_OPTIONS = (env.NODE_OPTIONS || '') + ' --max-old-space-size=4096';
+  }
+  
   const spawnedProcess = spawn(command, [], {
     cwd: appPath,
     shell: true,
     stdio: "pipe", // Ensure stdio is piped so we can capture output/errors and detect close
     detached: false, // Ensure child process is attached to the main process lifecycle unless explicitly backgrounded
+    env,
   });
 
   // Check if process spawned correctly
@@ -461,6 +469,8 @@ RUN npm install -g pnpm@latest-10 && \\
       "PNPM_STORE_PATH=/app/.cache/.pnpm-store",
       "-e",
       "YARN_CACHE_FOLDER=/app/.cache/.yarn-cache",
+      "-e",
+      "NODE_OPTIONS=--max-old-space-size=4096",
       "-w",
       "/app",
       `dyad-app-${appId}`,

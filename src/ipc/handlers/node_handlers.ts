@@ -20,11 +20,21 @@ export function registerNodeHandlers() {
     const [nodeVersion, pnpmVersion] = await Promise.all([
       runShellCommand("node --version"),
       // First, check if pnpm is installed.
-      // If not, try to install it using corepack.
-      // If both fail, then pnpm is not available.
+      // If not, try to install it using corepack (preferred method).
+      // As a fallback, try npx to run pnpm without global installation.
+      // If all fail, try npm install -g as last resort.
       runShellCommand(
-        "pnpm --version || (corepack enable pnpm && pnpm --version) || (npm install -g pnpm@latest-10 && pnpm --version)",
-      ),
+        "pnpm --version || (corepack enable pnpm && pnpm --version) || (npx -y pnpm@latest-10 --version) || (npm install -g pnpm@latest-10 && pnpm --version)",
+      ).catch(async (error) => {
+        logger.warn("Failed to get pnpm version using primary methods:", error);
+        // Last resort: try to use npx without -y flag
+        try {
+          return await runShellCommand("npx pnpm@latest-10 --version");
+        } catch (npxError) {
+          logger.error("All attempts to get pnpm version failed:", npxError);
+          return "Not available";
+        }
+      }),
     ]);
     // Default to mac download url.
     let nodeDownloadUrl = "https://nodejs.org/dist/v22.14.0/node-v22.14.0.pkg";
