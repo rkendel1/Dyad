@@ -118,3 +118,132 @@ export interface IntegrateGithubRepoResult {
   message: string;
   changedFiles?: string[];
 }
+
+/**
+ * Analyze GitHub repo parameters
+ */
+export interface AnalyzeGithubRepoParams {
+  repoUrl: string;
+  targetAppId: number;
+}
+
+/**
+ * Integrate GitHub repo parameters
+ */
+export interface IntegrateGithubRepoParams {
+  repoUrl: string;
+  targetAppId: number;
+  approach: 'recreate' | 'integrate' | 'tailor';
+  analysisResult: AnalyzeGithubRepoResult;
+}
+
+/**
+ * Connect to existing Vercel project parameters
+ */
+export interface ConnectToExistingVercelProjectParams {
+  projectId: string;
+  appId: number;
+}
+
+/**
+ * Is Vercel project available response
+ */
+export interface IsVercelProjectAvailableResponse {
+  available: boolean;
+  reason?: string;
+}
+
+/**
+ * Create Vercel project parameters
+ */
+export interface CreateVercelProjectParams {
+  name: string;
+  appId: number;
+}
+
+/**
+ * Get Vercel deployments parameters
+ */
+export interface GetVercelDeploymentsParams {
+  appId: number;
+}
+
+/**
+ * Disconnect Vercel project parameters
+ */
+export interface DisconnectVercelProjectParams {
+  appId: number;
+}
+
+/**
+ * Is Vercel project available parameters
+ */
+export interface IsVercelProjectAvailableParams {
+  name: string;
+}
+
+/**
+ * Save Vercel access token parameters
+ */
+export interface SaveVercelAccessTokenParams {
+  token: string;
+}
+
+/**
+ * Create Neon project parameters
+ */
+export interface CreateNeonProjectParams {
+  name: string;
+  appId: number;
+}
+
+/**
+ * Get Neon project parameters
+ */
+export interface GetNeonProjectParams {
+  appId: number;
+}
+
+/**
+ * Get Neon project response
+ */
+export interface GetNeonProjectResponse {
+  projectId: string;
+  projectName: string;
+  orgId: string;
+  branches: NeonBranch[];
+}
+
+/**
+ * Revert version parameters
+ */
+export interface RevertVersionParams {
+  appId: number;
+  previousVersionId: string;
+}
+
+/**
+ * Revert version response
+ */
+export type RevertVersionResponse =
+  | { successMessage: string }
+  | { warningMessage: string };
+
+/**
+ * Setup local Supabase parameters
+ */
+export interface SetupLocalSupabaseParams {
+  appId: number;
+}
+
+/**
+ * Production promotion parameters
+ */
+export interface ProductionPromotionParams {
+  appId: number;
+  productionProjectRef: string;
+  supabaseUrl: string;
+  anonKey: string;
+  serviceRoleKey: string;
+  dbPassword: string;
+}
