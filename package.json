@@ -45,7 +45,10 @@
     "supabase:status": "node scripts/setup-local-supabase.js status",
     "supabase:config": "node scripts/setup-local-supabase.js config",
     "supabase:promote": "node scripts/promote-to-production.js",
-    "supabase:switch": "node scripts/switch-supabase-env.js"
+    "supabase:switch": "node scripts/switch-supabase-env.js",
+    "openapi:generate": "ts-node src/scripts/generate-openapi.ts",
+    "quality:analyze": "ts-node src/scripts/analyze-code-quality.ts",
+    "quality:report": "npm run quality:analyze > quality-report.txt"
   },
   "keywords": [],
   "author": {

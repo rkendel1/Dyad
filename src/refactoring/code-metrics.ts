@@ -4,8 +4,8 @@
  * Analyzes code quality metrics to identify refactoring opportunities.
  */
 
-import fs from 'fs/promises';
-import path from 'path';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Code quality metrics for a file

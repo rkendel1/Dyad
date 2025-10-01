@@ -9,7 +9,7 @@ import type {
   Message,
   ChatStreamParams,
   ChatResponseEnd,
-} from '@/types';
+} from '../../types';
 
 /**
  * Service class for managing chats and messages

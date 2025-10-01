@@ -14,7 +14,7 @@ import type {
   ImportAppParams,
   ImportAppResult,
   ListAppsResponse,
-} from '@/types';
+} from '../../types';
 
 /**
  * Service class for managing applications
