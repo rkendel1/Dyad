@@ -65,6 +65,8 @@ import { selectedComponentPreviewAtom } from "@/atoms/previewAtoms";
 import { SelectedComponentDisplay } from "./SelectedComponentDisplay";
 import { useCheckProblems } from "@/hooks/useCheckProblems";
 import { LexicalChatInput } from "./LexicalChatInput";
+import { VoiceInputButton } from "./VoiceInputButton";
+import { emotionDetectionService } from "@/services/emotion/EmotionDetectionService";
 
 const showTokenBarAtom = atom(false);
 
@@ -86,6 +88,8 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     selectedComponentPreviewAtom,
   );
   const { checkProblems } = useCheckProblems(appId);
+  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(null);
+
   // Use the attachments hook
   const {
     attachments,
@@ -132,7 +136,17 @@ export function ChatInput({ chatId }: { chatId?: number }) {
       return;
     }
 
-    const currentInput = inputValue;
+    let currentInput = inputValue;
+    
+    // Apply adaptive prompt based on emotion state if detected
+    if (currentEmotionState && currentEmotionState !== "neutral") {
+      const emotionState = currentEmotionState as any;
+      currentInput = emotionDetectionService.generateAdaptivePrompt(
+        currentInput,
+        emotionState
+      );
+    }
+
     setInputValue("");
     setSelectedComponent(null);
 
@@ -153,6 +167,16 @@ export function ChatInput({ chatId }: { chatId?: number }) {
       IpcClient.getInstance().cancelChatStream(chatId);
     }
     setIsStreaming(false);
+  };
+
+  const handleVoiceTranscript = (transcript: string) => {
+    // Append voice transcript to current input
+    const newValue = inputValue ? `${inputValue} ${transcript}` : transcript;
+    setInputValue(newValue);
+  };
+
+  const handleEmotionDetected = (emotionState: string) => {
+    setCurrentEmotionState(emotionState);
   };
 
   const dismissError = () => {
@@ -322,6 +346,13 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               <FileAttachmentDropdown
                 onFileSelect={handleFileSelect}
                 disabled={isStreaming}
+              />
+              {/* Voice Input Button */}
+              <VoiceInputButton
+                onTranscriptChange={handleVoiceTranscript}
+                onEmotionDetected={handleEmotionDetected}
+                disabled={isStreaming}
+                className="ml-1"
               />
             </div>
 

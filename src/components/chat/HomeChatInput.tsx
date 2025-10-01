@@ -12,6 +12,9 @@ import { usePostHog } from "posthog-js/react";
 import { HomeSubmitOptions } from "@/pages/home";
 import { ChatInputControls } from "../ChatInputControls";
 import { LexicalChatInput } from "./LexicalChatInput";
+import { VoiceInputButton } from "./VoiceInputButton";
+import { emotionDetectionService } from "@/services/emotion/EmotionDetectionService";
+import { useState } from "react";
 export function HomeChatInput({
   onSubmit,
 }: {
@@ -23,6 +26,7 @@ export function HomeChatInput({
   const { isStreaming } = useStreamChat({
     hasChatId: false,
   }); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(null);
 
   // Use the attachments hook
   const {
@@ -49,6 +53,15 @@ export function HomeChatInput({
     // Clear attachments as part of submission process
     clearAttachments();
     posthog.capture("chat:home_submit");
+  };
+
+  const handleVoiceTranscript = (transcript: string) => {
+    const newValue = inputValue ? `${inputValue} ${transcript}` : transcript;
+    setInputValue(newValue);
+  };
+
+  const handleEmotionDetected = (emotionState: string) => {
+    setCurrentEmotionState(emotionState);
   };
 
   if (!settings) {
@@ -91,6 +104,14 @@ export function HomeChatInput({
               className="mt-1 mr-1"
               onFileSelect={handleFileSelect}
               disabled={isStreaming}
+            />
+
+            {/* Voice Input Button */}
+            <VoiceInputButton
+              onTranscriptChange={handleVoiceTranscript}
+              onEmotionDetected={handleEmotionDetected}
+              disabled={isStreaming}
+              className="mt-1 mr-1"
             />
 
             {isStreaming ? (

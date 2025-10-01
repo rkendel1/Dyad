@@ -246,6 +246,15 @@ export const UserSettingsSchema = z.object({
   // Custom preview URL
   previewUrl: z.string().optional(),
 
+  // Voice input settings
+  voiceSettings: z.object({
+    enabled: z.boolean(),
+    language: z.string(),
+    continuousMode: z.boolean(),
+    emotionDetection: z.boolean(),
+    adaptivePrompts: z.boolean(),
+  }).optional(),
+
   ////////////////////////////////
   // E2E TESTING ONLY.
   ////////////////////////////////
