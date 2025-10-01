@@ -11,6 +11,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173, // Default Vite port
+    port: 5175, // Changed default port to 5175
   },
 });
