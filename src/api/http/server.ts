@@ -41,7 +41,7 @@ export interface HttpServerConfig {
  */
 const DEFAULT_CONFIG: HttpServerConfig = {
   enabled: true,
-  port: 3000,
+  port: parseInt(process.env.DYAD_API_PORT || "3000", 10), // Configurable via env var
   host: "localhost",
   cors: {
     enabled: true,

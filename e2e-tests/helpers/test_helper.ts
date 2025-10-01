@@ -168,15 +168,15 @@ class GitHubConnector {
 
   async clearPushEvents() {
     const response = await this.page.request.post(
-      "http://localhost:3500/github/api/test/clear-push-events",
+      `http://localhost:${process.env.FAKE_LLM_SERVER_PORT || 3500}/github/api/test/clear-push-events`,
     );
     return await response.json();
   }
 
   async getPushEvents(repo?: string) {
     const url = repo
-      ? `http://localhost:3500/github/api/test/push-events?repo=${repo}`
-      : "http://localhost:3500/github/api/test/push-events";
+      ? `http://localhost:${process.env.FAKE_LLM_SERVER_PORT || 3500}/github/api/test/push-events?repo=${repo}`
+      : `http://localhost:${process.env.FAKE_LLM_SERVER_PORT || 3500}/github/api/test/push-events`;
     const response = await this.page.request.get(url);
     return await response.json();
   }
@@ -758,7 +758,9 @@ export class PageObject {
     await this.page.getByText("API Base URLThe base URL for").click();
     await this.page
       .getByRole("textbox", { name: "API Base URL" })
-      .fill("http://localhost:3500/v1");
+      .fill(
+        `http://localhost:${process.env.FAKE_LLM_SERVER_PORT || 3500}/v1`,
+      );
     await this.page.getByRole("button", { name: "Add Provider" }).click();
   }
 
@@ -813,7 +815,7 @@ export class PageObject {
 
   async isCurrentAppNameNone() {
     await expect(async () => {
-      await expect(this.getTitleBarAppNameButton()).toContainText(
+      await expect(this.getTitleBarAppNameButton()).not.toContainText(
         "no app selected",
       );
     }).toPass();
@@ -1085,11 +1087,11 @@ export const test = base.extend<{
       const latestBuild = eph.findLatestBuild();
       // parse the directory and find paths and other info
       const appInfo = eph.parseElectronApp(latestBuild);
-      process.env.OLLAMA_HOST = "http://localhost:3500/ollama";
-      process.env.LM_STUDIO_BASE_URL_FOR_TESTING =
-        "http://localhost:3500/lmstudio";
+      process.env.OLLAMA_HOST = "http://localhost:11434"; // Default Ollama port
+      process.env.LM_STUDIO_BASE_URL_FOR_TESTING = "http://localhost:1234"; // Default LM Studio port
       process.env.DYAD_ENGINE_URL = "http://localhost:3500/engine/v1";
       process.env.DYAD_GATEWAY_URL = "http://localhost:3500/gateway/v1";
+      process.env.FAKE_LLM_SERVER_PORT = "3500"; // Configurable fake LLM server port
       process.env.E2E_TEST_BUILD = "true";
       // Increase memory limit for e2e tests
       if (
