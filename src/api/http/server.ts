@@ -6,6 +6,7 @@
 
 import express from "express";
 import cors from "cors";
+import http from "http";
 import type { Server } from "http";
 import log from "electron-log";
 
@@ -163,19 +164,24 @@ export class HttpApiServer {
 
     return new Promise((resolve, reject) => {
       try {
-        this.server = this.app.listen(
-          this.config.port,
-          this.config.host,
-          () => {
-            logger.info(
-              `HTTP API server listening on http://${this.config.host}:${this.config.port}`,
-            );
-            logger.info(
-              `API endpoints available at http://${this.config.host}:${this.config.port}/api`,
-            );
-            resolve();
+        // Create HTTP server with increased maxHeaderSize to prevent header size errors
+        // Default is 8KB (8192 bytes), we increase to 16KB (16384 bytes)
+        this.server = http.createServer(
+          {
+            maxHeaderSize: 16384, // 16KB - double the default to handle larger headers
           },
+          this.app,
         );
+
+        this.server.listen(this.config.port, this.config.host, () => {
+          logger.info(
+            `HTTP API server listening on http://${this.config.host}:${this.config.port}`,
+          );
+          logger.info(
+            `API endpoints available at http://${this.config.host}:${this.config.port}/api`,
+          );
+          resolve();
+        });
 
         this.server.on("error", (error: NodeJS.ErrnoException) => {
           if (error.code === "EADDRINUSE") {
