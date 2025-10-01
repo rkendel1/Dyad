@@ -30,6 +30,8 @@ const validInvokeChannels = [
   "get-app",
   "get-app-env-vars",
   "set-app-env-vars",
+  "get-app-settings",
+  "update-app-settings",
   "edit-app-file",
   "read-app-file",
   "run-app",
