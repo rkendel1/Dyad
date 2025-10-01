@@ -1,6 +1,6 @@
 /**
  * Portal Service
- * 
+ *
  * Business logic for Portal operations (database migrations).
  * This service provides a clean abstraction layer for managing
  * database migrations and related operations.
@@ -53,7 +53,9 @@ export class PortalService {
   /**
    * Create a database migration for an app
    */
-  async createMigration(params: MigrateCreateParams): Promise<MigrateCreateResult> {
+  async createMigration(
+    params: MigrateCreateParams,
+  ): Promise<MigrateCreateResult> {
     const { appId } = params;
     const app = await this.getApp(appId);
     const appPath = getDyadAppPath(app.path);
@@ -131,10 +133,7 @@ export class PortalService {
           appId: app.id,
         });
       } catch (error) {
-        logger.error(
-          "Error storing Neon timestamp at current version:",
-          error,
-        );
+        logger.error("Error storing Neon timestamp at current version:", error);
         throw new Error(
           "Could not store Neon timestamp at current version; database versioning functionality is not working: " +
             error,

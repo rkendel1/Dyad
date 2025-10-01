@@ -7,15 +7,17 @@
 ## Context
 
 The current architecture has business logic embedded directly in IPC handlers:
+
 - `src/ipc/handlers/` contains both IPC handling and business logic
 - Difficult to test business logic without IPC layer
 - Cannot reuse logic from different transports (e.g., HTTP API)
 - Tight coupling between communication layer and domain logic
 
 Example problem:
+
 ```typescript
 // Current: Business logic in handler
-ipcMain.handle('create-app', async (event, params) => {
+ipcMain.handle("create-app", async (event, params) => {
   // DB queries here
   // File operations here
   // Complex logic here
@@ -36,6 +38,7 @@ src/api/services/
 ```
 
 **Architecture**:
+
 ```
 IPC Handler → Service → Database/External API
            ↓
@@ -43,6 +46,7 @@ IPC Handler → Service → Database/External API
 ```
 
 **Pattern**:
+
 ```typescript
 // Service: Pure business logic
 export class AppService {
@@ -52,7 +56,7 @@ export class AppService {
 }
 
 // Handler: Thin wrapper
-ipcMain.handle('create-app', async (event, params) => {
+ipcMain.handle("create-app", async (event, params) => {
   return await appService.createApp(params);
 });
 ```
@@ -60,6 +64,7 @@ ipcMain.handle('create-app', async (event, params) => {
 ## Consequences
 
 ### Positive
+
 - **Testability**: Services can be unit tested without IPC
 - **Reusability**: Same service can serve IPC, HTTP, CLI
 - **Separation of Concerns**: Clear boundary between transport and logic
@@ -67,11 +72,13 @@ ipcMain.handle('create-app', async (event, params) => {
 - **Type Safety**: Strong typing between layers
 
 ### Negative
+
 - **More Files**: Additional layer adds files
 - **Indirection**: One more hop to trace logic
 - **Migration Effort**: Need to refactor existing handlers
 
 ### Mitigation
+
 - Services provide clear value, complexity is justified
 - Good documentation helps with tracing
 - Gradual migration during feature development
@@ -79,6 +86,7 @@ ipcMain.handle('create-app', async (event, params) => {
 ## Implementation Guidelines
 
 ### Service Structure
+
 ```typescript
 export class AppService {
   // Constructor can inject dependencies
@@ -90,10 +98,10 @@ export class AppService {
   // Methods are async and return typed results
   async createApp(params: CreateAppParams): Promise<CreateAppResult> {
     this.logger.info('Creating app', params);
-    
+
     // Business logic
     const app = await this.db.apps.create(params);
-    
+
     return { app, chatId: /* ... */ };
   }
 }
@@ -103,25 +111,27 @@ export const appService = new AppService(db, logger);
 ```
 
 ### Handler Pattern
+
 ```typescript
 // Handler is thin, just error handling and delegation
 const handle = createLoggedHandler(logger);
 
-handle('create-app', async (event, params: CreateAppParams) => {
+handle("create-app", async (event, params: CreateAppParams) => {
   return await appService.createApp(params);
 });
 ```
 
 ### Testing
+
 ```typescript
-describe('AppService', () => {
-  it('should create app', async () => {
+describe("AppService", () => {
+  it("should create app", async () => {
     const mockDb = createMockDb();
     const service = new AppService(mockDb, mockLogger);
-    
-    const result = await service.createApp({ name: 'test' });
-    
-    expect(result.app.name).toBe('test');
+
+    const result = await service.createApp({ name: "test" });
+
+    expect(result.app.name).toBe("test");
   });
 });
 ```
@@ -129,18 +139,21 @@ describe('AppService', () => {
 ## Alternatives Considered
 
 ### 1. Keep Logic in Handlers
+
 **Pros**: Simpler, fewer files
 **Cons**: Hard to test, can't reuse, poor separation
 
 **Rejected**: Doesn't scale, violates SRP
 
 ### 2. Use Classes for Handlers
+
 **Pros**: Object-oriented, can inject dependencies
 **Cons**: Still couples to IPC
 
 **Rejected**: Doesn't solve reusability problem
 
 ### 3. Functional Services (Not Classes)
+
 **Pros**: Simpler, less ceremony
 **Cons**: Harder to mock, no dependency injection
 
@@ -149,14 +162,17 @@ describe('AppService', () => {
 ## Migration Strategy
 
 ### Phase 1: New Features
+
 - All new features use service layer
 - Establish patterns and best practices
 
 ### Phase 2: High-Value Refactoring
+
 - Refactor complex handlers to services
 - Focus on most-changed code
 
 ### Phase 3: Complete Migration
+
 - Move remaining handlers to services
 - Remove business logic from handlers
 

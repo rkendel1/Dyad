@@ -11,7 +11,9 @@ import { CliInput } from "./CliInput";
 export const Console = () => {
   const appOutput = useAtomValue(appOutputAtom);
   const clearAppOutput = useSetAtom(clearAppOutputAtom);
-  const [filter, setFilter] = useState<"all" | "stdout" | "stderr" | "errors">("all");
+  const [filter, setFilter] = useState<"all" | "stdout" | "stderr" | "errors">(
+    "all",
+  );
   const { copyMessageContent, copied } = useCopyToClipboard();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -26,23 +28,26 @@ export const Console = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle shortcuts when console is focused or no other input is focused
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
         return;
       }
 
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case 'k':
+          case "k":
             e.preventDefault();
             handleClearLogs();
             break;
-          case 'c':
+          case "c":
             if (e.shiftKey) {
               e.preventDefault();
               handleCopyAll();
             }
             break;
-          case 's':
+          case "s":
             if (e.shiftKey) {
               e.preventDefault();
               handleExportLogs();
@@ -52,23 +57,26 @@ export const Console = () => {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [filteredOutput]);
 
   // Filter messages based on selected filter
   const filteredOutput = useMemo(() => {
     switch (filter) {
       case "stdout":
-        return appOutput.filter(output => output.type === "stdout");
+        return appOutput.filter((output) => output.type === "stdout");
       case "stderr":
-        return appOutput.filter(output => output.type === "stderr");
+        return appOutput.filter((output) => output.type === "stderr");
       case "errors":
-        return appOutput.filter(output => 
-          output.type === "stderr" || 
-          output.type === "client-error" ||
-          // Enhanced error detection patterns
-          /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message)
+        return appOutput.filter(
+          (output) =>
+            output.type === "stderr" ||
+            output.type === "client-error" ||
+            // Enhanced error detection patterns
+            /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(
+              output.message,
+            ),
         );
       default:
         return appOutput;
@@ -77,20 +85,25 @@ export const Console = () => {
 
   // Format timestamp
   const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   };
 
   // Get message styling based on type and content
   const getMessageStyle = (output: AppOutput) => {
     // Check for error patterns in message content
-    const hasErrorPattern = /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message);
-    const hasWarningPattern = /warn|Warn|WARN|warning|Warning|WARNING/i.test(output.message);
-    
+    const hasErrorPattern =
+      /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(
+        output.message,
+      );
+    const hasWarningPattern = /warn|Warn|WARN|warning|Warning|WARNING/i.test(
+      output.message,
+    );
+
     switch (output.type) {
       case "stderr":
         return "text-red-400 bg-red-50 dark:bg-red-950/20 border-l-2 border-red-400 pl-2";
@@ -116,22 +129,28 @@ export const Console = () => {
   // Handle copy all logs
   const handleCopyAll = async () => {
     const allLogs = filteredOutput
-      .map(output => `[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`)
-      .join('\n');
+      .map(
+        (output) =>
+          `[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`,
+      )
+      .join("\n");
     await copyMessageContent(allLogs);
   };
 
   // Handle export logs
   const handleExportLogs = () => {
     const allLogs = filteredOutput
-      .map(output => `[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`)
-      .join('\n');
-    
-    const blob = new Blob([allLogs], { type: 'text/plain' });
+      .map(
+        (output) =>
+          `[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`,
+      )
+      .join("\n");
+
+    const blob = new Blob([allLogs], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `dyad-logs-${new Date().toISOString().split('T')[0]}.txt`;
+    a.download = `dyad-logs-${new Date().toISOString().split("T")[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -162,15 +181,15 @@ export const Console = () => {
             onClick={() => setFilter("stdout")}
             className={filter === "stdout" ? "bg-muted" : ""}
           >
-            Output ({appOutput.filter(o => o.type === "stdout").length})
+            Output ({appOutput.filter((o) => o.type === "stdout").length})
           </Button>
           <Button
-            variant="ghost" 
+            variant="ghost"
             size="sm"
             onClick={() => setFilter("stderr")}
             className={filter === "stderr" ? "bg-muted" : ""}
           >
-            Errors ({appOutput.filter(o => o.type === "stderr").length})
+            Errors ({appOutput.filter((o) => o.type === "stderr").length})
           </Button>
         </div>
         <div className="flex items-center gap-1">
@@ -185,7 +204,7 @@ export const Console = () => {
           </Button>
           <Button
             variant="ghost"
-            size="sm" 
+            size="sm"
             onClick={handleExportLogs}
             disabled={filteredOutput.length === 0}
             title="Export logs to file (Ctrl+Shift+S)"
@@ -205,7 +224,7 @@ export const Console = () => {
       </div>
 
       {/* Console output */}
-      <div 
+      <div
         ref={scrollRef}
         className="font-mono text-xs px-4 py-2 flex-1 overflow-auto bg-background"
       >
@@ -215,8 +234,8 @@ export const Console = () => {
           </div>
         ) : (
           filteredOutput.map((output, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`mb-1 p-1 rounded ${getMessageStyle(output)} hover:bg-muted/50 group`}
             >
               <div className="flex items-start gap-2">
@@ -233,7 +252,11 @@ export const Console = () => {
                   variant="ghost"
                   size="sm"
                   className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
-                  onClick={() => copyMessageContent(`[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`)}
+                  onClick={() =>
+                    copyMessageContent(
+                      `[${formatTimestamp(output.timestamp)}] [${output.type.toUpperCase()}] ${output.message}`,
+                    )
+                  }
                   title="Copy this log entry"
                 >
                   <Copy size={10} />
@@ -243,13 +266,15 @@ export const Console = () => {
           ))
         )}
       </div>
-      
+
       {/* CLI Input */}
-      <CliInput onCommandExecute={(cmd) => {
-        if (cmd === "clear") {
-          handleClearLogs();
-        }
-      }} />
+      <CliInput
+        onCommandExecute={(cmd) => {
+          if (cmd === "clear") {
+            handleClearLogs();
+          }
+        }}
+      />
     </div>
   );
 };

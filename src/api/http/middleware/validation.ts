@@ -1,12 +1,12 @@
 /**
  * Validation Middleware
- * 
+ *
  * Request validation using Zod schemas
  */
 
-import type { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
-import { HttpApiError } from './errorHandler';
+import type { Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { HttpApiError } from "./errorHandler";
 
 /**
  * Validate request body against a Zod schema
@@ -20,10 +20,10 @@ export function validateBody<T extends z.ZodType>(schema: T) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HttpApiError(
-          'Validation failed',
+          "Validation failed",
           400,
-          'VALIDATION_ERROR',
-          error.errors
+          "VALIDATION_ERROR",
+          error.errors,
         );
       }
       throw error;
@@ -43,10 +43,10 @@ export function validateParams<T extends z.ZodType>(schema: T) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HttpApiError(
-          'Invalid parameters',
+          "Invalid parameters",
           400,
-          'VALIDATION_ERROR',
-          error.errors
+          "VALIDATION_ERROR",
+          error.errors,
         );
       }
       throw error;
@@ -66,10 +66,10 @@ export function validateQuery<T extends z.ZodType>(schema: T) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HttpApiError(
-          'Invalid query parameters',
+          "Invalid query parameters",
           400,
-          'VALIDATION_ERROR',
-          error.errors
+          "VALIDATION_ERROR",
+          error.errors,
         );
       }
       throw error;

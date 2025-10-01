@@ -92,12 +92,12 @@ export function VoiceInputButton({
 
   const getTooltipText = () => {
     if (voiceState.isListening) {
-      return "Stop listening (click to finish)";
+      return "🎤 Recording... Click to stop and finish";
     }
     if (voiceState.error) {
       return voiceState.error;
     }
-    return "Start voice input";
+    return "🎤 Click to start voice input";
   };
 
   const getEmotionIndicator = () => {
@@ -114,7 +114,9 @@ export function VoiceInputButton({
 
     if (voiceState.frustrationLevel > 0.6) {
       return (
-        <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${color} animate-pulse`} />
+        <div
+          className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${color} animate-pulse`}
+        />
       );
     }
 
@@ -137,13 +139,27 @@ export function VoiceInputButton({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{getTooltipText()}</p>
-            {voiceState.emotionAnalysis && (
-              <p className="text-xs mt-1">
-                Emotion: {voiceState.emotionState}
-                {voiceState.frustrationLevel > 0.6 && " (frustrated)"}
-              </p>
-            )}
+            <div className="space-y-1">
+              <p className="font-medium">{getTooltipText()}</p>
+              {voiceState.isListening && (
+                <p className="text-xs text-muted-foreground">
+                  Microphone is active and listening
+                </p>
+              )}
+              {voiceState.emotionAnalysis && (
+                <div className="text-xs mt-2 pt-2 border-t">
+                  <p className="font-medium">Detected Emotion:</p>
+                  <p className="capitalize">
+                    {voiceState.emotionState}
+                    {voiceState.frustrationLevel > 0.6 &&
+                      " (High frustration detected)"}
+                    {voiceState.frustrationLevel > 0.3 &&
+                      voiceState.frustrationLevel <= 0.6 &&
+                      " (Some frustration detected)"}
+                  </p>
+                </div>
+              )}
+            </div>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

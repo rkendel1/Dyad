@@ -1357,7 +1357,9 @@ export class IpcClient {
     return this.ipcRenderer.invoke("voice:get-settings");
   }
 
-  public async updateVoiceSettings(settings: VoiceSettings): Promise<VoiceSettings> {
+  public async updateVoiceSettings(
+    settings: VoiceSettings,
+  ): Promise<VoiceSettings> {
     return this.ipcRenderer.invoke("voice:update-settings", settings);
   }
 }

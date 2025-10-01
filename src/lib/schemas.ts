@@ -231,29 +231,34 @@ export const UserSettingsSchema = z.object({
   enableAutoUpdate: z.boolean(),
   releaseChannel: ReleaseChannelSchema,
   runtimeMode2: RuntimeMode2Schema.optional(),
-  
+
   // Port range configuration for dynamic port handling
-  portRange: z.object({
-    min: z.number().min(1000).max(65535),
-    max: z.number().min(1000).max(65535),
-  }).refine(data => data.min <= data.max, {
-    message: "Minimum port must be less than or equal to maximum port",
-  }).optional(),
+  portRange: z
+    .object({
+      min: z.number().min(1000).max(65535),
+      max: z.number().min(1000).max(65535),
+    })
+    .refine((data) => data.min <= data.max, {
+      message: "Minimum port must be less than or equal to maximum port",
+    })
+    .optional(),
 
   // Package manager preference
   preferredPackageManager: z.enum(["npm", "yarn", "pnpm", "bun"]).optional(),
-  
+
   // Custom preview URL
   previewUrl: z.string().optional(),
 
   // Voice input settings
-  voiceSettings: z.object({
-    enabled: z.boolean(),
-    language: z.string(),
-    continuousMode: z.boolean(),
-    emotionDetection: z.boolean(),
-    adaptivePrompts: z.boolean(),
-  }).optional(),
+  voiceSettings: z
+    .object({
+      enabled: z.boolean(),
+      language: z.string(),
+      continuousMode: z.boolean(),
+      emotionDetection: z.boolean(),
+      adaptivePrompts: z.boolean(),
+    })
+    .optional(),
 
   ////////////////////////////////
   // E2E TESTING ONLY.

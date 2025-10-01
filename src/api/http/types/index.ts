@@ -1,11 +1,11 @@
 /**
  * HTTP API Type Definitions
- * 
+ *
  * Type definitions for HTTP API requests and responses
  */
 
-import type { Request, Response, NextFunction } from 'express';
-import type { App, Chat, Message } from '../../../types';
+import type { Request, Response, NextFunction } from "express";
+import type { App, Chat, Message } from "../../../types";
 
 /**
  * Extended Express Request with optional authentication
@@ -44,7 +44,7 @@ export interface ApiError {
  * Health check response
  */
 export interface HealthResponse {
-  status: 'ok' | 'degraded' | 'error';
+  status: "ok" | "degraded" | "error";
   version: string;
   timestamp: string;
   uptime: number;
@@ -97,7 +97,7 @@ export interface CreateChatRequest {
  */
 export interface SendMessageRequest {
   content: string;
-  role?: 'user' | 'assistant';
+  role?: "user" | "assistant";
 }
 
 /**
@@ -106,7 +106,7 @@ export interface SendMessageRequest {
 export type ApiMiddleware = (
   req: ApiRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => void | Promise<void>;
 
 /**
@@ -115,5 +115,5 @@ export type ApiMiddleware = (
 export type ApiHandler = (
   req: ApiRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => void | Promise<void>;

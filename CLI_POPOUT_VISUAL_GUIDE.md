@@ -1,26 +1,24 @@
-CLI POPOUT VISUAL GUIDE
-========================
+# CLI POPOUT VISUAL GUIDE
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                        PREVIEW PANEL                            │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                    Preview/Code/Configure                │   │
-│  │                                                          │   │
-│  │              [Your App Running Here]                     │   │
-│  │                                                          │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 📋 System Messages (12)  ⚠️ 2 errors     [↗ Popout] [▼] │◄──┐
-│  └─────────────────────────────────────────────────────────┘   │
+│ PREVIEW PANEL │
+│ │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Preview/Code/Configure │ │
+│ │ │ │
+│ │ [Your App Running Here] │ │
+│ │ │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 📋 System Messages (12) ⚠️ 2 errors [↗ Popout] [▼] │◄──┐
+│ └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
-                                                                   │
-                                                                   │
-    Click here to open CLI Popout ─────────────────────────────────┘
+│
+│
+Click here to open CLI Popout ─────────────────────────────────┘
 
-FLOATING CLI POPOUT (500px × 600px)
-=====================================
+# FLOATING CLI POPOUT (500px × 600px)
 
                                               ┌────────────────────────────────┐
                                               │ 💻 CLI Terminal (App #3)       │
@@ -47,52 +45,49 @@ FLOATING CLI POPOUT (500px × 600px)
                                               │ 💻 [Type command...] [?][⏱][→] │
                                               └────────────────────────────────┘
 
-MINIMIZED CLI POPOUT
-=====================
+# MINIMIZED CLI POPOUT
 
                                               ┌────────────────────┐
                                               │ 💻 CLI  12 messages│
                                               │         [⬜] [✕]   │
                                               └────────────────────┘
 
-CONFIGURE PANEL WITH APP SETTINGS
-==================================
+# CONFIGURE PANEL WITH APP SETTINGS
 
 ┌──────────────────────────────────────────────────────────────────┐
-│                      CONFIGURE PANEL                             │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ Environment Variables (Local)                               │ │
-│  │                                                             │ │
-│  │  [+ Add New Variable]                                       │ │
-│  │                                                             │ │
-│  │  API_KEY=*************************** [✎] [🗑️]              │ │
-│  │  DATABASE_URL=postgresql://... [✎] [🗑️]                    │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ App Settings                                          [NEW] │ │
-│  │                                                             │ │
-│  │  Package Manager:                                           │ │
-│  │  [Auto-detect        ▼]                                     │ │
-│  │  Override package manager for this app. If set to           │ │
-│  │  auto-detect, Dyad will use global setting or detect        │ │
-│  │  based on lock files.                                       │ │
-│  │                                                             │ │
-│  │  Preview URL:                                               │ │
-│  │  [http://localhost:3000          ] [Save] [✕]              │ │
-│  │  Override the preview URL for this app. If not set, Dyad    │ │
-│  │  will use the global setting or auto-detect the URL.        │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ Neon Database Configuration                                 │ │
-│  │  ...                                                        │ │
-│  └────────────────────────────────────────────────────────────┘ │
+│ CONFIGURE PANEL │
+│ │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │ Environment Variables (Local) │ │
+│ │ │ │
+│ │ [+ Add New Variable] │ │
+│ │ │ │
+│ │ API_KEY=************\*\*\************* [✎] [🗑️] │ │
+│ │ DATABASE_URL=postgresql://... [✎] [🗑️] │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │ App Settings [NEW] │ │
+│ │ │ │
+│ │ Package Manager: │ │
+│ │ [Auto-detect ▼] │ │
+│ │ Override package manager for this app. If set to │ │
+│ │ auto-detect, Dyad will use global setting or detect │ │
+│ │ based on lock files. │ │
+│ │ │ │
+│ │ Preview URL: │ │
+│ │ [http://localhost:3000 ] [Save] [✕] │ │
+│ │ Override the preview URL for this app. If not set, Dyad │ │
+│ │ will use the global setting or auto-detect the URL. │ │
+│ └────────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌────────────────────────────────────────────────────────────┐ │
+│ │ Neon Database Configuration │ │
+│ │ ... │ │
+│ └────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
 
-KEY INTERACTIONS
-================
+# KEY INTERACTIONS
 
 1. System Messages Header:
    - Click [↗] icon → Opens CLI Popout
@@ -110,4 +105,3 @@ KEY INTERACTIONS
    - Select Package Manager → Saves automatically
    - Enter Preview URL + Save → Updates app setting
    - Click [✕] on Preview URL → Clears app-level override
-

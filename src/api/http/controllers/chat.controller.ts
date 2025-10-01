@@ -1,14 +1,19 @@
 /**
  * Chat Controller
- * 
+ *
  * HTTP endpoints for chat and message management
  */
 
-import type { Response } from 'express';
-import type { ApiRequest, ApiResponse, ChatListResponse, MessageListResponse } from '../types';
-import { asyncHandler, HttpApiError } from '../middleware/errorHandler';
-import { ChatService } from '../../services/chat.service';
-import { z } from 'zod';
+import type { Response } from "express";
+import type {
+  ApiRequest,
+  ApiResponse,
+  ChatListResponse,
+  MessageListResponse,
+} from "../types";
+import { asyncHandler, HttpApiError } from "../middleware/errorHandler";
+import { ChatService } from "../../services/chat.service";
+import { z } from "zod";
 
 const chatService = new ChatService();
 
@@ -16,46 +21,50 @@ const chatService = new ChatService();
  * GET /api/apps/:appId/chats
  * List all chats for an application
  */
-export const listChats = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const appId = parseInt(req.params.appId, 10);
-  
-  if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
-  }
+export const listChats = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.appId, 10);
 
-  const chats = await chatService.listChats(appId);
-  
-  const response: ApiResponse<ChatListResponse> = {
-    success: true,
-    data: {
-      chats,
-      total: chats.length,
-    },
-  };
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
 
-  res.json(response);
-});
+    const chats = await chatService.listChats(appId);
+
+    const response: ApiResponse<ChatListResponse> = {
+      success: true,
+      data: {
+        chats,
+        total: chats.length,
+      },
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * POST /api/apps/:appId/chats
  * Create a new chat for an application
  */
-export const createChat = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const appId = parseInt(req.params.appId, 10);
-  
-  if (isNaN(appId)) {
-    throw new HttpApiError('Invalid app ID', 400, 'INVALID_APP_ID');
-  }
+export const createChat = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.appId, 10);
 
-  const chat = await chatService.createChat(appId);
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
 
-  const response: ApiResponse = {
-    success: true,
-    data: chat,
-  };
+    const chat = await chatService.createChat(appId);
 
-  res.status(201).json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: chat,
+    };
+
+    res.status(201).json(response);
+  },
+);
 
 /**
  * GET /api/chats/:id
@@ -63,15 +72,15 @@ export const createChat = asyncHandler(async (req: ApiRequest, res: Response) =>
  */
 export const getChat = asyncHandler(async (req: ApiRequest, res: Response) => {
   const chatId = parseInt(req.params.id, 10);
-  
+
   if (isNaN(chatId)) {
-    throw new HttpApiError('Invalid chat ID', 400, 'INVALID_CHAT_ID');
+    throw new HttpApiError("Invalid chat ID", 400, "INVALID_CHAT_ID");
   }
 
   const chat = await chatService.getChat(chatId);
-  
+
   if (!chat) {
-    throw new HttpApiError('Chat not found', 404, 'CHAT_NOT_FOUND');
+    throw new HttpApiError("Chat not found", 404, "CHAT_NOT_FOUND");
   }
 
   const response: ApiResponse = {
@@ -86,99 +95,107 @@ export const getChat = asyncHandler(async (req: ApiRequest, res: Response) => {
  * DELETE /api/chats/:id
  * Delete a chat
  */
-export const deleteChat = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const chatId = parseInt(req.params.id, 10);
-  
-  if (isNaN(chatId)) {
-    throw new HttpApiError('Invalid chat ID', 400, 'INVALID_CHAT_ID');
-  }
+export const deleteChat = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const chatId = parseInt(req.params.id, 10);
 
-  await chatService.deleteChat(chatId);
+    if (isNaN(chatId)) {
+      throw new HttpApiError("Invalid chat ID", 400, "INVALID_CHAT_ID");
+    }
 
-  const response: ApiResponse = {
-    success: true,
-    data: {
-      message: 'Chat deleted successfully',
-      chatId,
-    },
-  };
+    await chatService.deleteChat(chatId);
 
-  res.json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: {
+        message: "Chat deleted successfully",
+        chatId,
+      },
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * PUT /api/chats/:id
  * Update a chat (e.g., title)
  */
-export const updateChat = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const chatId = parseInt(req.params.id, 10);
-  
-  if (isNaN(chatId)) {
-    throw new HttpApiError('Invalid chat ID', 400, 'INVALID_CHAT_ID');
-  }
+export const updateChat = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const chatId = parseInt(req.params.id, 10);
 
-  const { title } = req.body;
+    if (isNaN(chatId)) {
+      throw new HttpApiError("Invalid chat ID", 400, "INVALID_CHAT_ID");
+    }
 
-  const chat = await chatService.updateChatTitle(chatId, title);
+    const { title } = req.body;
 
-  const response: ApiResponse = {
-    success: true,
-    data: chat,
-  };
+    const chat = await chatService.updateChatTitle(chatId, title);
 
-  res.json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: chat,
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * GET /api/chats/:id/messages
  * Get all messages for a chat
  */
-export const getChatMessages = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const chatId = parseInt(req.params.id, 10);
-  
-  if (isNaN(chatId)) {
-    throw new HttpApiError('Invalid chat ID', 400, 'INVALID_CHAT_ID');
-  }
+export const getChatMessages = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const chatId = parseInt(req.params.id, 10);
 
-  const messages = await chatService.getChatMessages(chatId);
+    if (isNaN(chatId)) {
+      throw new HttpApiError("Invalid chat ID", 400, "INVALID_CHAT_ID");
+    }
 
-  const response: ApiResponse<MessageListResponse> = {
-    success: true,
-    data: {
-      messages,
-      total: messages.length,
-      chatId,
-    },
-  };
+    const messages = await chatService.getChatMessages(chatId);
 
-  res.json(response);
-});
+    const response: ApiResponse<MessageListResponse> = {
+      success: true,
+      data: {
+        messages,
+        total: messages.length,
+        chatId,
+      },
+    };
+
+    res.json(response);
+  },
+);
 
 /**
  * POST /api/chats/:id/messages
  * Create a new message in a chat
  */
-export const createMessage = asyncHandler(async (req: ApiRequest, res: Response) => {
-  const chatId = parseInt(req.params.id, 10);
-  
-  if (isNaN(chatId)) {
-    throw new HttpApiError('Invalid chat ID', 400, 'INVALID_CHAT_ID');
-  }
+export const createMessage = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const chatId = parseInt(req.params.id, 10);
 
-  const { content, role } = req.body;
+    if (isNaN(chatId)) {
+      throw new HttpApiError("Invalid chat ID", 400, "INVALID_CHAT_ID");
+    }
 
-  const message = await chatService.createMessage(chatId, {
-    content,
-    role: role || 'user',
-  });
+    const { content, role } = req.body;
 
-  const response: ApiResponse = {
-    success: true,
-    data: message,
-  };
+    const message = await chatService.createMessage(chatId, {
+      content,
+      role: role || "user",
+    });
 
-  res.status(201).json(response);
-});
+    const response: ApiResponse = {
+      success: true,
+      data: message,
+    };
+
+    res.status(201).json(response);
+  },
+);
 
 /**
  * Validation schemas
@@ -189,5 +206,5 @@ export const updateChatSchema = z.object({
 
 export const createMessageSchema = z.object({
   content: z.string().min(1),
-  role: z.enum(['user', 'assistant']).optional(),
+  role: z.enum(["user", "assistant"]).optional(),
 });

@@ -47,6 +47,7 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 To switch manually:
+
 1. Comment out the section you're not using (add `#` at the start of each line)
 2. Uncomment the section you want to use (remove `#` from the start of each line)
 3. Restart your development server
@@ -68,11 +69,13 @@ npm run supabase:switch ./path/to/your/app local
 ```
 
 **What happens:**
+
 - All `LOCAL SUPABASE` section variables become active (uncommented)
 - All `HOSTED SUPABASE` section variables are commented out
 - Your app now connects to `http://localhost:8000`
 
 **Benefits of local development:**
+
 - No internet connection required (after initial setup)
 - Faster development cycle
 - Easy database resets for testing
@@ -94,11 +97,13 @@ npm run supabase:switch ./path/to/your/app hosted
 ```
 
 **What happens:**
+
 - All `HOSTED SUPABASE` section variables become active (uncommented)
 - All `LOCAL SUPABASE` section variables are commented out
 - Your app now connects to your hosted Supabase project
 
 **When to use hosted:**
+
 - Testing with production data
 - Deploying to production/staging
 - Working with team members on shared database
@@ -141,6 +146,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
 **Advantages:**
+
 - Both configurations always present in the file
 - Easy to switch by commenting/uncommenting
 - Clear visual separation between environments
@@ -158,6 +164,7 @@ SUPABASE_URL=...
 ```
 
 **Migration:**
+
 - The new handlers will automatically create the structured format
 - Existing files continue to work
 - You can manually reorganize if desired
@@ -224,6 +231,7 @@ npm run supabase:switch ./app3 local
 **Problem:** The switcher can't find your environment file.
 
 **Solution:**
+
 1. Make sure you've connected your app to Supabase first (using Dyad UI)
 2. Check that the app path is correct
 3. The file might be in `.dyad/.env.local` instead
@@ -233,6 +241,7 @@ npm run supabase:switch ./app3 local
 **Problem:** Trying to switch to hosted, but no hosted credentials exist.
 
 **Solution:**
+
 1. Run `npm run supabase:promote` first to set up production
 2. This will create the hosted section in your `.env.local`
 
@@ -241,6 +250,7 @@ npm run supabase:switch ./app3 local
 **Problem:** Switched environments but app still uses old connection.
 
 **Solution:**
+
 1. Make sure to restart your development server after switching
 2. Check that the correct variables are uncommented in `.env.local`
 3. Clear any environment variable caches
@@ -250,6 +260,7 @@ npm run supabase:switch ./app3 local
 **Problem:** Accidentally commented out both sections.
 
 **Solution:**
+
 1. Run the switch command again: `npm run supabase:switch <app> local`
 2. Or manually uncomment the section you need
 
@@ -258,6 +269,7 @@ npm run supabase:switch ./app3 local
 ### 1. Keep Both Configurations Updated
 
 When you update hosted credentials:
+
 - Update the `HOSTED SUPABASE` section in `.env.local`
 - Keep local section for development
 
@@ -272,6 +284,7 @@ When you update hosted credentials:
 ### 3. Document Your Environment
 
 Add a note in your project README:
+
 ```markdown
 ## Supabase Setup
 
@@ -286,6 +299,7 @@ Make sure to restart the dev server after switching.
 ### 4. Test Before Deploying
 
 Always test with hosted Supabase before deploying:
+
 ```bash
 # Switch to hosted
 npm run supabase:switch ./my-app hosted
@@ -300,6 +314,7 @@ npm run supabase:switch ./my-app local
 ### 5. Keep Local Supabase Running
 
 If you frequently switch between environments:
+
 ```bash
 # Keep local Supabase running in background
 npm run supabase:start
@@ -357,6 +372,7 @@ You can extend the structure for staging:
 ## Support
 
 If you encounter issues:
+
 1. Check this documentation
 2. Verify both local and hosted Supabase are properly set up
 3. Review the environment file structure

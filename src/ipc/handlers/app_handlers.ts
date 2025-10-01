@@ -61,18 +61,26 @@ const DEFAULT_COMMAND =
 /**
  * Generate a command with a specific port using dynamic package manager detection
  */
-async function getDefaultCommandWithPort(port: number, appPath?: string): Promise<string> {
+async function getDefaultCommandWithPort(
+  port: number,
+  appPath?: string,
+): Promise<string> {
   if (appPath) {
     try {
       // Try to generate smart command based on project and system detection
       const installCmd = await generateCommandWithFallbacks(appPath, "install");
-      const devCmd = await generateCommandWithFallbacks(appPath, "dev", { port });
+      const devCmd = await generateCommandWithFallbacks(appPath, "dev", {
+        port,
+      });
       return `(${installCmd}) && (${devCmd})`;
     } catch (error) {
-      logger.warn("Failed to detect package manager, using fallback command:", error);
+      logger.warn(
+        "Failed to detect package manager, using fallback command:",
+        error,
+      );
     }
   }
-  
+
   // Fallback to the expanded default command
   return `(pnpm install && pnpm run dev --port ${port}) || (yarn install && yarn dev --port ${port}) || (bun install && bun run dev --port ${port}) || (npm install --legacy-peer-deps && npm run dev -- --port ${port})`;
 }
@@ -165,30 +173,32 @@ async function executeAppLocalNode({
   // Find an available port in the configured range for default commands
   let dynamicPort: number | undefined;
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
-  
+
   if (!hasCustomCommands) {
     const portRange = getPortRange();
     try {
       dynamicPort = await findAvailablePort(portRange.min, portRange.max);
       logger.info(`Using dynamic port ${dynamicPort} for app ${appId}`);
     } catch (error) {
-      logger.warn(`Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`);
+      logger.warn(
+        `Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`,
+      );
     }
   }
-  
-  const command = await getCommand({ 
-    installCommand, 
-    startCommand, 
-    port: dynamicPort, 
-    appPath 
+
+  const command = await getCommand({
+    installCommand,
+    startCommand,
+    port: dynamicPort,
+    appPath,
   });
-  
+
   // Set up environment with increased memory limit for spawned processes
   const env = { ...process.env };
-  if (!env.NODE_OPTIONS || !env.NODE_OPTIONS.includes('--max-old-space-size')) {
-    env.NODE_OPTIONS = (env.NODE_OPTIONS || '') + ' --max-old-space-size=4096';
+  if (!env.NODE_OPTIONS || !env.NODE_OPTIONS.includes("--max-old-space-size")) {
+    env.NODE_OPTIONS = (env.NODE_OPTIONS || "") + " --max-old-space-size=4096";
   }
-  
+
   const spawnedProcess = spawn(command, [], {
     cwd: appPath,
     shell: true,
@@ -277,7 +287,9 @@ function listenToProcess({
         timestamp: Date.now(),
       });
 
-      const urlMatch = message.match(/(https?:\/\/(?:localhost|127\.0\.0\.1):\d+\/?)/);
+      const urlMatch = message.match(
+        /(https?:\/\/(?:localhost|127\.0\.0\.1):\d+\/?)/,
+      );
       if (urlMatch) {
         proxyWorker = await startProxy(urlMatch[1], {
           onStarted: (proxyUrl) => {
@@ -436,20 +448,22 @@ RUN npm install -g pnpm@latest-10 && \\
   // Find an available port in the configured range for default commands
   let dynamicPort: number | undefined;
   const hasCustomCommands = !!installCommand?.trim() && !!startCommand?.trim();
-  
+
   if (!hasCustomCommands) {
     const portRange = getPortRange();
     try {
       dynamicPort = await findAvailablePort(portRange.min, portRange.max);
       logger.info(`Using dynamic port ${dynamicPort} for Docker app ${appId}`);
     } catch (error) {
-      logger.warn(`Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`);
+      logger.warn(
+        `Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`,
+      );
       dynamicPort = 32100; // Fallback to default
     }
   } else {
     dynamicPort = 32100; // Use default for custom commands
   }
-  
+
   const process = spawn(
     "docker",
     [
@@ -465,7 +479,7 @@ RUN npm install -g pnpm@latest-10 && \\
       `dyad-cache-${appId}:/app/.cache`,
       "-e",
       "NPM_CONFIG_CACHE=/app/.cache",
-      "-e", 
+      "-e",
       "PNPM_STORE_PATH=/app/.cache/.pnpm-store",
       "-e",
       "YARN_CACHE_FOLDER=/app/.cache/.yarn-cache",
@@ -476,11 +490,11 @@ RUN npm install -g pnpm@latest-10 && \\
       `dyad-app-${appId}`,
       "sh",
       "-c",
-      await getCommand({ 
-        installCommand, 
-        startCommand, 
-        port: dynamicPort, 
-        appPath 
+      await getCommand({
+        installCommand,
+        startCommand,
+        port: dynamicPort,
+        appPath,
       }),
     ],
     {
@@ -753,7 +767,9 @@ export function registerAppHandlers() {
     if (app.supabaseProjectId && settings.supabase?.accessToken?.value) {
       // Fetch from API if not cached or if we want to refresh
       if (!supabaseProjectName) {
-        supabaseProjectName = await getSupabaseProjectName(app.supabaseProjectId);
+        supabaseProjectName = await getSupabaseProjectName(
+          app.supabaseProjectId,
+        );
         // Cache in database for future requests
         if (supabaseProjectName) {
           await db
@@ -1422,10 +1438,10 @@ export function registerAppHandlers() {
     "respond-to-app-input",
     async (_, { appId, response }: RespondToAppInputParams) => {
       // Validate that response is not empty
-      if (!response || typeof response !== 'string') {
-        throw new Error('Invalid response: must be a non-empty string');
+      if (!response || typeof response !== "string") {
+        throw new Error("Invalid response: must be a non-empty string");
       }
-      
+
       const appInfo = runningApps.get(appId);
 
       if (!appInfo) {
@@ -1550,8 +1566,10 @@ async function getCommand({
   if (hasCustomCommands) {
     return `${installCommand!.trim()} && ${startCommand!.trim()}`;
   }
-  
-  return port ? await getDefaultCommandWithPort(port, appPath) : DEFAULT_COMMAND;
+
+  return port
+    ? await getDefaultCommandWithPort(port, appPath)
+    : DEFAULT_COMMAND;
 }
 
 async function cleanUpPort(port: number) {
@@ -1569,12 +1587,12 @@ async function cleanUpPort(port: number) {
 async function cleanUpPortRange() {
   const settings = readSettings();
   const portRange = settings.portRange || { min: 32100, max: 32200 };
-  
+
   const cleanupPromises = [];
   for (let port = portRange.min; port <= portRange.max; port++) {
     cleanupPromises.push(cleanUpPort(port));
   }
-  
+
   await Promise.allSettled(cleanupPromises);
 }
 

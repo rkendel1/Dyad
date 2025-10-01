@@ -40,19 +40,58 @@ export class EmotionDetectionService {
 
   // Keyword patterns for emotion detection
   private readonly FRUSTRATION_KEYWORDS = [
-    "frustrated", "annoying", "wrong", "broken", "bug", "issue", "problem",
-    "doesn't work", "not working", "failed", "error", "help", "stuck",
-    "again", "still", "why", "ugh", "argh", "damn", "wtf", "seriously"
+    "frustrated",
+    "annoying",
+    "wrong",
+    "broken",
+    "bug",
+    "issue",
+    "problem",
+    "doesn't work",
+    "not working",
+    "failed",
+    "error",
+    "help",
+    "stuck",
+    "again",
+    "still",
+    "why",
+    "ugh",
+    "argh",
+    "damn",
+    "wtf",
+    "seriously",
   ];
 
   private readonly NEGATIVE_KEYWORDS = [
-    "bad", "terrible", "awful", "poor", "worse", "horrible", "hate",
-    "dislike", "incorrect", "useless", "confusing", "complicated"
+    "bad",
+    "terrible",
+    "awful",
+    "poor",
+    "worse",
+    "horrible",
+    "hate",
+    "dislike",
+    "incorrect",
+    "useless",
+    "confusing",
+    "complicated",
   ];
 
   private readonly POSITIVE_KEYWORDS = [
-    "good", "great", "excellent", "perfect", "awesome", "amazing",
-    "love", "like", "better", "thanks", "thank you", "helpful", "works"
+    "good",
+    "great",
+    "excellent",
+    "perfect",
+    "awesome",
+    "amazing",
+    "love",
+    "like",
+    "better",
+    "thanks",
+    "thank you",
+    "helpful",
+    "works",
   ];
 
   // Patterns for detecting repetition and frustration
@@ -66,29 +105,29 @@ export class EmotionDetectionService {
     let frustrationLevel = 0;
 
     // Check for frustration keywords
-    const frustrationMatches = this.FRUSTRATION_KEYWORDS.filter(keyword =>
-      lowerMessage.includes(keyword)
+    const frustrationMatches = this.FRUSTRATION_KEYWORDS.filter((keyword) =>
+      lowerMessage.includes(keyword),
     );
     if (frustrationMatches.length > 0) {
-      indicators.push(...frustrationMatches.map(k => `frustration: ${k}`));
+      indicators.push(...frustrationMatches.map((k) => `frustration: ${k}`));
       frustrationLevel += frustrationMatches.length * 0.3;
     }
 
     // Check for negative sentiment
-    const negativeMatches = this.NEGATIVE_KEYWORDS.filter(keyword =>
-      lowerMessage.includes(keyword)
+    const negativeMatches = this.NEGATIVE_KEYWORDS.filter((keyword) =>
+      lowerMessage.includes(keyword),
     );
     if (negativeMatches.length > 0) {
-      indicators.push(...negativeMatches.map(k => `negative: ${k}`));
+      indicators.push(...negativeMatches.map((k) => `negative: ${k}`));
       emotionScore -= negativeMatches.length * 0.2;
     }
 
     // Check for positive sentiment
-    const positiveMatches = this.POSITIVE_KEYWORDS.filter(keyword =>
-      lowerMessage.includes(keyword)
+    const positiveMatches = this.POSITIVE_KEYWORDS.filter((keyword) =>
+      lowerMessage.includes(keyword),
     );
     if (positiveMatches.length > 0) {
-      indicators.push(...positiveMatches.map(k => `positive: ${k}`));
+      indicators.push(...positiveMatches.map((k) => `positive: ${k}`));
       emotionScore += positiveMatches.length * 0.2;
     }
 
@@ -167,18 +206,25 @@ export class EmotionDetectionService {
   public onEmotionDetected(callback: EmotionCallback): () => void {
     this.emotionCallbacks.push(callback);
     return () => {
-      this.emotionCallbacks = this.emotionCallbacks.filter(cb => cb !== callback);
+      this.emotionCallbacks = this.emotionCallbacks.filter(
+        (cb) => cb !== callback,
+      );
     };
   }
 
   public onFrustrationDetected(callback: FrustrationCallback): () => void {
     this.frustrationCallbacks.push(callback);
     return () => {
-      this.frustrationCallbacks = this.frustrationCallbacks.filter(cb => cb !== callback);
+      this.frustrationCallbacks = this.frustrationCallbacks.filter(
+        (cb) => cb !== callback,
+      );
     };
   }
 
-  public generateAdaptivePrompt(originalPrompt: string, emotionState: EmotionState): string {
+  public generateAdaptivePrompt(
+    originalPrompt: string,
+    emotionState: EmotionState,
+  ): string {
     switch (emotionState) {
       case EmotionState.FRUSTRATED:
         return `[User seems frustrated - provide clear, step-by-step solutions]\n${originalPrompt}`;
@@ -196,22 +242,23 @@ export class EmotionDetectionService {
       return 0;
     }
 
-    const lastMessage = this.context.messageHistory[this.context.messageHistory.length - 1];
+    const lastMessage =
+      this.context.messageHistory[this.context.messageHistory.length - 1];
     const words1 = new Set(message.toLowerCase().split(/\s+/));
     const words2 = new Set(lastMessage.toLowerCase().split(/\s+/));
 
-    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const intersection = new Set([...words1].filter((x) => words2.has(x)));
     const union = new Set([...words1, ...words2]);
 
     return intersection.size / union.size;
   }
 
   private notifyEmotion(analysis: EmotionAnalysis): void {
-    this.emotionCallbacks.forEach(callback => callback(analysis));
+    this.emotionCallbacks.forEach((callback) => callback(analysis));
   }
 
   private notifyFrustration(level: number): void {
-    this.frustrationCallbacks.forEach(callback => callback(level));
+    this.frustrationCallbacks.forEach((callback) => callback(level));
   }
 
   public cleanup(): void {

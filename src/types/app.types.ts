@@ -1,6 +1,6 @@
 /**
  * App Domain Types
- * 
+ *
  * Type definitions related to applications, files, and app settings.
  */
 

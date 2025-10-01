@@ -11,7 +11,9 @@ export function AddGitHubRepoButton() {
 
   const handleClick = () => {
     if (!selectedAppId) {
-      showError("Please select an app first before adding a GitHub repository.");
+      showError(
+        "Please select an app first before adding a GitHub repository.",
+      );
       return;
     }
     navigate({ to: "/add-github-repo" });
@@ -19,11 +21,7 @@ export function AddGitHubRepoButton() {
 
   return (
     <div className="px-4 pb-1 flex justify-center">
-      <Button
-        variant="outline"
-        size="default"
-        onClick={handleClick}
-      >
+      <Button variant="outline" size="default" onClick={handleClick}>
         <Github className="mr-2 h-4 w-4" />
         Add GitHub Repo
       </Button>

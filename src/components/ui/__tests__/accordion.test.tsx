@@ -1,44 +1,44 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from '../accordion';
+} from "../accordion";
 
-describe('Accordion', () => {
-  it('should render accordion trigger and content', () => {
+describe("Accordion", () => {
+  it("should render accordion trigger and content", () => {
     render(
       <Accordion type="single" collapsible>
         <AccordionItem value="item-1">
           <AccordionTrigger>Test Trigger</AccordionTrigger>
           <AccordionContent>Test Content</AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion>,
     );
 
-    expect(screen.getByText('Test Trigger')).toBeDefined();
+    expect(screen.getByText("Test Trigger")).toBeDefined();
   });
 
-  it('should expand and collapse on trigger click', () => {
+  it("should expand and collapse on trigger click", () => {
     render(
       <Accordion type="single" collapsible>
         <AccordionItem value="item-1">
           <AccordionTrigger>Click Me</AccordionTrigger>
           <AccordionContent>Hidden Content</AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion>,
     );
 
-    const trigger = screen.getByText('Click Me');
-    
+    const trigger = screen.getByText("Click Me");
+
     // Click to expand
     fireEvent.click(trigger);
-    
+
     // Content should be visible after click
-    expect(screen.getByText('Hidden Content')).toBeDefined();
-    
+    expect(screen.getByText("Hidden Content")).toBeDefined();
+
     // Click to collapse
     fireEvent.click(trigger);
   });
@@ -54,22 +54,22 @@ describe('Accordion', () => {
           <AccordionTrigger>Trigger 2</AccordionTrigger>
           <AccordionContent>Content 2</AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion>,
     );
 
-    const trigger1 = screen.getByText('Trigger 1');
-    const trigger2 = screen.getByText('Trigger 2');
-    
+    const trigger1 = screen.getByText("Trigger 1");
+    const trigger2 = screen.getByText("Trigger 2");
+
     // Click both triggers
     fireEvent.click(trigger1);
     fireEvent.click(trigger2);
-    
+
     // Both contents should be present in the document
-    expect(screen.getByText('Content 1')).toBeDefined();
-    expect(screen.getByText('Content 2')).toBeDefined();
+    expect(screen.getByText("Content 1")).toBeDefined();
+    expect(screen.getByText("Content 2")).toBeDefined();
   });
 
-  it('should forward refs correctly', () => {
+  it("should forward refs correctly", () => {
     const itemRef = { current: null };
     const triggerRef = { current: null };
     const contentRef = { current: null };
@@ -80,7 +80,7 @@ describe('Accordion', () => {
           <AccordionTrigger ref={triggerRef}>Test</AccordionTrigger>
           <AccordionContent ref={contentRef}>Content</AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion>,
     );
 
     expect(itemRef.current).toBeTruthy();
@@ -88,20 +88,20 @@ describe('Accordion', () => {
     expect(contentRef.current).toBeTruthy();
   });
 
-  it('should not navigate or open new window on trigger click', () => {
+  it("should not navigate or open new window on trigger click", () => {
     render(
       <Accordion type="single" collapsible>
         <AccordionItem value="item-1">
           <AccordionTrigger>Test</AccordionTrigger>
           <AccordionContent>Content</AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion>,
     );
 
-    const trigger = screen.getByText('Test');
-    
+    const trigger = screen.getByText("Test");
+
     // The accordion trigger should be a button, not a link
-    expect(trigger.closest('button')).toBeTruthy();
-    expect(trigger.closest('a')).toBeFalsy();
+    expect(trigger.closest("button")).toBeTruthy();
+    expect(trigger.closest("a")).toBeFalsy();
   });
 });

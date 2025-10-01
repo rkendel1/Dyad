@@ -25,6 +25,7 @@ The Dyad application previously operated exclusively as a desktop application wi
 - Integration with main Electron process lifecycle
 
 **Key Features:**
+
 - Singleton pattern for server instance management
 - Request logging and monitoring
 - JSON body parsing (50MB limit)
@@ -33,22 +34,26 @@ The Dyad application previously operated exclusively as a desktop application wi
 ### 2. Middleware Layer
 
 **Files:**
+
 - `src/api/http/middleware/errorHandler.ts` - Error handling and async wrappers
 - `src/api/http/middleware/validation.ts` - Zod-based request validation
 - `src/api/http/middleware/auth.ts` - JWT authentication (optional)
 
 **Error Handling:**
+
 - Custom `HttpApiError` class for structured errors
 - Global error handler middleware
 - 404 handler for non-existent routes
 - Async handler wrapper for automatic error catching
 
 **Validation:**
+
 - Zod schema validation for request body, params, and query
 - Consistent validation error responses
 - Type-safe request handling
 
 **Authentication:**
+
 - Optional JWT-based authentication
 - Token verification middleware
 - Configurable for localhost (no auth required by default)
@@ -56,16 +61,19 @@ The Dyad application previously operated exclusively as a desktop application wi
 ### 3. Controllers
 
 **Files:**
+
 - `src/api/http/controllers/health.controller.ts` - Health and status endpoints
 - `src/api/http/controllers/app.controller.ts` - Application management
 - `src/api/http/controllers/chat.controller.ts` - Chat and message management
 
 **Health Controller:**
+
 - `GET /api/health` - Basic health check with uptime
 - `GET /api/version` - Application version info
 - `GET /api/status` - Detailed system status
 
 **App Controller:**
+
 - `GET /api/apps` - List all applications
 - `GET /api/apps/:id` - Get specific application
 - `DELETE /api/apps/:id` - Delete application
@@ -73,6 +81,7 @@ The Dyad application previously operated exclusively as a desktop application wi
 - `PUT /api/apps/:id/settings` - Update app settings
 
 **Chat Controller:**
+
 - `GET /api/apps/:appId/chats` - List chats for app
 - `POST /api/apps/:appId/chats` - Create new chat
 - `GET /api/chats/:id` - Get specific chat
@@ -84,11 +93,13 @@ The Dyad application previously operated exclusively as a desktop application wi
 ### 4. Routes
 
 **Files:**
+
 - `src/api/http/routes/health.routes.ts` - Health endpoints
 - `src/api/http/routes/app.routes.ts` - App endpoints
 - `src/api/http/routes/chat.routes.ts` - Chat endpoints
 
 **Route Organization:**
+
 - Health routes mounted at root and `/api`
 - API routes under `/api` prefix
 - RESTful URL structure
@@ -99,6 +110,7 @@ The Dyad application previously operated exclusively as a desktop application wi
 **File:** `src/api/http/types/index.ts`
 
 **Key Types:**
+
 - `ApiRequest` - Extended Express Request with user info
 - `ApiResponse<T>` - Standard response wrapper
 - `ApiError` - Error response structure
@@ -110,10 +122,12 @@ The Dyad application previously operated exclusively as a desktop application wi
 ### 6. Service Layer Extensions
 
 **Extended AppService (`src/api/services/app.service.ts`):**
+
 - Added `getAppSettings(appId)` method
 - Returns app-specific settings (package manager, preview URL)
 
 **Extended ChatService (`src/api/services/chat.service.ts`):**
+
 - Added `getChatMessages(chatId)` method
 - Added `createMessage(chatId, messageData)` method
 - Enables message management via HTTP API
@@ -123,6 +137,7 @@ The Dyad application previously operated exclusively as a desktop application wi
 **File:** `src/main.ts`
 
 **Changes:**
+
 - Import HTTP server functions
 - Start HTTP server in `onReady()` function
 - Stop HTTP server on app quit
@@ -173,10 +188,12 @@ The Dyad application previously operated exclusively as a desktop application wi
 ### Example Web Application
 
 **Files:**
+
 - `examples/web-app/index.html` - Single-page web interface
 - `examples/web-app/README.md` - Usage instructions
 
 **Features:**
+
 - Lists all applications
 - Shows chats for each app
 - Creates new chats
@@ -188,22 +205,26 @@ The Dyad application previously operated exclusively as a desktop application wi
 ## Benefits Delivered
 
 ### 1. Enhanced Accessibility
+
 ✅ Users can access Dyad via web browsers
 ✅ No desktop installation required for web interface
 ✅ Cross-platform compatibility
 
 ### 2. Increased Scalability
+
 ✅ HTTP API enables external integrations
 ✅ Support for CLI tools and scripts
 ✅ Foundation for cloud deployments
 
 ### 3. Developer Experience
+
 ✅ RESTful API design
 ✅ Comprehensive documentation
 ✅ Type-safe TypeScript implementation
 ✅ Working examples provided
 
 ### 4. Backward Compatibility
+
 ✅ IPC handlers remain unchanged
 ✅ No breaking changes to desktop app
 ✅ Existing functionality preserved
@@ -236,12 +257,12 @@ The Dyad application previously operated exclusively as a desktop application wi
 
 ```typescript
 interface HttpServerConfig {
-  enabled: boolean;        // Default: true
-  port: number;           // Default: 3000
-  host: string;           // Default: 'localhost'
+  enabled: boolean; // Default: true
+  port: number; // Default: 3000
+  host: string; // Default: 'localhost'
   cors: {
-    enabled: boolean;     // Default: true
-    origins: string[];    // Default: ['http://localhost:*', 'http://127.0.0.1:*']
+    enabled: boolean; // Default: true
+    origins: string[]; // Default: ['http://localhost:*', 'http://127.0.0.1:*']
   };
 }
 ```
@@ -271,16 +292,19 @@ All responses follow this structure:
 ## Code Quality
 
 ### TypeScript Compilation
+
 ✅ All new code compiles without errors
 ✅ Strict type checking enabled
 ✅ No `any` types used
 
 ### Linting
+
 ✅ Passes oxlint checks
 ✅ Follows existing code style
 ✅ No new linting warnings
 
 ### Testing
+
 ✅ Integration tests written
 ✅ All tests pass
 ✅ Test coverage for critical paths
@@ -288,6 +312,7 @@ All responses follow this structure:
 ## Files Modified
 
 ### New Files Created (16 files)
+
 1. `src/api/http/server.ts` - Main HTTP server
 2. `src/api/http/types/index.ts` - Type definitions
 3. `src/api/http/middleware/errorHandler.ts` - Error handling
@@ -306,24 +331,28 @@ All responses follow this structure:
 16. `examples/test-api.js` - Test script
 
 ### Files Modified (4 files)
+
 1. `src/main.ts` - Added HTTP server initialization
 2. `src/api/services/app.service.ts` - Added getAppSettings method
 3. `src/api/services/chat.service.ts` - Added getChatMessages and createMessage methods
 4. `README.md` - Added HTTP API section
 
 ### Configuration Files Modified (2 files)
+
 1. `package.json` - Added HTTP server dependencies
 2. `package-lock.json` - Updated lock file
 
 ## Future Enhancements
 
 ### Phase 2 (Recommended)
+
 1. **Streaming Support** - Server-Sent Events for real-time chat
 2. **WebSocket Support** - Real-time updates
 3. **OpenAPI Schema** - Auto-generated API documentation
 4. **API Key Management** - Generate and manage API keys
 
 ### Phase 3 (Advanced)
+
 1. **Rate Limiting** - Protect against abuse
 2. **Request Logging** - Detailed audit logs
 3. **Metrics & Monitoring** - Performance tracking
@@ -332,6 +361,7 @@ All responses follow this structure:
 ## Security Considerations
 
 ### Current Implementation
+
 - ✅ CORS enabled with localhost origins only
 - ✅ Input validation using Zod schemas
 - ✅ SQL injection prevention via ORM
@@ -339,6 +369,7 @@ All responses follow this structure:
 - ✅ Error messages don't leak sensitive data
 
 ### Recommendations for Production
+
 - 🔒 Enable required authentication
 - 🔒 Use HTTPS with valid certificates
 - 🔒 Implement rate limiting
@@ -348,12 +379,14 @@ All responses follow this structure:
 ## Performance
 
 ### Metrics
+
 - Server startup: < 100ms
 - Request latency: < 10ms (localhost)
 - Memory overhead: < 5MB
 - No impact on desktop app performance
 
 ### Optimizations Applied
+
 - Connection pooling for database
 - Efficient JSON parsing
 - Minimal middleware stack
@@ -362,12 +395,14 @@ All responses follow this structure:
 ## Maintenance
 
 ### Code Organization
+
 - Clear separation of concerns
 - Modular architecture
 - Easy to extend with new endpoints
 - Consistent naming conventions
 
 ### Documentation
+
 - Inline JSDoc comments
 - Comprehensive README files
 - API reference documentation
@@ -380,6 +415,7 @@ The HTTP REST API implementation successfully enables web application functional
 **Status:** ✅ **COMPLETE AND READY FOR PRODUCTION**
 
 All acceptance criteria from the original issue have been met:
+
 1. ✅ HTTP communication layers implemented
 2. ✅ Seamless integration with existing architecture
 3. ✅ Web application capability enabled

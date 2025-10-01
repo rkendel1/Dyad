@@ -2,13 +2,13 @@
 
 /**
  * Supabase Environment Switcher
- * 
+ *
  * This script helps you switch between local and hosted Supabase environments
  * by managing the .env.local file in your app.
- * 
+ *
  * Usage:
  *   node scripts/switch-supabase-env.js <app-path> <local|hosted>
- * 
+ *
  * Or use npm scripts:
  *   npm run supabase:switch-local <app-path>
  *   npm run supabase:switch-hosted <app-path>
@@ -223,10 +223,7 @@ function switchToHosted(envPath) {
   }
 
   if (!foundHostedSection) {
-    log(
-      "No hosted Supabase configuration found in .env.local",
-      "warning",
-    );
+    log("No hosted Supabase configuration found in .env.local", "warning");
     console.log("═══════════════════════════════════════════════════════");
     log("Please set up hosted Supabase first using:", "info");
     log("  npm run supabase:promote");

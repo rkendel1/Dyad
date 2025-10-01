@@ -7,8 +7,9 @@ This guide explains how to set up and use local Supabase with Dyad for developme
 **NEW**: Each app now gets its own isolated Supabase instance with dedicated containers, ports, and credentials!
 
 See [LOCAL_SUPABASE_MULTI_PROJECT.md](./LOCAL_SUPABASE_MULTI_PROJECT.md) for details on:
+
 - How per-app isolation works
-- Port allocation strategy  
+- Port allocation strategy
 - Managing multiple instances
 - Troubleshooting tips
 
@@ -27,8 +28,9 @@ See [LOCAL_SUPABASE_MULTI_PROJECT.md](./LOCAL_SUPABASE_MULTI_PROJECT.md) for det
 4. Your app is now connected to its own isolated local Supabase instance!
 
 Each app gets unique:
+
 - Dashboard URL (e.g., http://localhost:3101 for app 1)
-- API endpoints (e.g., http://localhost:8100 for app 1)  
+- API endpoints (e.g., http://localhost:8100 for app 1)
 - Database ports (e.g., 5532 for app 1)
 - Credentials automatically synced to `.env.local`
 
@@ -41,7 +43,7 @@ npm run supabase:start
 # Check status
 npm run supabase:status
 
-# Stop shared local Supabase  
+# Stop shared local Supabase
 npm run supabase:stop
 ```
 
@@ -78,6 +80,7 @@ Local Supabase includes all the core services:
 ### Enhanced Startup Experience
 
 When you start local Supabase, you'll see:
+
 - 📦 List of services being started
 - ⏳ Real-time progress indicators
 - ✅ Service-by-service health checks
@@ -85,6 +88,7 @@ When you start local Supabase, you'll see:
 - 💡 Next steps and helpful tips
 
 Example output:
+
 ```
 ═══════════════════════════════════════════════════════
 🚀 Starting local Supabase...
@@ -227,7 +231,7 @@ You can easily switch between local and hosted Supabase:
 # Switch to local Supabase
 npm run supabase:switch /path/to/your/app local
 
-# Switch to hosted Supabase  
+# Switch to hosted Supabase
 npm run supabase:switch /path/to/your/app hosted
 ```
 
@@ -241,6 +245,7 @@ The switcher automatically manages your `.env.local` file by commenting/uncommen
 ### Manual Method
 
 Edit your `.env.local` file:
+
 - Uncomment the `LOCAL SUPABASE` section for local development
 - Uncomment the `HOSTED SUPABASE` section for production/staging
 

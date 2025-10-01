@@ -5,6 +5,7 @@ This document describes the new CSS selector feature that allows users to captur
 ## Overview
 
 The CSS selector feature enables users to:
+
 1. Select any element on a website displayed in Dyad's preview panel
 2. Automatically generate an optimal CSS selector for that element
 3. Copy the selector to clipboard or insert it directly into the chat
@@ -42,11 +43,13 @@ After capturing a selector, you'll see a green panel with two options:
 The feature uses intelligent logic to generate optimal CSS selectors:
 
 ### Priority Order:
+
 1. **ID Selector**: `#unique-id` (highest priority if element has an ID)
 2. **Class Selector**: `.class1.class2` (if classes are unique)
 3. **Path Selector**: `div.container > p.text > span:nth-child(2)` (fallback with full path)
 
 ### Features:
+
 - Handles multiple classes correctly
 - Uses nth-child selectors when needed to ensure uniqueness
 - Excludes internal Dyad classes (prefixed with `__dyad`)
@@ -55,26 +58,33 @@ The feature uses intelligent logic to generate optimal CSS selectors:
 ## Examples
 
 ### Element with ID
+
 ```html
 <h1 id="main-title">Welcome</h1>
 ```
+
 **Generated Selector**: `#main-title`
 
 ### Element with Classes
+
 ```html
 <div class="card featured">Content</div>
 ```
+
 **Generated Selector**: `.card.featured` (if unique)
 
 ### Nested Element
+
 ```html
 <div class="container">
   <ul class="nav-list">
     <li>Item 1</li>
-    <li>Item 2</li> <!-- Selecting this -->
+    <li>Item 2</li>
+    <!-- Selecting this -->
   </ul>
 </div>
 ```
+
 **Generated Selector**: `div.container > ul.nav-list > li:nth-child(2)`
 
 ## Visual Indicators
@@ -94,11 +104,13 @@ The feature uses intelligent logic to generate optimal CSS selectors:
 ## Technical Implementation
 
 ### Files Modified/Created:
+
 - `worker/dyad-css-selector-client.js` - Client-side selector logic
 - `worker/proxy_server.js` - Injects CSS selector client into iframes
 - `src/components/preview_panel/PreviewIframe.tsx` - UI and state management
 
 ### Message Types:
+
 - `dyad-css-selector-initialized` - Client initialization complete
 - `dyad-css-selector-selected` - Element selected with selector data
 - `dyad-css-selector-cancelled` - Selection cancelled
@@ -123,16 +135,19 @@ The feature uses intelligent logic to generate optimal CSS selectors:
 ## Troubleshooting
 
 ### CSS Selector Button Not Working
+
 - Ensure an app is loaded in the preview
 - Check that the preview iframe has loaded completely
 - Verify JavaScript is enabled
 
 ### Generated Selectors Not Unique
+
 - The logic prioritizes readability over uniqueness in some cases
 - Test selectors in browser dev tools to verify they target the correct element
 - Complex dynamic pages may require manual selector refinement
 
 ### No Response When Clicking Elements
+
 - Ensure CSS selector mode is active (green button)
 - Check browser console for any JavaScript errors
 - Try refreshing the preview panel

@@ -32,18 +32,22 @@ VS Code extension for running Dyad CLI commands and API calls with a sidebar for
 This extension contributes the following commands:
 
 ### App Creation
+
 - `Dyad: Create New App` - Create a new Dyad app (basic)
 - `Dyad: Create App with AI Template Selection` - Describe your app and get intelligent template suggestions
 
 ### App Management
+
 - `Dyad: Run App` - Run a Dyad app
 - `Dyad: Stop App` - Stop a running Dyad app
 
 ### Supabase Integration
+
 - `Dyad: Setup Local Supabase` - One-click setup for local Supabase integration
 - `Dyad: Promote to Production Supabase` - Promote your app to production Supabase environment
 
 ### Collaboration
+
 - `Dyad: Start Collaboration Session` - Create a new collaboration session
 - `Dyad: Join Collaboration Session` - Join an existing collaboration session
 - `Dyad: Leave Collaboration Session` - Leave the current session
@@ -51,6 +55,7 @@ This extension contributes the following commands:
 - `Dyad: Add Inline Comment` - Add a comment to the current line
 
 ### Utilities
+
 - `Dyad: Open Console` - Open the Dyad console
 - `Dyad: Send CLI Command` - Send a command to the Dyad CLI
 - `Dyad: Refresh Sidebar` - Refresh the sidebar view
@@ -140,6 +145,7 @@ For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.m
 **Problem**: The extension cannot connect to Dyad Desktop.
 
 **Solutions**:
+
 1. **Make sure Dyad Desktop is running**
    - Launch the Dyad Desktop application
    - Wait for it to fully start up
@@ -160,6 +166,7 @@ For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.m
 **Context**: Dyad is primarily a desktop application, not a CLI tool. The VS Code extension is designed to work with Dyad Desktop through its API.
 
 **Solutions**:
+
 1. **Use Dyad Desktop instead**
    - Most operations should be performed through Dyad Desktop
    - The extension provides a convenient interface but requires Dyad Desktop to be running
@@ -172,6 +179,7 @@ For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.m
 **Problem**: The sidebar shows "No apps found" or "Error loading apps"
 
 **Solutions**:
+
 1. **Ensure Dyad Desktop is running**
    - The sidebar requires an active connection to Dyad Desktop
 2. **Create an app**
@@ -186,6 +194,7 @@ For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.m
 **Problem**: The Dyad extension doesn't appear to be working.
 
 **Solutions**:
+
 1. **Check the extension is enabled**
    - Go to Extensions view (`Ctrl+Shift+X` or `Cmd+Shift+X`)
    - Search for "Dyad"
@@ -207,6 +216,7 @@ For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.m
 ## Configuration
 
 The extension currently uses default values:
+
 - Dyad CLI path: `dyad` (assumed to be in PATH)
 - API base URL: `http://localhost:3000`
 - WebSocket server: `ws://localhost:3000` (for collaboration)
@@ -227,6 +237,7 @@ Please report issues at: [https://github.com/rkendel1/Dyad/issues](https://githu
 ### 0.2.0 (In Development)
 
 Added real-time collaboration features:
+
 - **Multi-user collaboration**: Work with team members on the same app simultaneously
 - **Live cursors and selections**: See where collaborators are editing in real-time
 - **Integrated chat**: Communicate with team members without leaving VS Code
@@ -239,6 +250,7 @@ Added real-time collaboration features:
 ### 0.1.0
 
 Initial release of the Dyad VS Code extension:
+
 - CLI command integration with error handling
 - API integration with health checks
 - Sidebar with app management and status indicators

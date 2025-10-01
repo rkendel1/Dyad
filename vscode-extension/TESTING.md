@@ -3,6 +3,7 @@
 This document provides a comprehensive checklist for testing the Dyad VS Code Extension.
 
 ## Prerequisites
+
 - [ ] VS Code 1.80.0 or higher installed
 - [ ] Node.js 20 or higher installed
 - [ ] Extension compiled (`npm run compile`)
@@ -171,21 +172,25 @@ Test various inputs for commands:
 ## Edge Cases
 
 ### Edge Case 1: Port Conflict
+
 - [ ] Another service running on port 3000
 - [ ] Extension shows appropriate error
 - [ ] Suggests checking for port conflicts
 
 ### Edge Case 2: Partial Dyad Desktop Failure
+
 - [ ] Dyad Desktop running but API not responding
 - [ ] Timeout occurs (10 seconds)
 - [ ] Appropriate timeout error shown
 
 ### Edge Case 3: Network Issues
+
 - [ ] Simulate slow network
 - [ ] Operations timeout appropriately
 - [ ] No extension crashes
 
 ### Edge Case 4: Invalid App IDs
+
 - [ ] Try to run/stop non-existent app
 - [ ] Graceful error handling
 - [ ] No extension crashes
@@ -241,12 +246,12 @@ Test various inputs for commands:
 
 ---
 
-**Test Date**: _________________
+**Test Date**: ********\_********
 
-**Tested By**: _________________
+**Tested By**: ********\_********
 
-**VS Code Version**: _________________
+**VS Code Version**: ********\_********
 
-**Dyad Desktop Version**: _________________
+**Dyad Desktop Version**: ********\_********
 
 **Notes**:

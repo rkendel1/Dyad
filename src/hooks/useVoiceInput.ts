@@ -58,30 +58,35 @@ export function useVoiceInput(): [VoiceInputHookState, VoiceInputHookActions] {
     });
 
     // Subscribe to voice input results
-    const unsubscribeResult = voiceInputService.onResult((result: VoiceInputResult) => {
-      if (result.isFinal) {
-        // Final result - add to final transcript
-        const newTranscript = finalTranscriptRef.current + result.transcript + " ";
-        finalTranscriptRef.current = newTranscript;
+    const unsubscribeResult = voiceInputService.onResult(
+      (result: VoiceInputResult) => {
+        if (result.isFinal) {
+          // Final result - add to final transcript
+          const newTranscript =
+            finalTranscriptRef.current + result.transcript + " ";
+          finalTranscriptRef.current = newTranscript;
 
-        // Analyze emotion for final transcript
-        const analysis = emotionDetectionService.analyzeMessage(result.transcript);
+          // Analyze emotion for final transcript
+          const analysis = emotionDetectionService.analyzeMessage(
+            result.transcript,
+          );
 
-        setState((prev) => ({
-          ...prev,
-          transcript: newTranscript.trim(),
-          interimTranscript: "",
-          emotionAnalysis: analysis,
-          emotionState: analysis.state,
-        }));
-      } else {
-        // Interim result - show as temporary
-        setState((prev) => ({
-          ...prev,
-          interimTranscript: result.transcript,
-        }));
-      }
-    });
+          setState((prev) => ({
+            ...prev,
+            transcript: newTranscript.trim(),
+            interimTranscript: "",
+            emotionAnalysis: analysis,
+            emotionState: analysis.state,
+          }));
+        } else {
+          // Interim result - show as temporary
+          setState((prev) => ({
+            ...prev,
+            interimTranscript: result.transcript,
+          }));
+        }
+      },
+    );
 
     // Subscribe to voice input errors
     const unsubscribeError = voiceInputService.onError((error: string) => {
@@ -100,18 +105,17 @@ export function useVoiceInput(): [VoiceInputHookState, VoiceInputHookActions] {
           emotionAnalysis: analysis,
           emotionState: analysis.state,
         }));
-      }
+      },
     );
 
     // Subscribe to frustration detection
-    const unsubscribeFrustration = emotionDetectionService.onFrustrationDetected(
-      (level: number) => {
+    const unsubscribeFrustration =
+      emotionDetectionService.onFrustrationDetected((level: number) => {
         setState((prev) => ({
           ...prev,
           frustrationLevel: level,
         }));
-      }
-    );
+      });
 
     return () => {
       unsubscribeState();
@@ -126,13 +130,14 @@ export function useVoiceInput(): [VoiceInputHookState, VoiceInputHookActions] {
     if (!state.isSupported) {
       setState((prev) => ({
         ...prev,
-        error: "Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.",
+        error:
+          "Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.",
       }));
       return;
     }
 
     const success = voiceInputService.startListening({
-      continuous: false,
+      continuous: true,
       interimResults: true,
       language: "en-US",
     });
@@ -140,7 +145,8 @@ export function useVoiceInput(): [VoiceInputHookState, VoiceInputHookActions] {
     if (!success) {
       setState((prev) => ({
         ...prev,
-        error: "Failed to start voice input. Please check microphone permissions.",
+        error:
+          "Failed to start voice input. Please check microphone permissions.",
       }));
     }
   }, [state.isSupported]);

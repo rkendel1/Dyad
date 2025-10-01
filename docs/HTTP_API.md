@@ -21,6 +21,7 @@ curl http://localhost:3000/api/health
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -38,6 +39,7 @@ Expected response:
 ### Health & Status
 
 #### GET /api/health
+
 Health check endpoint.
 
 ```bash
@@ -45,6 +47,7 @@ curl http://localhost:3000/api/health
 ```
 
 #### GET /api/version
+
 Get application version information.
 
 ```bash
@@ -52,6 +55,7 @@ curl http://localhost:3000/api/version
 ```
 
 #### GET /api/status
+
 Get detailed system status.
 
 ```bash
@@ -61,6 +65,7 @@ curl http://localhost:3000/api/status
 ### Applications
 
 #### GET /api/apps
+
 List all applications.
 
 ```bash
@@ -68,6 +73,7 @@ curl http://localhost:3000/api/apps
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -87,6 +93,7 @@ Response:
 ```
 
 #### GET /api/apps/:id
+
 Get a specific application by ID.
 
 ```bash
@@ -94,6 +101,7 @@ curl http://localhost:3000/api/apps/1
 ```
 
 #### DELETE /api/apps/:id
+
 Delete an application.
 
 ```bash
@@ -101,6 +109,7 @@ curl -X DELETE http://localhost:3000/api/apps/1
 ```
 
 #### GET /api/apps/:id/settings
+
 Get application settings.
 
 ```bash
@@ -108,6 +117,7 @@ curl http://localhost:3000/api/apps/1/settings
 ```
 
 #### PUT /api/apps/:id/settings
+
 Update application settings.
 
 ```bash
@@ -122,6 +132,7 @@ curl -X PUT http://localhost:3000/api/apps/1/settings \
 ### Chats
 
 #### GET /api/apps/:appId/chats
+
 List all chats for an application.
 
 ```bash
@@ -129,6 +140,7 @@ curl http://localhost:3000/api/apps/1/chats
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -147,6 +159,7 @@ Response:
 ```
 
 #### POST /api/apps/:appId/chats
+
 Create a new chat for an application.
 
 ```bash
@@ -154,6 +167,7 @@ curl -X POST http://localhost:3000/api/apps/1/chats
 ```
 
 #### GET /api/chats/:id
+
 Get a specific chat by ID.
 
 ```bash
@@ -161,6 +175,7 @@ curl http://localhost:3000/api/chats/1
 ```
 
 #### PUT /api/chats/:id
+
 Update a chat (e.g., title).
 
 ```bash
@@ -172,6 +187,7 @@ curl -X PUT http://localhost:3000/api/chats/1 \
 ```
 
 #### DELETE /api/chats/:id
+
 Delete a chat.
 
 ```bash
@@ -181,6 +197,7 @@ curl -X DELETE http://localhost:3000/api/chats/1
 ### Messages
 
 #### GET /api/chats/:id/messages
+
 Get all messages for a chat.
 
 ```bash
@@ -188,6 +205,7 @@ curl http://localhost:3000/api/chats/1/messages
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -215,6 +233,7 @@ Response:
 ```
 
 #### POST /api/chats/:id/messages
+
 Create a new message in a chat.
 
 ```bash
@@ -231,6 +250,7 @@ curl -X POST http://localhost:3000/api/chats/1/messages \
 All API responses follow a consistent format:
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -241,6 +261,7 @@ All API responses follow a consistent format:
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -267,9 +288,11 @@ Common error codes:
 ## Authentication
 
 ### Localhost Access
+
 By default, the API is accessible without authentication when accessed from `localhost`. This is suitable for local development and desktop usage.
 
 ### JWT Authentication (Optional)
+
 For remote access or programmatic integration, JWT authentication is available:
 
 ```bash
@@ -280,6 +303,7 @@ curl http://localhost:3000/api/apps \
 ## CORS
 
 CORS is enabled for localhost origins by default:
+
 - `http://localhost:*`
 - `http://127.0.0.1:*`
 
@@ -294,11 +318,13 @@ Currently, no rate limiting is enforced for localhost connections. This may be a
 ### Using with curl
 
 List all apps:
+
 ```bash
 curl http://localhost:3000/api/apps
 ```
 
 Create a chat:
+
 ```bash
 curl -X POST http://localhost:3000/api/apps/1/chats
 ```
@@ -306,7 +332,7 @@ curl -X POST http://localhost:3000/api/apps/1/chats
 ### Using with JavaScript/TypeScript
 
 ```typescript
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = "http://localhost:3000";
 
 // Fetch all apps
 const response = await fetch(`${BASE_URL}/api/apps`);
@@ -315,9 +341,9 @@ console.log(data.data.apps);
 
 // Create a chat
 const chatResponse = await fetch(`${BASE_URL}/api/apps/1/chats`, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 const chatData = await chatResponse.json();
@@ -364,6 +390,7 @@ Planned features for future versions:
 If the HTTP server fails to start:
 
 1. **Check if port 3000 is already in use:**
+
    ```bash
    lsof -i :3000  # macOS/Linux
    netstat -ano | findstr :3000  # Windows

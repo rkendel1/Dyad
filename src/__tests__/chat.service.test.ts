@@ -3,7 +3,7 @@ import type { Chat } from "@/types";
 
 /**
  * Unit tests for ChatService
- * 
+ *
  * These tests verify the service layer's business logic with proper mocking.
  * The service layer provides:
  * - Separation of business logic from IPC handlers
@@ -62,15 +62,15 @@ describe("ChatService", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    
+
     // Import after mocks are set up
     const module = await import("@/api/services/chat.service");
     ChatService = module.ChatService;
     chatService = module.chatService;
-    
+
     const dbModule = await import("@/db");
     db = dbModule.db;
-    
+
     const gitModule = await import("isomorphic-git");
     git = gitModule;
   });
@@ -114,7 +114,7 @@ describe("ChatService", () => {
 
       db.query.apps.findFirst.mockResolvedValue(mockApp);
       git.resolveRef.mockResolvedValue(mockCommitHash);
-      
+
       const mockInsert = vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([mockChat]),
@@ -143,7 +143,7 @@ describe("ChatService", () => {
 
       db.query.apps.findFirst.mockResolvedValue(mockApp);
       git.resolveRef.mockRejectedValue(new Error("Git error"));
-      
+
       const mockInsert = vi.fn().mockReturnValue({
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([mockChat]),
@@ -162,7 +162,7 @@ describe("ChatService", () => {
       db.query.apps.findFirst.mockResolvedValue(null);
 
       await expect(chatService.createChat(999)).rejects.toThrow(
-        "App with ID 999 not found"
+        "App with ID 999 not found",
       );
     });
   });
@@ -193,7 +193,7 @@ describe("ChatService", () => {
       db.query.chats.findFirst.mockResolvedValue(null);
 
       await expect(chatService.getChat(999)).rejects.toThrow(
-        "Chat with ID 999 not found"
+        "Chat with ID 999 not found",
       );
     });
   });
@@ -201,8 +201,20 @@ describe("ChatService", () => {
   describe("listChats", () => {
     it("should return all chats for an app", async () => {
       const mockChats = [
-        { id: 1, appId: 1, title: "Chat 1", createdAt: new Date(), initialCommitHash: null },
-        { id: 2, appId: 1, title: "Chat 2", createdAt: new Date(), initialCommitHash: null },
+        {
+          id: 1,
+          appId: 1,
+          title: "Chat 1",
+          createdAt: new Date(),
+          initialCommitHash: null,
+        },
+        {
+          id: 2,
+          appId: 1,
+          title: "Chat 2",
+          createdAt: new Date(),
+          initialCommitHash: null,
+        },
       ];
 
       db.query.chats.findMany.mockResolvedValue(mockChats);
@@ -229,7 +241,13 @@ describe("ChatService", () => {
 
     it("should filter chats by appId", async () => {
       const mockChats = [
-        { id: 1, appId: 1, title: "Chat 1", createdAt: new Date(), initialCommitHash: null },
+        {
+          id: 1,
+          appId: 1,
+          title: "Chat 1",
+          createdAt: new Date(),
+          initialCommitHash: null,
+        },
       ];
 
       db.query.chats.findMany.mockResolvedValue(mockChats);
@@ -258,8 +276,8 @@ describe("ChatService", () => {
       };
 
       db.query.chats.findFirst
-        .mockResolvedValueOnce(mockChat)  // Initial check
-        .mockResolvedValueOnce(updatedChat);  // After update
+        .mockResolvedValueOnce(mockChat) // Initial check
+        .mockResolvedValueOnce(updatedChat); // After update
 
       const mockUpdate = vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
@@ -278,7 +296,7 @@ describe("ChatService", () => {
       db.query.chats.findFirst.mockResolvedValue(null);
 
       await expect(
-        chatService.updateChatTitle(999, "New Title")
+        chatService.updateChatTitle(999, "New Title"),
       ).rejects.toThrow("Chat with ID 999 not found");
     });
   });
@@ -303,7 +321,7 @@ describe("ChatService", () => {
       db.query.chats.findFirst.mockResolvedValue(null);
 
       await expect(chatService.deleteChat(999)).rejects.toThrow(
-        "Chat with ID 999 not found"
+        "Chat with ID 999 not found",
       );
     });
   });
@@ -311,7 +329,7 @@ describe("ChatService", () => {
   describe("sendMessage", () => {
     it("should throw error indicating to use IPC handler", async () => {
       await expect(
-        chatService.sendMessage({ chatId: 1, message: "Test" })
+        chatService.sendMessage({ chatId: 1, message: "Test" }),
       ).rejects.toThrow(/Use IPC handler "chat-stream"/);
     });
   });
@@ -320,9 +338,7 @@ describe("ChatService", () => {
     it("should handle database errors gracefully in createChat", async () => {
       db.query.apps.findFirst.mockRejectedValue(new Error("Database error"));
 
-      await expect(chatService.createChat(1)).rejects.toThrow(
-        "Database error"
-      );
+      await expect(chatService.createChat(1)).rejects.toThrow("Database error");
     });
 
     it("should handle database errors gracefully in getChat", async () => {
@@ -376,7 +392,7 @@ describe("ChatService", () => {
       };
 
       db.query.chats.findFirst.mockResolvedValue(mockChat);
-      
+
       const mockUpdate = vi.fn().mockReturnValue({
         set: vi.fn().mockReturnValue({
           where: vi.fn().mockResolvedValue(undefined),

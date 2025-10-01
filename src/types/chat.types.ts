@@ -1,6 +1,6 @@
 /**
  * Chat Domain Types
- * 
+ *
  * Type definitions related to chats, messages, and chat interactions.
  */
 

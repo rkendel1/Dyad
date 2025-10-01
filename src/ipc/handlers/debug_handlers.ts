@@ -29,7 +29,7 @@ async function getSystemDebugInfo({
   // Get Node.js version
   let nodeVersion: string | null = null;
   let nodePath: string | null = null;
-  
+
   try {
     nodeVersion = await runShellCommand("node --version");
   } catch (err) {
@@ -39,26 +39,28 @@ async function getSystemDebugInfo({
   // Get all package manager information
   let pnpmVersion: string | null = null;
   let packageManagerInfo: string | null = null;
-  
+
   try {
     const packageManagers = await detectSystemPackageManagers();
-    const availableManagers = packageManagers.filter(pm => pm.available);
-    const unavailableManagers = packageManagers.filter(pm => !pm.available);
-    
+    const availableManagers = packageManagers.filter((pm) => pm.available);
+    const unavailableManagers = packageManagers.filter((pm) => !pm.available);
+
     // Keep pnpmVersion for backwards compatibility
-    const pnpmManager = packageManagers.find(pm => pm.name === "pnpm");
+    const pnpmManager = packageManagers.find((pm) => pm.name === "pnpm");
     pnpmVersion = pnpmManager?.version || null;
-    
+
     // Create a comprehensive package manager info string
-    const availableInfo = availableManagers.map(pm => `${pm.name}: ${pm.version}`).join(", ");
-    const unavailableInfo = unavailableManagers.map(pm => pm.name).join(", ");
-    
+    const availableInfo = availableManagers
+      .map((pm) => `${pm.name}: ${pm.version}`)
+      .join(", ");
+    const unavailableInfo = unavailableManagers.map((pm) => pm.name).join(", ");
+
     packageManagerInfo = `Available: ${availableInfo || "none"}${unavailableInfo ? ` | Unavailable: ${unavailableInfo}` : ""}`;
-    
+
     console.log("Package manager info:", packageManagerInfo);
   } catch (err) {
     console.error("Failed to get package manager versions:", err);
-    
+
     // Fallback to old pnpm-only detection
     try {
       pnpmVersion = await runShellCommand("pnpm --version");

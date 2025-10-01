@@ -24,12 +24,12 @@
     }
 
     // If element has unique classes, build class selector
-    const classes = Array.from(element.classList).filter(cls => 
-      cls && !cls.startsWith('__dyad') // exclude our overlay classes
+    const classes = Array.from(element.classList).filter(
+      (cls) => cls && !cls.startsWith("__dyad"), // exclude our overlay classes
     );
-    
+
     if (classes.length > 0) {
-      const classSelector = `.${classes.join('.')}`;
+      const classSelector = `.${classes.join(".")}`;
       // Check if this class combination is unique
       if (document.querySelectorAll(classSelector).length === 1) {
         return classSelector;
@@ -51,18 +51,18 @@
       }
 
       // Add classes if present
-      const elementClasses = Array.from(currentElement.classList).filter(cls => 
-        cls && !cls.startsWith('__dyad')
+      const elementClasses = Array.from(currentElement.classList).filter(
+        (cls) => cls && !cls.startsWith("__dyad"),
       );
       if (elementClasses.length > 0) {
-        selector += `.${elementClasses.join('.')}`;
+        selector += `.${elementClasses.join(".")}`;
       }
 
       // Add nth-child if there are siblings of same type
       const parent = currentElement.parentElement;
       if (parent) {
-        const siblings = Array.from(parent.children).filter(child => 
-          child.tagName === currentElement.tagName
+        const siblings = Array.from(parent.children).filter(
+          (child) => child.tagName === currentElement.tagName,
         );
         if (siblings.length > 1) {
           const index = siblings.indexOf(currentElement) + 1;
@@ -74,7 +74,7 @@
       currentElement = currentElement.parentElement;
     }
 
-    return path.join(' > ');
+    return path.join(" > ");
   }
 
   function makeOverlay() {
@@ -140,7 +140,7 @@
         fontWeight: "bold",
         marginBottom: "2px",
       });
-      
+
       const svgNS = "http://www.w3.org/2000/svg";
       const svg = document.createElementNS(svgNS, "svg");
       svg.setAttribute("width", "12");
@@ -155,7 +155,7 @@
       const path = document.createElementNS(svgNS, "path");
       path.setAttribute(
         "d",
-        "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
       );
       path.setAttribute("stroke", "white");
       path.setAttribute("stroke-width", "2");
@@ -170,7 +170,7 @@
 
     const tagName = el.tagName.toLowerCase();
     const selectorText = selector || generateCSSSelector(el);
-    
+
     const tagEl = document.createElement("div");
     css(tagEl, {
       fontSize: "10px",
@@ -181,8 +181,8 @@
     label.appendChild(tagEl);
 
     const selectorEl = document.createElement("div");
-    css(selectorEl, { 
-      fontSize: "10px", 
+    css(selectorEl, {
+      fontSize: "10px",
       fontFamily: "monospace",
       wordBreak: "break-all",
     });
@@ -195,7 +195,7 @@
     if (state.type !== "inspecting") return;
 
     let el = e.target;
-    
+
     // Skip our overlay elements
     if (el === overlay || (overlay && overlay.contains(el))) {
       return;
@@ -214,12 +214,12 @@
 
   function onClick(e) {
     if (state.type !== "inspecting" || !state.element) return;
-    
+
     // Skip our overlay elements
     if (e.target === overlay || (overlay && overlay.contains(e.target))) {
       return;
     }
-    
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -256,10 +256,7 @@
     if (e.key === "Escape" && state.type !== "inactive") {
       e.preventDefault();
       deactivate();
-      window.parent.postMessage(
-        { type: "dyad-css-selector-cancelled" },
-        "*",
-      );
+      window.parent.postMessage({ type: "dyad-css-selector-cancelled" }, "*");
     }
 
     // Forward shortcuts to parent window

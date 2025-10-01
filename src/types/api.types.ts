@@ -1,6 +1,6 @@
 /**
  * API Types
- * 
+ *
  * Type definitions for API requests, responses, and parameters.
  */
 

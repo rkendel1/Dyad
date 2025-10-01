@@ -28,11 +28,13 @@ The API server starts automatically when Dyad launches and listens on `http://lo
 ### Quick Start
 
 Check if the API is running:
+
 ```bash
 curl http://localhost:3000/api/health
 ```
 
 List all applications:
+
 ```bash
 curl http://localhost:3000/api/apps
 ```

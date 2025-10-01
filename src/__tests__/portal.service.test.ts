@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 /**
  * Integration tests for PortalService
- * 
+ *
  * These tests verify the service layer exists and has the correct interface.
  * Full unit testing would require mocking child processes and git operations.
  * The service layer provides:

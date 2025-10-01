@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Terminal, Send, History, HelpCircle, X, Minimize2, Maximize2 } from "lucide-react";
+import {
+  Terminal,
+  Send,
+  History,
+  HelpCircle,
+  X,
+  Minimize2,
+  Maximize2,
+} from "lucide-react";
 import { useAtomValue } from "jotai";
 import { selectedAppIdAtom, appOutputAtom } from "@/atoms/appAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
@@ -13,7 +21,11 @@ interface CliPopoutProps {
   onToggleMinimize?: () => void;
 }
 
-export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: CliPopoutProps) => {
+export const CliPopout = ({
+  onClose,
+  isMinimized = false,
+  onToggleMinimize,
+}: CliPopoutProps) => {
   const [command, setCommand] = useState("");
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -47,9 +59,9 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
   // Handle command submission
   const handleSubmit = async () => {
     if (!command.trim() || isExecuting) return;
-    
+
     const trimmedCommand = command.trim();
-    
+
     // Handle built-in commands
     if (trimmedCommand === "help") {
       setShowHelp(true);
@@ -73,18 +85,20 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
 
     try {
       setIsExecuting(true);
-      
+
       // Send command to app's stdin
       await IpcClient.getInstance().respondToAppInput({
         appId: selectedAppId,
         response: trimmedCommand,
       });
-      
+
       addToHistory(trimmedCommand);
       setCommand("");
     } catch (error) {
       console.error("Failed to execute command:", error);
-      toast.error(`Failed to execute command: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(
+        `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`,
+      );
     } finally {
       setIsExecuting(false);
     }
@@ -92,7 +106,7 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
 
   // Add command to history
   const addToHistory = (cmd: string) => {
-    setCommandHistory(prev => {
+    setCommandHistory((prev) => {
       const newHistory = [cmd, ...prev.filter((h: string) => h !== cmd)];
       return newHistory.slice(0, 50); // Keep last 50 commands
     });
@@ -130,19 +144,24 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
 
   // Format timestamp
   const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   };
 
   // Get message styling based on type and content
   const getMessageStyle = (output: AppOutput) => {
-    const hasErrorPattern = /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(output.message);
-    const hasWarningPattern = /warn|Warn|WARN|warning|Warning|WARNING/i.test(output.message);
-    
+    const hasErrorPattern =
+      /error|Error|ERROR|failed|Failed|FAILED|exception|Exception|EXCEPTION/i.test(
+        output.message,
+      );
+    const hasWarningPattern = /warn|Warn|WARN|warning|Warning|WARNING/i.test(
+      output.message,
+    );
+
     switch (output.type) {
       case "stderr":
         return "text-red-400 bg-red-50 dark:bg-red-950/20 border-l-2 border-red-400 pl-2";
@@ -185,16 +204,37 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
         <div>
           <p className="font-medium mb-1">Built-in Commands:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded">help</code> - Show this help message</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded">clear</code> - Clear console output</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded">help</code> - Show
+              this help message
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded">clear</code> -
+              Clear console output
+            </li>
           </ul>
         </div>
         <div>
           <p className="font-medium mb-1">Keyboard Shortcuts:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">Enter</kbd> - Execute command</li>
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑</kbd> / <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↓</kbd> - Navigate command history</li>
-            <li><kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">Esc</kbd> - Clear input or close help</li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                Enter
+              </kbd>{" "}
+              - Execute command
+            </li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↑</kbd>{" "}
+              /{" "}
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">↓</kbd>{" "}
+              - Navigate command history
+            </li>
+            <li>
+              <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                Esc
+              </kbd>{" "}
+              - Clear input or close help
+            </li>
           </ul>
         </div>
       </div>
@@ -232,7 +272,10 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-background border border-border rounded-lg shadow-xl flex flex-col" style={{ width: '500px', height: '600px', maxHeight: '80vh' }}>
+    <div
+      className="fixed bottom-4 right-4 z-50 bg-background border border-border rounded-lg shadow-xl flex flex-col"
+      style={{ width: "500px", height: "600px", maxHeight: "80vh" }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50">
         <div className="flex items-center gap-2">
@@ -267,7 +310,7 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
       </div>
 
       {/* Output area */}
-      <div 
+      <div
         ref={outputRef}
         className="flex-1 overflow-auto font-mono text-xs px-4 py-2 bg-background"
       >
@@ -277,8 +320,8 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
           </div>
         ) : (
           localOutput.map((output, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`mb-1 p-1 rounded ${getMessageStyle(output)} hover:bg-muted/50 group`}
             >
               <div className="flex items-start gap-2">
@@ -297,17 +340,19 @@ export const CliPopout = ({ onClose, isMinimized = false, onToggleMinimize }: Cl
       {/* CLI Input */}
       <div className="relative border-t border-border bg-background">
         {showHelp && helpContent}
-        
+
         <div className="flex items-center gap-2 px-4 py-2">
           <Terminal size={16} className="text-muted-foreground" />
-          
+
           <input
             ref={inputRef}
             type="text"
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={selectedAppId ? "Enter command or app input..." : "No app running"}
+            placeholder={
+              selectedAppId ? "Enter command or app input..." : "No app running"
+            }
             disabled={isExecuting}
             className="flex-1 bg-transparent text-sm outline-none disabled:opacity-50"
           />

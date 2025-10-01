@@ -22,7 +22,7 @@ describe("Package Manager Utils", () => {
   describe("detectSystemPackageManagers", () => {
     it("should detect available package managers", async () => {
       const mockRunShellCommand = vi.mocked(runShellCommand);
-      
+
       // Mock the exact order as called in detectSystemPackageManagers: pnpm, npm, yarn, bun
       mockRunShellCommand
         .mockRejectedValueOnce(new Error("pnpm: command not found")) // pnpm --version
@@ -33,22 +33,22 @@ describe("Package Manager Utils", () => {
       const result = await detectSystemPackageManagers();
 
       expect(result).toHaveLength(4);
-      expect(result.find(pm => pm.name === "npm")).toEqual({
+      expect(result.find((pm) => pm.name === "npm")).toEqual({
         name: "npm",
         version: "10.8.2",
         available: true,
       });
-      expect(result.find(pm => pm.name === "yarn")).toEqual({
+      expect(result.find((pm) => pm.name === "yarn")).toEqual({
         name: "yarn",
         version: "1.22.22",
         available: true,
       });
-      expect(result.find(pm => pm.name === "pnpm")).toEqual({
+      expect(result.find((pm) => pm.name === "pnpm")).toEqual({
         name: "pnpm",
         version: null,
         available: false,
       });
-      expect(result.find(pm => pm.name === "bun")).toEqual({
+      expect(result.find((pm) => pm.name === "bun")).toEqual({
         name: "bun",
         version: null,
         available: false,
@@ -129,7 +129,7 @@ describe("Package Manager Utils", () => {
   describe("detectProjectPackageManager", () => {
     it("should detect pnpm from pnpm-lock.yaml", async () => {
       const mockAccess = vi.spyOn(fs, "access");
-      
+
       // Mock file existence: package.json and pnpm-lock.yaml exist
       mockAccess
         .mockResolvedValueOnce(undefined) // package.json
@@ -148,7 +148,7 @@ describe("Package Manager Utils", () => {
 
     it("should detect yarn from yarn.lock", async () => {
       const mockAccess = vi.spyOn(fs, "access");
-      
+
       // Mock file existence: package.json and yarn.lock exist
       mockAccess
         .mockResolvedValueOnce(undefined) // package.json
@@ -167,7 +167,7 @@ describe("Package Manager Utils", () => {
 
     it("should detect npm from package-lock.json", async () => {
       const mockAccess = vi.spyOn(fs, "access");
-      
+
       // Mock file existence: package.json and package-lock.json exist
       mockAccess
         .mockResolvedValueOnce(undefined) // package.json
@@ -185,7 +185,7 @@ describe("Package Manager Utils", () => {
 
     it("should return null if no lock files found", async () => {
       const mockAccess = vi.spyOn(fs, "access");
-      
+
       // Mock file existence: only package.json exists
       mockAccess
         .mockResolvedValueOnce(undefined) // package.json
@@ -203,47 +203,100 @@ describe("Package Manager Utils", () => {
 
   describe("command generation", () => {
     it("should generate correct install commands", () => {
-      expect(getInstallCommand({ name: "pnpm", version: "8.6.1", available: true }))
-        .toBe("pnpm install");
-      expect(getInstallCommand({ name: "yarn", version: "1.22.22", available: true }))
-        .toBe("yarn install");
-      expect(getInstallCommand({ name: "bun", version: "1.0.0", available: true }))
-        .toBe("bun install");
-      expect(getInstallCommand({ name: "npm", version: "10.8.2", available: true }))
-        .toBe("npm install --legacy-peer-deps");
+      expect(
+        getInstallCommand({ name: "pnpm", version: "8.6.1", available: true }),
+      ).toBe("pnpm install");
+      expect(
+        getInstallCommand({
+          name: "yarn",
+          version: "1.22.22",
+          available: true,
+        }),
+      ).toBe("yarn install");
+      expect(
+        getInstallCommand({ name: "bun", version: "1.0.0", available: true }),
+      ).toBe("bun install");
+      expect(
+        getInstallCommand({ name: "npm", version: "10.8.2", available: true }),
+      ).toBe("npm install --legacy-peer-deps");
     });
 
     it("should generate correct dev commands", () => {
-      expect(getDevCommand({ name: "pnpm", version: "8.6.1", available: true }, 3000))
-        .toBe("pnpm run dev --port 3000");
-      expect(getDevCommand({ name: "yarn", version: "1.22.22", available: true }, 3000))
-        .toBe("yarn dev --port 3000");
-      expect(getDevCommand({ name: "bun", version: "1.0.0", available: true }, 3000))
-        .toBe("bun run dev --port 3000");
-      expect(getDevCommand({ name: "npm", version: "10.8.2", available: true }, 3000))
-        .toBe("npm run dev -- --port 3000");
+      expect(
+        getDevCommand(
+          { name: "pnpm", version: "8.6.1", available: true },
+          3000,
+        ),
+      ).toBe("pnpm run dev --port 3000");
+      expect(
+        getDevCommand(
+          { name: "yarn", version: "1.22.22", available: true },
+          3000,
+        ),
+      ).toBe("yarn dev --port 3000");
+      expect(
+        getDevCommand({ name: "bun", version: "1.0.0", available: true }, 3000),
+      ).toBe("bun run dev --port 3000");
+      expect(
+        getDevCommand(
+          { name: "npm", version: "10.8.2", available: true },
+          3000,
+        ),
+      ).toBe("npm run dev -- --port 3000");
     });
 
     it("should generate correct add dependency commands", () => {
-      expect(getAddDependencyCommand({ name: "pnpm", version: "8.6.1", available: true }, ["react", "vue"]))
-        .toBe("pnpm add react vue");
-      expect(getAddDependencyCommand({ name: "yarn", version: "1.22.22", available: true }, ["react", "vue"]))
-        .toBe("yarn add react vue");
-      expect(getAddDependencyCommand({ name: "bun", version: "1.0.0", available: true }, ["react", "vue"]))
-        .toBe("bun add react vue");
-      expect(getAddDependencyCommand({ name: "npm", version: "10.8.2", available: true }, ["react", "vue"]))
-        .toBe("npm install --legacy-peer-deps react vue");
+      expect(
+        getAddDependencyCommand(
+          { name: "pnpm", version: "8.6.1", available: true },
+          ["react", "vue"],
+        ),
+      ).toBe("pnpm add react vue");
+      expect(
+        getAddDependencyCommand(
+          { name: "yarn", version: "1.22.22", available: true },
+          ["react", "vue"],
+        ),
+      ).toBe("yarn add react vue");
+      expect(
+        getAddDependencyCommand(
+          { name: "bun", version: "1.0.0", available: true },
+          ["react", "vue"],
+        ),
+      ).toBe("bun add react vue");
+      expect(
+        getAddDependencyCommand(
+          { name: "npm", version: "10.8.2", available: true },
+          ["react", "vue"],
+        ),
+      ).toBe("npm install --legacy-peer-deps react vue");
     });
 
     it("should generate correct add dev dependency commands", () => {
-      expect(getAddDevDependencyCommand({ name: "pnpm", version: "8.6.1", available: true }, ["@types/node"]))
-        .toBe("pnpm add -D @types/node");
-      expect(getAddDevDependencyCommand({ name: "yarn", version: "1.22.22", available: true }, ["@types/node"]))
-        .toBe("yarn add -D @types/node");
-      expect(getAddDevDependencyCommand({ name: "bun", version: "1.0.0", available: true }, ["@types/node"]))
-        .toBe("bun add -d @types/node");
-      expect(getAddDevDependencyCommand({ name: "npm", version: "10.8.2", available: true }, ["@types/node"]))
-        .toBe("npm install --save-dev --legacy-peer-deps @types/node");
+      expect(
+        getAddDevDependencyCommand(
+          { name: "pnpm", version: "8.6.1", available: true },
+          ["@types/node"],
+        ),
+      ).toBe("pnpm add -D @types/node");
+      expect(
+        getAddDevDependencyCommand(
+          { name: "yarn", version: "1.22.22", available: true },
+          ["@types/node"],
+        ),
+      ).toBe("yarn add -D @types/node");
+      expect(
+        getAddDevDependencyCommand(
+          { name: "bun", version: "1.0.0", available: true },
+          ["@types/node"],
+        ),
+      ).toBe("bun add -d @types/node");
+      expect(
+        getAddDevDependencyCommand(
+          { name: "npm", version: "10.8.2", available: true },
+          ["@types/node"],
+        ),
+      ).toBe("npm install --save-dev --legacy-peer-deps @types/node");
     });
   });
 });

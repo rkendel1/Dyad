@@ -1,6 +1,6 @@
 /**
  * Shared Types
- * 
+ *
  * Common type definitions used across multiple domains.
  */
 

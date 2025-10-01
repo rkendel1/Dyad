@@ -93,9 +93,7 @@ try {
     dyadCssSelectorClientPath,
     "utf-8",
   );
-  parentPort?.postMessage(
-    "[proxy-worker] dyad-css-selector-client.js loaded.",
-  );
+  parentPort?.postMessage("[proxy-worker] dyad-css-selector-client.js loaded.");
 } catch (error) {
   parentPort?.postMessage(
     `[proxy-worker] Failed to read dyad-css-selector-client.js: ${error.message}`,
@@ -141,7 +139,7 @@ function injectHTML(buf) {
       '<script>console.warn("[proxy-worker] dyad component selector client was not injected.");</script>',
     );
   }
-  
+
   if (dyadCssSelectorClientContent) {
     scripts.push(`<script>${dyadCssSelectorClientContent}</script>`);
   } else {

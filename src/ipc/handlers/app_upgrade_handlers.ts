@@ -152,19 +152,27 @@ async function applyComponentTagger(appPath: string) {
   await new Promise<void>((resolve, reject) => {
     const installDependency = async () => {
       logger.info("Installing component-tagger dependency");
-      
+
       let command: string;
       try {
         // Generate smart command with fallbacks
-        command = await generateCommandWithFallbacks(appPath, "addDevDependency", { 
-          packages: ["@dyad-sh/react-vite-component-tagger"] 
-        });
+        command = await generateCommandWithFallbacks(
+          appPath,
+          "addDevDependency",
+          {
+            packages: ["@dyad-sh/react-vite-component-tagger"],
+          },
+        );
       } catch (error) {
         // Fallback to the original command
-        logger.warn("Failed to detect package manager, using fallback command:", error);
-        command = "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger";
+        logger.warn(
+          "Failed to detect package manager, using fallback command:",
+          error,
+        );
+        command =
+          "pnpm add -D @dyad-sh/react-vite-component-tagger || npm install --save-dev --legacy-peer-deps @dyad-sh/react-vite-component-tagger";
       }
-      
+
       const process = spawn(command, {
         cwd: appPath,
         shell: true,
@@ -220,15 +228,28 @@ async function applyCapacitor({
   // Install Capacitor dependencies
   let installCommand: string;
   try {
-    installCommand = await generateCommandWithFallbacks(appPath, "addDependency", {
-      packages: ["@capacitor/core", "@capacitor/cli", "@capacitor/ios", "@capacitor/android"]
-    });
+    installCommand = await generateCommandWithFallbacks(
+      appPath,
+      "addDependency",
+      {
+        packages: [
+          "@capacitor/core",
+          "@capacitor/cli",
+          "@capacitor/ios",
+          "@capacitor/android",
+        ],
+      },
+    );
   } catch (error) {
     // Fallback to original command
-    logger.warn("Failed to detect package manager for Capacitor install, using fallback:", error);
-    installCommand = "pnpm add @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android || npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android --legacy-peer-deps";
+    logger.warn(
+      "Failed to detect package manager for Capacitor install, using fallback:",
+      error,
+    );
+    installCommand =
+      "pnpm add @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android || npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android --legacy-peer-deps";
   }
-  
+
   await simpleSpawn({
     command: installCommand,
     cwd: appPath,

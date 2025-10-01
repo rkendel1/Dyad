@@ -96,6 +96,7 @@ Access via: `Dyad: Show Collaboration Panel`
 #### CollaborationService
 
 Manages WebSocket connections and collaboration state:
+
 - Session creation and joining
 - Real-time event broadcasting
 - User management
@@ -104,6 +105,7 @@ Manages WebSocket connections and collaboration state:
 #### CollaborationPanel
 
 WebView-based UI for:
+
 - Chat interface
 - User list
 - Comment management
@@ -112,6 +114,7 @@ WebView-based UI for:
 #### DecoratorManager
 
 Handles visual decorations:
+
 - Live cursor positions
 - Selection highlights
 - Inline comment markers
@@ -120,6 +123,7 @@ Handles visual decorations:
 #### CollaborationSidebarProvider
 
 Tree view in the sidebar showing:
+
 - Session status
 - Quick actions
 - User list
@@ -207,6 +211,7 @@ Planned improvements:
 **Problem**: "Failed to connect to collaboration server" error
 
 **Solutions**:
+
 1. Ensure Dyad Desktop is running
 2. Check that port 3000 is not blocked
 3. Verify WebSocket support is enabled
@@ -217,6 +222,7 @@ Planned improvements:
 **Problem**: Unable to join a session with valid ID
 
 **Solutions**:
+
 1. Verify the session ID is correct
 2. Check if the session is still active
 3. Ensure you have network connectivity
@@ -227,6 +233,7 @@ Planned improvements:
 **Problem**: Can't see other users' cursors or selections
 
 **Solutions**:
+
 1. Check if the file is open in your editor
 2. Ensure decorations are enabled in VS Code
 3. Verify the session is active
@@ -237,6 +244,7 @@ Planned improvements:
 **Problem**: Chat messages not synchronized
 
 **Solutions**:
+
 1. Check WebSocket connection in Output panel
 2. Verify the Collaboration Panel is open
 3. Try leaving and rejoining the session

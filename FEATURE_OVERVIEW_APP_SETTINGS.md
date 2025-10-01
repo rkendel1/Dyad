@@ -3,18 +3,21 @@
 ## What Was Implemented
 
 ### 1. App-Level Package Manager Settings
+
 - **Location**: Configure tab > App Settings section
 - **Purpose**: Override package manager for specific apps
 - **Options**: Auto-detect, npm, yarn, pnpm, bun
 - **Priority**: App-level > Global > Project-detected > System default
 
 ### 2. App-Level Preview URL Settings
+
 - **Location**: Configure tab > App Settings section
 - **Purpose**: Override preview URL for specific apps
 - **Features**: URL validation, clear button, fallback to global/auto-detect
 - **Priority**: App-level > Global > Auto-detected
 
 ### 3. CLI Popout Component
+
 - **Access**: Click External Link icon (↗) in System Messages header
 - **Features**:
   - Floating window in bottom-right corner
@@ -27,6 +30,7 @@
 ## UI Changes
 
 ### Configure Panel
+
 ```
 ┌─────────────────────────────────────┐
 │ Environment Variables (Local)        │
@@ -53,6 +57,7 @@
 ```
 
 ### System Messages Header
+
 ```
 ┌─────────────────────────────────────┐
 │ 📋 System Messages (5) ⚠️ 2 errors  │
@@ -64,6 +69,7 @@
 ```
 
 ### CLI Popout
+
 ```
 ┌────────────────────────────┐
 │ 💻 CLI Terminal (App #1)   │
@@ -80,6 +86,7 @@
 ```
 
 ### Minimized CLI Popout
+
 ```
 ┌──────────────────────┐
 │ 💻 CLI  5 messages   │
@@ -90,6 +97,7 @@
 ## Key Workflows
 
 ### Workflow 1: Set App-Level Package Manager
+
 1. Select app in sidebar
 2. Click Configure tab
 3. Scroll to "App Settings"
@@ -97,6 +105,7 @@
 5. Setting saved automatically
 
 ### Workflow 2: Set App-Level Preview URL
+
 1. Select app in sidebar
 2. Click Configure tab
 3. Scroll to "App Settings"
@@ -105,6 +114,7 @@
 6. (Optional) Click X to clear
 
 ### Workflow 3: Use CLI Popout
+
 1. Start an app
 2. Click ↗ icon in System Messages header
 3. Floating CLI appears
@@ -116,6 +126,7 @@
 ## Technical Architecture
 
 ### Data Flow: Package Manager
+
 ```
 User selects PM in UI
     ↓
@@ -133,6 +144,7 @@ Returns selected PM for use
 ```
 
 ### Data Flow: Preview URL
+
 ```
 User enters URL in UI
     ↓
@@ -150,6 +162,7 @@ Sets preview panel URL
 ```
 
 ### Data Flow: CLI Popout
+
 ```
 User clicks ↗ icon
     ↓
@@ -171,12 +184,14 @@ Output → appOutputAtom → CliPopout
 ## Benefits
 
 ### For Users
+
 - **Flexibility**: Different settings for different apps
 - **Workspace Organization**: CLI doesn't disrupt code view
 - **Quick Access**: Easy override without changing global settings
 - **Transparency**: Clear priority order for settings
 
 ### For Developers
+
 - **Backwards Compatible**: All changes are additive
 - **Well Documented**: Clear documentation and implementation summary
 - **Type Safe**: Full TypeScript support

@@ -104,7 +104,9 @@ export class VoiceInputService {
   public onResult(callback: VoiceInputCallback): () => void {
     this.resultCallbacks.push(callback);
     return () => {
-      this.resultCallbacks = this.resultCallbacks.filter((cb) => cb !== callback);
+      this.resultCallbacks = this.resultCallbacks.filter(
+        (cb) => cb !== callback,
+      );
     };
   }
 

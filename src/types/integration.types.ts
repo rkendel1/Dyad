@@ -1,6 +1,6 @@
 /**
  * Integration Types
- * 
+ *
  * Type definitions for third-party integrations (Vercel, Neon, Supabase, GitHub).
  */
 
@@ -87,25 +87,25 @@ export interface AnalyzeGithubRepoResult {
     mainTechnology: string;
     framework: string;
     dependencies: string[];
-    complexity: 'simple' | 'moderate' | 'complex';
+    complexity: "simple" | "moderate" | "complex";
     integrationApproaches: {
       recreate: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
       integrate: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
       tailor: {
         feasible: boolean;
-        effort: 'low' | 'medium' | 'high';
+        effort: "low" | "medium" | "high";
         description: string;
       };
     };
-    recommendation: 'recreate' | 'integrate' | 'tailor';
+    recommendation: "recreate" | "integrate" | "tailor";
     reasoning: string;
   };
 }
@@ -133,7 +133,7 @@ export interface AnalyzeGithubRepoParams {
 export interface IntegrateGithubRepoParams {
   repoUrl: string;
   targetAppId: number;
-  approach: 'recreate' | 'integrate' | 'tailor';
+  approach: "recreate" | "integrate" | "tailor";
   analysisResult: AnalyzeGithubRepoResult;
 }
 

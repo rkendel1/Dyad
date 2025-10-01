@@ -62,37 +62,31 @@ The CLI tool (`scripts/promote-to-production.js`) provides an interactive wizard
 ### Step-by-Step Process
 
 1. **Prerequisites Check**
-
    - Verifies local Supabase is running
    - Validates required tools are available
    - Confirms working directory
 
 2. **Project Configuration**
-
    - Choose to create new or use existing project
    - Provide production project details
    - Configure database credentials
 
 3. **Schema Migration**
-
    - Automatically extracts local database schema
    - Provides SQL file for production deployment
    - Guides manual schema application
 
 4. **Function Migration**
-
    - Identifies Supabase functions to migrate
    - Provides guidance for manual function deployment
    - Validates function deployment
 
 5. **Environment Configuration**
-
    - Updates `.env.local` with production values
    - Creates `.env.production` file
    - Configures all necessary environment variables
 
 6. **Optional Data Migration**
-
    - Provides guidance for data migration
    - Recommends safe migration strategies
    - Validates data migration completion
@@ -312,25 +306,21 @@ If you encounter issues:
 ### Critical Security Steps
 
 1. **Service Role Key Protection**
-
    - Never expose service role key in client-side code
    - Store securely in server-side environment variables only
    - Rotate keys periodically
 
 2. **Row Level Security (RLS)**
-
    - Enable RLS on all tables with sensitive data
    - Configure appropriate policies for your use case
    - Test policies thoroughly
 
 3. **API Key Management**
-
    - Use anon key for client-side operations only
    - Implement proper authentication before database operations
    - Monitor API usage for suspicious activity
 
 4. **Database Security**
-
    - Use strong database passwords
    - Enable SSL connections
    - Configure network restrictions if needed

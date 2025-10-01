@@ -5,11 +5,11 @@ describe("Node.js Memory Configuration", () => {
     // Simulate the logic from main.ts
     const existingOptions = process.env.NODE_OPTIONS;
     let nodeOptions = existingOptions || "";
-    
-    if (!nodeOptions.includes('--max-old-space-size')) {
-      nodeOptions = (nodeOptions + ' --max-old-space-size=4096').trim();
+
+    if (!nodeOptions.includes("--max-old-space-size")) {
+      nodeOptions = (nodeOptions + " --max-old-space-size=4096").trim();
     }
-    
+
     expect(nodeOptions).toContain("--max-old-space-size");
     expect(nodeOptions).toContain("4096");
   });
@@ -18,11 +18,11 @@ describe("Node.js Memory Configuration", () => {
     // Simulate having NODE_OPTIONS already set
     const existingOptions = "--max-old-space-size=2048";
     let nodeOptions = existingOptions;
-    
-    if (!nodeOptions.includes('--max-old-space-size')) {
-      nodeOptions = (nodeOptions + ' --max-old-space-size=4096').trim();
+
+    if (!nodeOptions.includes("--max-old-space-size")) {
+      nodeOptions = (nodeOptions + " --max-old-space-size=4096").trim();
     }
-    
+
     // Should not add another max-old-space-size
     const matches = nodeOptions.match(/--max-old-space-size/g);
     expect(matches).toBeDefined();
@@ -32,11 +32,11 @@ describe("Node.js Memory Configuration", () => {
   it("should preserve existing NODE_OPTIONS when adding memory limit", () => {
     const existingOptions = "--inspect --experimental-modules";
     let nodeOptions = existingOptions;
-    
-    if (!nodeOptions.includes('--max-old-space-size')) {
-      nodeOptions = (nodeOptions + ' --max-old-space-size=4096').trim();
+
+    if (!nodeOptions.includes("--max-old-space-size")) {
+      nodeOptions = (nodeOptions + " --max-old-space-size=4096").trim();
     }
-    
+
     expect(nodeOptions).toContain("--inspect");
     expect(nodeOptions).toContain("--experimental-modules");
     expect(nodeOptions).toContain("--max-old-space-size=4096");

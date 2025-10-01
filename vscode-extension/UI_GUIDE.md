@@ -5,13 +5,17 @@ This document illustrates what users will see when using the new features.
 ## Feature 1: AI-Powered Template Selection
 
 ### Step 1: Opening the Command
+
 **Command Palette View:**
+
 ```
 > Dyad: Create App with AI Template Selection
 ```
 
 ### Step 2: Describing the App
+
 **Input Box:**
+
 ```
 Describe the app you want to build (e.g., "an e-commerce store with payments")
 ┌─────────────────────────────────────────────────────────────┐
@@ -20,7 +24,9 @@ Describe the app you want to build (e.g., "an e-commerce store with payments")
 ```
 
 ### Step 3: Template Suggestions
+
 **Quick Pick Menu:**
+
 ```
 Choose App Template
 ────────────────────────────────────────────────────────────────
@@ -44,7 +50,9 @@ Choose App Template
 ```
 
 ### Step 4: Name Your App
+
 **Input Box:**
+
 ```
 Enter the name for your new Dyad app
 ┌─────────────────────────────────────────────────────────────┐
@@ -54,12 +62,15 @@ Validation: App name can only contain letters, numbers, hyphens, and underscores
 ```
 
 ### Step 5: Success
+
 **Information Message:**
+
 ```
 ✓ App "my-store" created successfully with Stripe E-commerce Template!
 ```
 
 **Sidebar Update:**
+
 ```
 DYAD: APPS
 └─ 🔵 my-store
@@ -67,6 +78,7 @@ DYAD: APPS
 ```
 
 **Output Channel:**
+
 ```
 [Dyad] Analyzing description: I want to build an online store with Stripe payments
 [Dyad] Found 3 matching templates
@@ -79,13 +91,17 @@ DYAD: APPS
 ## Feature 2: One-Click Local Supabase Setup
 
 ### Step 1: Opening the Command
+
 **Command Palette View:**
+
 ```
 > Dyad: Setup Local Supabase
 ```
 
 ### Step 2: Select Your App
+
 **Quick Pick Menu:**
+
 ```
 Select an app to setup local Supabase
 ────────────────────────────────────────────────────────────────
@@ -103,7 +119,9 @@ Select an app to setup local Supabase
 ```
 
 ### Step 3: Processing
+
 **Output Channel:**
+
 ```
 [Dyad] Setting up local Supabase for app: my-store (ID: 1)
 [Dyad] Starting local Supabase containers...
@@ -113,12 +131,15 @@ Select an app to setup local Supabase
 ```
 
 ### Step 4: Success
+
 **Information Message:**
+
 ```
 ✓ Local Supabase setup successfully for "my-store"!
 ```
 
 **Environment Variables Created (.env.local):**
+
 ```
 POSTGRES_URL=postgresql://postgres:your-super-secret-and-long-postgres-password@localhost:5432/postgres
 SUPABASE_URL=http://localhost:8000
@@ -129,6 +150,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 **Access Points:**
+
 ```
 🌐 Dashboard: http://localhost:3001
 📊 API: http://localhost:8000
@@ -138,13 +160,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## Feature 3: Production Supabase Promotion
 
 ### Step 1: Opening the Command
+
 **Command Palette View:**
+
 ```
 > Dyad: Promote to Production Supabase
 ```
 
 ### Step 2: Select Your App
+
 **Quick Pick Menu:**
+
 ```
 Select an app to promote to production Supabase
 ────────────────────────────────────────────────────────────────
@@ -154,7 +180,9 @@ Select an app to promote to production Supabase
 ```
 
 ### Step 3: Enter Project Reference
+
 **Input Box:**
+
 ```
 Enter your production Supabase project reference
 ┌─────────────────────────────────────────────────────────────┐
@@ -163,7 +191,9 @@ Enter your production Supabase project reference
 ```
 
 ### Step 4: Enter Supabase URL
+
 **Input Box:**
+
 ```
 Enter your production Supabase URL
 ┌─────────────────────────────────────────────────────────────┐
@@ -172,7 +202,9 @@ Enter your production Supabase URL
 ```
 
 ### Step 5: Enter Anon Key
+
 **Input Box:**
+
 ```
 Enter your production Supabase anon key
 ┌─────────────────────────────────────────────────────────────┐
@@ -181,7 +213,9 @@ Enter your production Supabase anon key
 ```
 
 ### Step 6: Enter Service Role Key
+
 **Input Box:**
+
 ```
 Enter your production Supabase service role key
 ┌─────────────────────────────────────────────────────────────┐
@@ -190,7 +224,9 @@ Enter your production Supabase service role key
 ```
 
 ### Step 7: Enter Database Password
+
 **Password Input Box:**
+
 ```
 Enter your production Supabase database password
 ┌─────────────────────────────────────────────────────────────┐
@@ -199,7 +235,9 @@ Enter your production Supabase database password
 ```
 
 ### Step 8: Processing
+
 **Output Channel:**
+
 ```
 [Dyad] Promoting app: my-store (ID: 1) to production
 [Dyad] Exporting local database schema...
@@ -209,12 +247,15 @@ Enter your production Supabase database password
 ```
 
 ### Step 9: Success
+
 **Information Message:**
+
 ```
 ✓ Successfully promoted "my-store" to production Supabase!
 ```
 
 **Production Environment Variables (.env.production):**
+
 ```
 SUPABASE_URL=https://abcdefghijklmnop.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -227,7 +268,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## Error Scenarios
 
 ### Connection Error
+
 **When Dyad Desktop is not running:**
+
 ```
 ⚠ Cannot connect to Dyad Desktop. Please make sure it is running.
 
@@ -240,7 +283,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Validation Error
+
 **Invalid app name:**
+
 ```
 Enter the name for your new Dyad app
 ┌─────────────────────────────────────────────────────────────┐
@@ -250,7 +295,9 @@ Enter the name for your new Dyad app
 ```
 
 ### No Apps Available
+
 **When no apps exist:**
+
 ```
 ℹ No apps available. Create one first using Dyad Desktop or the "Create New App" command.
 ```
@@ -258,6 +305,7 @@ Enter the name for your new Dyad app
 ## Sidebar Integration
 
 **Apps View:**
+
 ```
 DYAD: APPS
 ├─ 🟢 my-store (Running)
@@ -280,6 +328,7 @@ DYAD: QUICK ACTIONS
 ## Output Channel Logging
 
 **Comprehensive Logging:**
+
 ```
 [Dyad] Dyad extension is now active
 [Dyad] ✓ Successfully connected to Dyad Desktop
@@ -296,6 +345,7 @@ DYAD: QUICK ACTIONS
 ## Command Palette Quick Access
 
 **Type "Dyad" in Command Palette:**
+
 ```
 > Dyad
 
@@ -316,11 +366,13 @@ Dyad: Check Connection to Dyad Desktop
 ## Tips and Indicators
 
 **Status Bar (if implemented):**
+
 ```
 🟢 Dyad Desktop: Connected    |    📦 3 Apps    |    🔵 2 Running
 ```
 
 **Notifications:**
+
 ```
 ✓ Success messages (green checkmark)
 ⚠ Warning messages (yellow warning)

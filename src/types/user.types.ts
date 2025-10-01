@@ -1,6 +1,6 @@
 /**
  * User and Settings Types
- * 
+ *
  * Type definitions related to user settings, preferences, and authentication.
  */
 

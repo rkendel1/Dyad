@@ -71,9 +71,9 @@ import { prompts as promptsTable } from "../../db/schema";
 import { inArray } from "drizzle-orm";
 import { replacePromptReference } from "../utils/replacePromptReference";
 import { mcpManager } from "../utils/mcp_manager";
-import { 
-  shouldChunkResponse, 
-  chunkResponse, 
+import {
+  shouldChunkResponse,
+  chunkResponse,
   type ChunkingOptions,
   type TextChunk,
 } from "../utils/chunking_utils";
@@ -91,13 +91,16 @@ const activeStreams = new Map<number, AbortController>();
 const partialResponses = new Map<number, string>();
 
 // Track chunking state for active responses
-const chunkingState = new Map<number, {
-  chunks: TextChunk[];
-  deliveredChunks: number;
-  totalExpectedLength: number;
-  startTime: number;
-  errorCount: number;
-}>();
+const chunkingState = new Map<
+  number,
+  {
+    chunks: TextChunk[];
+    deliveredChunks: number;
+    totalExpectedLength: number;
+    startTime: number;
+    errorCount: number;
+  }
+>();
 
 // Directory for storing temporary files
 const TEMP_DIR = path.join(os.tmpdir(), "dyad-attachments");
@@ -228,7 +231,11 @@ async function processStreamChunks({
 
       // Check if we should deliver a chunk
       if (fullResponse.length - lastChunkCheckLength >= chunkCheckInterval) {
-        await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate);
+        await handleChunkedDelivery(
+          fullResponse,
+          chatId,
+          processResponseChunkUpdate,
+        );
         lastChunkCheckLength = fullResponse.length;
       } else {
         // Regular update without chunking metadata
@@ -247,9 +254,13 @@ async function processStreamChunks({
     // Final delivery - handle any remaining content as the last chunk
     // Only do final delivery if stream wasn't aborted
     if (!abortController.signal.aborted) {
-      await handleChunkedDelivery(fullResponse, chatId, processResponseChunkUpdate, true);
+      await handleChunkedDelivery(
+        fullResponse,
+        chatId,
+        processResponseChunkUpdate,
+        true,
+      );
     }
-
   } finally {
     // Clean up chunking state
     chunkingState.delete(chatId);
@@ -286,10 +297,13 @@ async function handleChunkedDelivery(
     preserveDyadTags: true,
   };
 
-  if (shouldChunkResponse(fullResponse, chunkingOptions) || state.chunks.length > 0) {
+  if (
+    shouldChunkResponse(fullResponse, chunkingOptions) ||
+    state.chunks.length > 0
+  ) {
     // Split the current response into chunks
     const chunks = chunkResponse(fullResponse, chunkingOptions);
-    
+
     // Update state
     state.chunks = chunks;
     state.totalExpectedLength = fullResponse.length;
@@ -303,18 +317,22 @@ async function handleChunkedDelivery(
     for (let i = state.deliveredChunks; i < chunks.length; i++) {
       const chunk = chunks[i];
       const isLastChunk = i === chunks.length - 1 && isFinalChunk;
-      
+
       try {
         const chunkStartTime = Date.now();
-        
+
         // Count file operations in the current chunk
-        const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
-        
+        const { completedFiles, incompleteFiles } = countFileOperations(
+          chunk.content,
+        );
+
         const chunkMetadata = {
           chunkIndex: chunk.index,
           totalChunks: chunks.length,
           isChunked: true,
-          chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
+          chunkDeliveryStatus: isLastChunk
+            ? ("completed" as const)
+            : ("delivering" as const),
           filesDelivered: completedFiles,
           filesPending: incompleteFiles,
         };
@@ -326,74 +344,90 @@ async function handleChunkedDelivery(
 
         const chunkDeliveryTime = Date.now() - chunkStartTime;
         state.deliveredChunks = i + 1;
-        
+
         // Track performance
         chunkPerfTracker.recordChunkDelivery(
           chatId,
           chunk.index,
           chunk.content.length,
           chunkDeliveryTime,
-          true // success
+          true, // success
         );
-        
+
         // Log chunk delivery
         logger.log(
-          `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars, ${chunkDeliveryTime}ms)`
+          `Delivered chunk ${chunk.index + 1}/${chunks.length} for chat ${chatId} (${chunk.content.length} chars, ${chunkDeliveryTime}ms)`,
         );
 
         // Adaptive delay between chunks to prevent overwhelming the UI
         // Longer delay if there are many pending files to give UI time to render
         if (!isLastChunk) {
           const baseDelay = 100;
-          const additionalDelay = incompleteFiles > 0 ? Math.min(incompleteFiles * 50, 200) : 0;
-          await new Promise(resolve => setTimeout(resolve, baseDelay + additionalDelay));
+          const additionalDelay =
+            incompleteFiles > 0 ? Math.min(incompleteFiles * 50, 200) : 0;
+          await new Promise((resolve) =>
+            setTimeout(resolve, baseDelay + additionalDelay),
+          );
         }
-
       } catch (error) {
         state.errorCount++;
         logger.error(`Error delivering chunk ${i} for chat ${chatId}:`, error);
-        
+
         // Implement retry logic for failed chunks
         let retryCount = 0;
         const maxRetries = 2;
         let chunkDelivered = false;
-        
+
         while (retryCount < maxRetries && !chunkDelivered) {
           try {
             retryCount++;
-            logger.log(`Retrying chunk ${i} delivery, attempt ${retryCount}/${maxRetries}`);
-            
+            logger.log(
+              `Retrying chunk ${i} delivery, attempt ${retryCount}/${maxRetries}`,
+            );
+
             // Wait before retry with exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
-            
+            await new Promise((resolve) =>
+              setTimeout(resolve, 500 * retryCount),
+            );
+
             // Count file operations for retry
-            const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
-            
+            const { completedFiles, incompleteFiles } = countFileOperations(
+              chunk.content,
+            );
+
             await processResponseChunkUpdate({
               fullResponse: chunk.content,
               chunkMetadata: {
                 chunkIndex: chunk.index,
                 totalChunks: chunks.length,
                 isChunked: true,
-                chunkDeliveryStatus: isLastChunk ? "completed" as const : "delivering" as const,
+                chunkDeliveryStatus: isLastChunk
+                  ? ("completed" as const)
+                  : ("delivering" as const),
                 filesDelivered: completedFiles,
                 filesPending: incompleteFiles,
               },
             });
-            
+
             chunkDelivered = true;
             state.deliveredChunks = i + 1;
-            logger.log(`Successfully delivered chunk ${i} on retry ${retryCount}`);
-            
+            logger.log(
+              `Successfully delivered chunk ${i} on retry ${retryCount}`,
+            );
           } catch (retryError) {
-            logger.error(`Retry ${retryCount} failed for chunk ${i}:`, retryError);
-            
+            logger.error(
+              `Retry ${retryCount} failed for chunk ${i}:`,
+              retryError,
+            );
+
             if (retryCount === maxRetries) {
               // Final attempt: try to deliver with failed status
               try {
                 // Count file operations for failed delivery
-                const { completedFiles, incompleteFiles } = countFileOperations(chunk.content);
-                
+                const { completedFiles, incompleteFiles } = countFileOperations(
+                  chunk.content,
+                );
+
                 await processResponseChunkUpdate({
                   fullResponse: chunk.content,
                   chunkMetadata: {
@@ -405,19 +439,26 @@ async function handleChunkedDelivery(
                     filesPending: incompleteFiles,
                   },
                 });
-                logger.log(`Marked chunk ${i} as failed after ${maxRetries} retries`);
+                logger.log(
+                  `Marked chunk ${i} as failed after ${maxRetries} retries`,
+                );
               } catch (failedStatusError) {
-                logger.error(`Failed to mark chunk ${i} as failed:`, failedStatusError);
+                logger.error(
+                  `Failed to mark chunk ${i} as failed:`,
+                  failedStatusError,
+                );
               }
             }
           }
         }
-        
+
         // If we couldn't deliver the chunk after retries, continue with next chunks
         // Don't throw error to allow remaining chunks to be delivered
         if (!chunkDelivered) {
-          logger.warn(`Skipping failed chunk ${i}, continuing with remaining chunks`);
-          
+          logger.warn(
+            `Skipping failed chunk ${i}, continuing with remaining chunks`,
+          );
+
           // Track failed chunk
           chunkPerfTracker.recordChunkDelivery(
             chatId,
@@ -425,9 +466,9 @@ async function handleChunkedDelivery(
             chunk.content.length,
             0, // no delivery time for failed chunks
             false, // failure
-            error instanceof Error ? error : new Error(String(error))
+            error instanceof Error ? error : new Error(String(error)),
           );
-          
+
           continue;
         }
       }
@@ -439,7 +480,7 @@ async function handleChunkedDelivery(
       if (sessionMetrics && sessionMetrics.errorRate > 0.1) {
         logger.warn(
           `High error rate detected (${(sessionMetrics.errorRate * 100).toFixed(1)}%) ` +
-          `for chat ${chatId}. Consider reducing chunk size.`
+            `for chat ${chatId}. Consider reducing chunk size.`,
         );
       }
     }
@@ -1082,7 +1123,7 @@ This conversation includes one or more image attachments. When the user uploads 
           ) {
             const lastMessage = currentMessages[currentMessages.length - 1];
             lastMessage.content = fullResponse;
-            
+
             // Add chunk metadata if provided (only for UI, not stored in DB)
             if (chunkMetadata) {
               (lastMessage as any).chunkMetadata = chunkMetadata;

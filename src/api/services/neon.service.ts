@@ -1,6 +1,6 @@
 /**
  * Neon Service
- * 
+ *
  * Business logic for Neon database operations.
  * This service provides a clean abstraction layer between the IPC handlers
  * and the core business logic for managing Neon projects and branches.
@@ -97,9 +97,7 @@ export class NeonService {
       );
 
       if (!response.data.project) {
-        throw new Error(
-          "Failed to create project: No project data returned.",
-        );
+        throw new Error("Failed to create project: No project data returned.");
       }
 
       const project = response.data.project;
@@ -158,7 +156,9 @@ export class NeonService {
   /**
    * Get Neon project information including branches
    */
-  async getProject(params: GetNeonProjectParams): Promise<GetNeonProjectResponse> {
+  async getProject(
+    params: GetNeonProjectParams,
+  ): Promise<GetNeonProjectResponse> {
     const { appId } = params;
     logger.info(`Getting Neon project info for app ${appId}`);
 
@@ -237,9 +237,7 @@ export class NeonService {
         },
       );
 
-      logger.info(
-        `Successfully retrieved Neon project info for app ${appId}`,
-      );
+      logger.info(`Successfully retrieved Neon project info for app ${appId}`);
 
       return {
         projectId: project.id,
@@ -248,10 +246,7 @@ export class NeonService {
         branches,
       };
     } catch (error) {
-      logger.error(
-        `Failed to get Neon project info for app ${appId}:`,
-        error,
-      );
+      logger.error(`Failed to get Neon project info for app ${appId}:`, error);
       throw error;
     }
   }

@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { chunkResponse, shouldChunkResponse } from "../ipc/utils/chunking_utils";
+import {
+  chunkResponse,
+  shouldChunkResponse,
+} from "../ipc/utils/chunking_utils";
 import { chunkPerfTracker } from "../ipc/utils/chunk_performance";
 
 describe("Chunking Integration Tests", () => {
@@ -186,11 +189,13 @@ The application uses modern React patterns with hooks and TypeScript for type sa
     `.repeat(3); // Make it even longer
 
     // Test chunking decision
-    const shouldChunk = shouldChunkResponse(longResponse, { maxChunkSize: 5000 });
+    const shouldChunk = shouldChunkResponse(longResponse, {
+      maxChunkSize: 5000,
+    });
     expect(shouldChunk).toBe(true);
 
     // Test actual chunking
-    const chunks = chunkResponse(longResponse, { 
+    const chunks = chunkResponse(longResponse, {
       maxChunkSize: 5000,
       preserveCodeBlocks: true,
       preserveDyadTags: true,
@@ -201,14 +206,18 @@ The application uses modern React patterns with hooks and TypeScript for type sa
     expect(chunks[0].metadata.totalChunks).toBe(chunks.length);
 
     // Check that dyad tags are preserved
-    const dyadTagChunks = chunks.filter(chunk => 
-      chunk.content.includes("<dyad-write") || chunk.content.includes("</dyad-write>")
+    const dyadTagChunks = chunks.filter(
+      (chunk) =>
+        chunk.content.includes("<dyad-write") ||
+        chunk.content.includes("</dyad-write>"),
     );
     expect(dyadTagChunks.length).toBeGreaterThan(0);
 
     // Check that code blocks are preserved
-    const codeBlockChunks = chunks.filter(chunk => 
-      chunk.content.includes("```typescript") || chunk.content.includes("```")
+    const codeBlockChunks = chunks.filter(
+      (chunk) =>
+        chunk.content.includes("```typescript") ||
+        chunk.content.includes("```"),
     );
     expect(codeBlockChunks.length).toBeGreaterThan(0);
 
@@ -231,7 +240,7 @@ The application uses modern React patterns with hooks and TypeScript for type sa
     // Simulate successful chunk deliveries
     chunkPerfTracker.recordChunkDelivery(chatId, 0, 1000, 150, true);
     chunkPerfTracker.recordChunkDelivery(chatId, 1, 1200, 180, true);
-    
+
     // Simulate a failed chunk
     const error = new Error("Network timeout");
     chunkPerfTracker.recordChunkDelivery(chatId, 2, 800, 0, false, error);
@@ -242,12 +251,12 @@ The application uses modern React patterns with hooks and TypeScript for type sa
     expect(sessionMetrics!.totalChunks).toBe(totalChunks);
     expect(sessionMetrics!.deliveredChunks).toBe(2);
     expect(sessionMetrics!.failedChunks).toBe(1);
-    expect(sessionMetrics!.errorRate).toBeCloseTo(1/3);
+    expect(sessionMetrics!.errorRate).toBeCloseTo(1 / 3);
 
     // End the session
     const finalMetrics = chunkPerfTracker.endSession(chatId);
     expect(finalMetrics).toBeTruthy();
-    expect(finalMetrics!.errorRate).toBeCloseTo(1/3);
+    expect(finalMetrics!.errorRate).toBeCloseTo(1 / 3);
     expect(finalMetrics!.deliveredChunks).toBe(2);
     expect(finalMetrics!.failedChunks).toBe(1);
   });
@@ -287,16 +296,19 @@ The application uses modern React patterns with hooks and TypeScript for type sa
   });
 
   it("should preserve context across chunks", () => {
-    const content = "First sentence. Second sentence.\n\nNew paragraph. Another sentence.".repeat(100);
+    const content =
+      "First sentence. Second sentence.\n\nNew paragraph. Another sentence.".repeat(
+        100,
+      );
     const chunks = chunkResponse(content, { maxChunkSize: 500 });
 
     if (chunks.length > 1) {
       // Check that chunks don't end abruptly in the middle of sentences
-      chunks.slice(0, -1).forEach(chunk => {
+      chunks.slice(0, -1).forEach((chunk) => {
         const trimmedContent = chunk.content.trim();
         const endsWithPeriod = trimmedContent.endsWith(".");
         const endsWithNewline = chunk.content.endsWith("\n");
-        
+
         // Should end at natural boundaries when possible
         expect(endsWithPeriod || endsWithNewline).toBe(true);
       });

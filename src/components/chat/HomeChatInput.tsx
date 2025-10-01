@@ -26,7 +26,9 @@ export function HomeChatInput({
   const { isStreaming } = useStreamChat({
     hasChatId: false,
   }); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(null);
+  const [currentEmotionState, setCurrentEmotionState] = useState<string | null>(
+    null,
+  );
 
   // Use the attachments hook
   const {

@@ -34,7 +34,7 @@ export function AppPreviewUrlInput({ appId }: AppPreviewUrlInputProps) {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // Validate URL if provided
       if (previewUrl && previewUrl.trim()) {
         try {
@@ -51,8 +51,10 @@ export function AppPreviewUrlInput({ appId }: AppPreviewUrlInputProps) {
           previewUrl: previewUrl.trim() || null,
         },
       });
-      
-      showSuccess(previewUrl.trim() ? "Preview URL updated" : "Preview URL cleared");
+
+      showSuccess(
+        previewUrl.trim() ? "Preview URL updated" : "Preview URL cleared",
+      );
     } catch (error: any) {
       showError(`Failed to update preview URL: ${error.message}`);
     } finally {
@@ -94,11 +96,7 @@ export function AppPreviewUrlInput({ appId }: AppPreviewUrlInputProps) {
             disabled={loading || saving}
             className="flex-1"
           />
-          <Button
-            onClick={handleSave}
-            disabled={loading || saving}
-            size="sm"
-          >
+          <Button onClick={handleSave} disabled={loading || saving} size="sm">
             {saving ? "Saving..." : "Save"}
           </Button>
           {previewUrl && (
@@ -114,7 +112,8 @@ export function AppPreviewUrlInput({ appId }: AppPreviewUrlInputProps) {
           )}
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Override the preview URL for this app. If not set, Dyad will use the global setting or auto-detect the URL.
+          Override the preview URL for this app. If not set, Dyad will use the
+          global setting or auto-detect the URL.
         </div>
       </div>
     </div>

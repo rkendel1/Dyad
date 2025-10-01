@@ -14,8 +14,12 @@ interface AppPackageManagerSelectorProps {
   appId: number;
 }
 
-export function AppPackageManagerSelector({ appId }: AppPackageManagerSelectorProps) {
-  const [packageManager, setPackageManager] = useState<"npm" | "yarn" | "pnpm" | "bun" | "auto">("auto");
+export function AppPackageManagerSelector({
+  appId,
+}: AppPackageManagerSelectorProps) {
+  const [packageManager, setPackageManager] = useState<
+    "npm" | "yarn" | "pnpm" | "bun" | "auto"
+  >("auto");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +39,7 @@ export function AppPackageManagerSelector({ appId }: AppPackageManagerSelectorPr
   }, [appId]);
 
   const handlePackageManagerChange = async (
-    value: "npm" | "yarn" | "pnpm" | "bun" | "auto"
+    value: "npm" | "yarn" | "pnpm" | "bun" | "auto",
   ) => {
     try {
       setLoading(true);
@@ -46,7 +50,9 @@ export function AppPackageManagerSelector({ appId }: AppPackageManagerSelectorPr
         },
       });
       setPackageManager(value);
-      showSuccess(`Package manager updated to ${value === "auto" ? "auto-detect" : value}`);
+      showSuccess(
+        `Package manager updated to ${value === "auto" ? "auto-detect" : value}`,
+      );
     } catch (error: any) {
       showError(`Failed to update package manager: ${error.message}`);
     } finally {
@@ -82,7 +88,8 @@ export function AppPackageManagerSelector({ appId }: AppPackageManagerSelectorPr
           </Select>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Override the package manager for this app. If set to auto-detect, Dyad will use the global setting or detect based on lock files.
+          Override the package manager for this app. If set to auto-detect, Dyad
+          will use the global setting or detect based on lock files.
         </div>
       </div>
     </div>
