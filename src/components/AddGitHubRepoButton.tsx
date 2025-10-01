@@ -12,7 +12,7 @@ export function AddGitHubRepoButton() {
   const handleClick = () => {
     if (!selectedAppId) {
       showError(
-        "Please select an app first before adding a GitHub repository.",
+        "Please select or create an app first before adding a GitHub repository.",
       );
       return;
     }

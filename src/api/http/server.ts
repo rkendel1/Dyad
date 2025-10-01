@@ -74,7 +74,7 @@ export class HttpApiServer {
       this.app.use(
         cors({
           origin: (origin, callback) => {
-            // Allow requests with no origin (like mobile apps or curl requests)
+            // Allow requests with no origin (like mobile apps, curl requests, or file:// protocol)
             if (!origin) {
               return callback(null, true);
             }

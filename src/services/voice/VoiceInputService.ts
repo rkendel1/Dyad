@@ -128,7 +128,7 @@ export class VoiceInputService {
     if (!this.recognition) return;
 
     this.recognition.lang = options.language || "en-US";
-    this.recognition.continuous = options.continuous ?? false;
+    this.recognition.continuous = options.continuous ?? true;
     this.recognition.interimResults = options.interimResults ?? true;
     this.recognition.maxAlternatives = options.maxAlternatives ?? 1;
   }
