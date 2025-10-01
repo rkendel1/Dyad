@@ -323,7 +323,10 @@ export function registerSupabaseHandlers() {
     async (_, { project, app }: { project: string; app: number }) => {
       await db
         .update(apps)
-        .set({ supabaseProjectId: project })
+        .set({ 
+          supabaseProjectId: project,
+          supabaseProjectName: null, // Will be fetched and cached on next getApp call
+        })
         .where(eq(apps.id, app));
 
       logger.info(`Associated app ${app} with Supabase project ${project}`);
@@ -334,7 +337,10 @@ export function registerSupabaseHandlers() {
   handle("supabase:unset-app-project", async (_, { app }: { app: number }) => {
     await db
       .update(apps)
-      .set({ supabaseProjectId: null })
+      .set({ 
+        supabaseProjectId: null,
+        supabaseProjectName: null, // Clear cached name
+      })
       .where(eq(apps.id, app));
 
     logger.info(`Removed Supabase project association for app ${app}`);
@@ -361,6 +367,7 @@ export function registerSupabaseHandlers() {
         .update(apps)
         .set({
           supabaseProjectId: fakeProjectId,
+          supabaseProjectName: null, // Will be fetched and cached on next getApp call
         })
         .where(eq(apps.id, appId));
       logger.info(
@@ -404,6 +411,7 @@ export function registerSupabaseHandlers() {
         .update(apps)
         .set({
           supabaseProjectId: "local-supabase",
+          supabaseProjectName: "Local Supabase", // Set a clear name for local instance
         })
         .where(eq(apps.id, appId));
 
@@ -526,6 +534,7 @@ export function registerSupabaseHandlers() {
           .update(apps)
           .set({
             supabaseProjectId: params.productionProjectRef,
+            supabaseProjectName: null, // Will be fetched and cached on next getApp call
           })
           .where(eq(apps.id, params.appId));
         logger.info("✅ App configuration updated");
