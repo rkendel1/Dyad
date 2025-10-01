@@ -110,4 +110,5 @@ volumes/storage/
 
 # Generated files
 openapi.json
-quality-report.txt
+quality-report.txtweb-app/.next/
+web-app/out/
