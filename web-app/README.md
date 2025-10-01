@@ -7,6 +7,9 @@ A Next.js-based web interface for managing Dyad AI applications.
 - 🚀 **Modern Next.js Architecture**: Built with Next.js 15+ App Router
 - 🎨 **Beautiful UI**: Styled with Tailwind CSS and Shadcn/UI components
 - 🔌 **Desktop Integration**: Seamlessly connects to Dyad Desktop API
+- 💬 **Chat Interface**: Interact with your apps through a chat-based interface
+- 📊 **App Management**: View, manage, and delete applications
+- 🗨️ **Real-time Messaging**: Send and receive messages with automatic polling
 - 📱 **Responsive Design**: Works on all devices
 - ⚡ **Fast & Efficient**: Optimized for performance
 - 🌐 **Scalable**: Ready for future web tool integrations
@@ -74,6 +77,13 @@ The web app connects to these Dyad Desktop API endpoints:
 - `GET /api/health` - Health check
 - `GET /api/apps` - List all applications
 - `GET /api/apps/:id` - Get specific application details
+- `DELETE /api/apps/:id` - Delete an application
+- `GET /api/apps/:appId/chats` - List chats for an application
+- `POST /api/apps/:appId/chats` - Create a new chat for an application
+- `GET /api/chats/:id` - Get chat details
+- `GET /api/chats/:id/messages` - Get messages for a chat
+- `POST /api/chats/:id/messages` - Send a message in a chat
+- `DELETE /api/chats/:id` - Delete a chat
 
 ## Development
 

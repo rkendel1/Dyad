@@ -151,7 +151,7 @@ export function AppsPage() {
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href={`/app/${app.id}`}>View App</a>
+                    <a href={`/app/${app.id}`}>Open App</a>
                   </Button>
                 </CardFooter>
               </Card>
@@ -167,9 +167,13 @@ export function AppsPage() {
                 <h3 className="text-xl font-semibold mb-2">
                   No Applications Yet
                 </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
+                <p className="text-muted-foreground max-w-md mx-auto mb-4">
                   Create your first application in Dyad Desktop to get started
                   building amazing AI-powered apps.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Once you create an app in the desktop application, it will
+                  appear here and you can interact with it through the browser.
                 </p>
               </div>
             </CardContent>
