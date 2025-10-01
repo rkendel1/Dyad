@@ -132,7 +132,7 @@ export function useVoiceInput(): [VoiceInputHookState, VoiceInputHookActions] {
     }
 
     const success = voiceInputService.startListening({
-      continuous: false,
+      continuous: true,
       interimResults: true,
       language: "en-US",
     });
