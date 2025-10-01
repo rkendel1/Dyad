@@ -29,12 +29,14 @@ export const apps = sqliteTable("apps", {
   githubRepo: text("github_repo"),
   githubBranch: text("github_branch"),
   supabaseProjectId: text("supabase_project_id"),
+  supabaseProjectName: text("supabase_project_name"), // Cached name from Supabase API
   neonProjectId: text("neon_project_id"),
   neonDevelopmentBranchId: text("neon_development_branch_id"),
   neonPreviewBranchId: text("neon_preview_branch_id"),
   vercelProjectId: text("vercel_project_id"),
   vercelProjectName: text("vercel_project_name"),
   vercelTeamId: text("vercel_team_id"),
+  vercelTeamSlug: text("vercel_team_slug"), // Cached slug from Vercel API
   vercelDeploymentUrl: text("vercel_deployment_url"),
   installCommand: text("install_command"),
   startCommand: text("start_command"),
