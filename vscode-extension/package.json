@@ -122,7 +122,8 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
     "test-sanity": "node ./scripts/sanity-check.js",
-    "package": "vsce package"
+    "package": "vsce package",
+    "mock-server": "node mock-collaboration-server.js"
   },
   "devDependencies": {
     "@types/node": "^20.x",
