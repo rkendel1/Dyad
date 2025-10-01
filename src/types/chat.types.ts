@@ -57,3 +57,20 @@ export interface FileAttachment {
   file: File;
   type: "upload-to-codebase" | "chat-context";
 }
+
+/**
+ * Chat problems event
+ */
+export interface ChatProblemsEvent {
+  chatId: number;
+  appId: number;
+  problems: any; // ProblemReport from tsc_types
+}
+
+/**
+ * Token count parameters
+ */
+export interface TokenCountParams {
+  chatId: number;
+  input: string;
+}

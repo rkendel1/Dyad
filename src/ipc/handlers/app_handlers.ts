@@ -737,15 +737,36 @@ export function registerAppHandlers() {
       // Return app even if files couldn't be read
     }
 
-    let supabaseProjectName: string | null = null;
+    // Fetch and cache external API data
+    let supabaseProjectName: string | null = app.supabaseProjectName;
     const settings = readSettings();
     if (app.supabaseProjectId && settings.supabase?.accessToken?.value) {
-      supabaseProjectName = await getSupabaseProjectName(app.supabaseProjectId);
+      // Fetch from API if not cached or if we want to refresh
+      if (!supabaseProjectName) {
+        supabaseProjectName = await getSupabaseProjectName(app.supabaseProjectId);
+        // Cache in database for future requests
+        if (supabaseProjectName) {
+          await db
+            .update(apps)
+            .set({ supabaseProjectName })
+            .where(eq(apps.id, appId));
+        }
+      }
     }
 
-    let vercelTeamSlug: string | null = null;
+    let vercelTeamSlug: string | null = app.vercelTeamSlug;
     if (app.vercelTeamId) {
-      vercelTeamSlug = await getVercelTeamSlug(app.vercelTeamId);
+      // Fetch from API if not cached or if we want to refresh
+      if (!vercelTeamSlug) {
+        vercelTeamSlug = await getVercelTeamSlug(app.vercelTeamId);
+        // Cache in database for future requests
+        if (vercelTeamSlug) {
+          await db
+            .update(apps)
+            .set({ vercelTeamSlug })
+            .where(eq(apps.id, appId));
+        }
+      }
     }
 
     return {

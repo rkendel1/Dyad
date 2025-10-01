@@ -7,17 +7,30 @@
 /**
  * Language model configuration
  */
-export interface LanguageModel {
-  apiName: string;
-  displayName: string;
-  description: string;
-  tag?: string;
-  maxOutputTokens?: number;
-  contextWindow?: number;
-  temperature?: number;
-  dollarSigns?: number;
-  type: "custom" | "local" | "cloud";
-}
+export type LanguageModel =
+  | {
+      id: number;
+      apiName: string;
+      displayName: string;
+      description: string;
+      tag?: string;
+      maxOutputTokens?: number;
+      contextWindow?: number;
+      temperature?: number;
+      dollarSigns?: number;
+      type: "custom";
+    }
+  | {
+      apiName: string;
+      displayName: string;
+      description: string;
+      tag?: string;
+      maxOutputTokens?: number;
+      contextWindow?: number;
+      temperature?: number;
+      dollarSigns?: number;
+      type: "local" | "cloud";
+    };
 
 /**
  * Language model provider configuration
@@ -90,4 +103,33 @@ export interface NodeSystemInfo {
   nodeVersion: string | null;
   pnpmVersion: string | null;
   nodeDownloadUrl: string;
+}
+
+/**
+ * Create custom language model provider parameters
+ */
+export interface CreateCustomLanguageModelProviderParams {
+  id: string;
+  name: string;
+  apiBaseUrl: string;
+  envVarName?: string;
+}
+
+/**
+ * Create custom language model parameters
+ */
+export interface CreateCustomLanguageModelParams {
+  apiName: string;
+  displayName: string;
+  providerId: string;
+  description?: string;
+  maxOutputTokens?: number;
+  contextWindow?: number;
+}
+
+/**
+ * Local model list response
+ */
+export interface LocalModelListResponse {
+  models: LocalModel[];
 }

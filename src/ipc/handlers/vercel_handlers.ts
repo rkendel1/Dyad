@@ -466,6 +466,7 @@ async function handleDisconnectVercelProject(
       vercelProjectId: null,
       vercelProjectName: null,
       vercelTeamId: null,
+      vercelTeamSlug: null, // Clear cached slug
       vercelDeploymentUrl: null,
     })
     .where(eq(apps.id, appId));
@@ -504,6 +505,7 @@ export async function updateAppVercelProject({
       vercelProjectId: projectId,
       vercelProjectName: projectName,
       vercelTeamId: teamId,
+      vercelTeamSlug: null, // Will be fetched and cached on next getApp call
       vercelDeploymentUrl: deploymentUrl,
     })
     .where(eq(schema.apps.id, appId));
