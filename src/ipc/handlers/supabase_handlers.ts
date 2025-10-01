@@ -37,15 +37,15 @@ function getAppSupabaseConfig(appId: number) {
   const apiPort = 8000 + appId * 100;
   const dashboardPort = 3001 + appId * 100;
   
-  // Generate unique JWT secret for this app based on appId
-  const jwtSecret = `dyad-supabase-jwt-secret-app-${appId}-${Buffer.from(`app-${appId}`).toString('base64')}`;
-  const dbPassword = `dyad-supabase-db-password-app-${appId}-${Buffer.from(`app-${appId}`).toString('base64')}`;
+  // Generate unique secrets for this app
+  // Use a deterministic approach based on appId for consistency
+  const jwtSecret = `your-super-secret-jwt-token-with-at-least-32-characters-long-app-${appId}`;
+  const dbPassword = `your-super-secret-and-long-postgres-password-app-${appId}`;
   
-  // Generate JWT tokens with the app-specific secret
-  // For demo purposes, using predictable tokens based on appId
-  // In production, these would be properly generated JWTs
-  const anonKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1hcHAtJHthcHBJZH0iLCJyb2xlIjoiYW5vbiIsImV4cCI6MTk4MzgxMjk5Nn0.app${appId}`;
-  const serviceRoleKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1hcHAtJHthcHBJZH0iLCJyb2xlIjoic2VydmljZV9yb2xlIiwiZXhwIjoxOTgzODEyOTk2fQ.app${appId}`;
+  // Use the standard Supabase demo tokens for local development
+  // These are safe to use in local development as they're well-known test tokens
+  const anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+  const serviceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
   
   return {
     url: `http://localhost:${apiPort}`,

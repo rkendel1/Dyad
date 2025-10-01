@@ -2,6 +2,16 @@
 
 This guide explains how to set up and use local Supabase with Dyad for development.
 
+## 🎉 Multi-Project Support
+
+**NEW**: Each app now gets its own isolated Supabase instance with dedicated containers, ports, and credentials!
+
+See [LOCAL_SUPABASE_MULTI_PROJECT.md](./LOCAL_SUPABASE_MULTI_PROJECT.md) for details on:
+- How per-app isolation works
+- Port allocation strategy  
+- Managing multiple instances
+- Troubleshooting tips
+
 ## Prerequisites
 
 - Docker and Docker Compose installed
@@ -13,21 +23,29 @@ This guide explains how to set up and use local Supabase with Dyad for developme
 
 1. Open Dyad and navigate to an app
 2. In the integrations section, click **"Use Local Supabase"**
-3. Wait for the setup to complete
-4. Your app is now connected to local Supabase!
+3. Wait for the setup to complete (containers will be created for this specific app)
+4. Your app is now connected to its own isolated local Supabase instance!
 
-### Option 2: Using npm scripts
+Each app gets unique:
+- Dashboard URL (e.g., http://localhost:3101 for app 1)
+- API endpoints (e.g., http://localhost:8100 for app 1)  
+- Database ports (e.g., 5532 for app 1)
+- Credentials automatically synced to `.env.local`
+
+### Option 2: Using npm scripts (Legacy - for shared instance)
 
 ```bash
-# Start local Supabase
+# Start shared local Supabase (not recommended for multi-app development)
 npm run supabase:start
 
 # Check status
 npm run supabase:status
 
-# Stop local Supabase
+# Stop shared local Supabase  
 npm run supabase:stop
 ```
+
+**Note**: The npm scripts start a shared instance. For better isolation, use the Dyad UI which creates per-app instances.
 
 ### Option 3: Using the setup script directly
 
