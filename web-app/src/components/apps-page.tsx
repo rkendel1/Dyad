@@ -151,7 +151,7 @@ export function AppsPage() {
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href={`/app/${app.id}`}>View App</a>
+                    <a href={`/app/${app.id}`}>Open App</a>
                   </Button>
                 </CardFooter>
               </Card>

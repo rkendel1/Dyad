@@ -12,6 +12,21 @@ export interface DyadApp {
   // Add other app properties as needed
 }
 
+export interface Chat {
+  id: number;
+  title: string;
+  messages: Message[];
+  initialCommitHash: string | null;
+}
+
+export interface Message {
+  id: number;
+  chatId: number;
+  content: string;
+  role: "user" | "assistant";
+  createdAt: string;
+}
+
 export class DyadApiClient {
   private client: AxiosInstance;
 
@@ -52,6 +67,170 @@ export class DyadApiClient {
         err.response?.data?.error?.message ||
           err.message ||
           "Failed to fetch apps"
+      );
+    }
+  }
+
+  async getApp(appId: number): Promise<DyadApp> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: DyadApp;
+      }>(`/apps/${appId}`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error("Failed to fetch app");
+    } catch (error: unknown) {
+      console.error("Error fetching app:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch app"
+      );
+    }
+  }
+
+  async deleteApp(appId: number): Promise<void> {
+    try {
+      const response = await this.client.delete<{
+        success: boolean;
+      }>(`/apps/${appId}`);
+      if (!response.data.success) {
+        throw new Error("Failed to delete app");
+      }
+    } catch (error: unknown) {
+      console.error("Error deleting app:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to delete app"
+      );
+    }
+  }
+
+  async listChats(appId: number): Promise<Chat[]> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: { chats: Chat[] };
+      }>(`/apps/${appId}/chats`);
+      if (response.data.success) {
+        return response.data.data.chats;
+      }
+      throw new Error("Failed to fetch chats");
+    } catch (error: unknown) {
+      console.error("Error fetching chats:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch chats"
+      );
+    }
+  }
+
+  async createChat(appId: number): Promise<Chat> {
+    try {
+      const response = await this.client.post<{
+        success: boolean;
+        data: Chat;
+      }>(`/apps/${appId}/chats`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error("Failed to create chat");
+    } catch (error: unknown) {
+      console.error("Error creating chat:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to create chat"
+      );
+    }
+  }
+
+  async getChat(chatId: number): Promise<Chat> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: Chat;
+      }>(`/chats/${chatId}`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error("Failed to fetch chat");
+    } catch (error: unknown) {
+      console.error("Error fetching chat:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch chat"
+      );
+    }
+  }
+
+  async getChatMessages(chatId: number): Promise<Message[]> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: { messages: Message[] };
+      }>(`/chats/${chatId}/messages`);
+      if (response.data.success) {
+        return response.data.data.messages;
+      }
+      throw new Error("Failed to fetch messages");
+    } catch (error: unknown) {
+      console.error("Error fetching messages:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch messages"
+      );
+    }
+  }
+
+  async sendMessage(chatId: number, content: string): Promise<Message> {
+    try {
+      const response = await this.client.post<{
+        success: boolean;
+        data: Message;
+      }>(`/chats/${chatId}/messages`, { content, role: "user" });
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error("Failed to send message");
+    } catch (error: unknown) {
+      console.error("Error sending message:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to send message"
+      );
+    }
+  }
+
+  async deleteChat(chatId: number): Promise<void> {
+    try {
+      const response = await this.client.delete<{
+        success: boolean;
+      }>(`/chats/${chatId}`);
+      if (!response.data.success) {
+        throw new Error("Failed to delete chat");
+      }
+    } catch (error: unknown) {
+      console.error("Error deleting chat:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to delete chat"
       );
     }
   }
