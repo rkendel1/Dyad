@@ -49,7 +49,10 @@ export function SelectedComponentDisplay() {
             className="ml-2 flex-shrink-0 rounded-full p-0.5 hover:bg-indigo-600/20"
             title="Send to terminal"
           >
-            <Terminal size={18} className="text-indigo-600 dark:text-indigo-400" />
+            <Terminal
+              size={18}
+              className="text-indigo-600 dark:text-indigo-400"
+            />
           </button>
           <button
             onClick={() => setSelectedComponent(null)}
