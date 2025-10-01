@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Terminal, Send, History, HelpCircle } from "lucide-react";
-import { useAtomValue } from "jotai";
-import { selectedAppIdAtom } from "@/atoms/appAtoms";
+import { useAtomValue, useAtom } from "jotai";
+import { selectedAppIdAtom, cliInputTextAtom } from "@/atoms/appAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
 import { toast } from "sonner";
 
@@ -18,11 +18,21 @@ export const CliInput = ({ onCommandExecute }: CliInputProps) => {
   const [showHelp, setShowHelp] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedAppId = useAtomValue(selectedAppIdAtom);
+  const [cliInputText, setCliInputText] = useAtom(cliInputTextAtom);
 
   // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Insert text from selector into CLI input
+  useEffect(() => {
+    if (cliInputText) {
+      setCommand(cliInputText);
+      setCliInputText(null); // Clear after insertion
+      inputRef.current?.focus();
+    }
+  }, [cliInputText, setCliInputText]);
 
   // Handle command submission
   const handleSubmit = async () => {

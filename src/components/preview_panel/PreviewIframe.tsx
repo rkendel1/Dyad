@@ -3,6 +3,7 @@ import {
   appUrlAtom,
   appOutputAtom,
   previewErrorMessageAtom,
+  cliInputTextAtom,
 } from "@/atoms/appAtoms";
 import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +26,7 @@ import {
   Square,
   Edit3,
   Check,
+  Terminal,
 } from "lucide-react";
 import { selectedChatIdAtom } from "@/atoms/chatAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
@@ -143,6 +145,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   const { streamMessage } = useStreamChat();
   const { routes: availableRoutes } = useParseRouter(selectedAppId);
   const { restartApp } = useRunApp();
+  const setCliInputText = useSetAtom(cliInputTextAtom);
 
   // Navigation state
   const [isComponentSelectorInitialized, setIsComponentSelectorInitialized] =
@@ -409,6 +412,14 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
       });
       setCapturedCssSelector(null);
       showSuccess("CSS selector inserted into chat!");
+    }
+  };
+
+  // Function to send CSS selector to terminal
+  const sendCssSelectorToTerminal = () => {
+    if (capturedCssSelector) {
+      setCliInputText(capturedCssSelector);
+      showSuccess("CSS selector sent to terminal!");
     }
   };
 
@@ -929,6 +940,22 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Copy to clipboard</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={sendCssSelectorToTerminal}
+                        className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 rounded text-green-700 dark:text-green-300 transition-colors"
+                        data-testid="send-css-selector-to-terminal-button"
+                      >
+                        <Terminal size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Send to terminal</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
