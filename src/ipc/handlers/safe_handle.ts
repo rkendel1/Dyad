@@ -2,6 +2,8 @@ import { ipcMain, IpcMainInvokeEvent } from "electron";
 import log from "electron-log";
 import { IS_TEST_BUILD } from "../utils/test_utils";
 
+const logger = log.scope("ipc");
+
 export function createLoggedHandler(logger: log.LogFunctions) {
   return (
     channel: string,
@@ -35,4 +37,21 @@ export function createTestOnlyLoggedHandler(logger: log.LogFunctions) {
     return () => {};
   }
   return createLoggedHandler(logger);
+}
+
+/**
+ * Simple wrapper for IPC handler functions that provides basic error handling.
+ * Used for simpler handlers that don't need full logging.
+ */
+export function safeHandle<T extends any[], R>(
+  fn: (event: IpcMainInvokeEvent, ...args: T) => Promise<R>,
+): (event: IpcMainInvokeEvent, ...args: T) => Promise<R> {
+  return async (event: IpcMainInvokeEvent, ...args: T): Promise<R> => {
+    try {
+      return await fn(event, ...args);
+    } catch (error) {
+      logger.error(`Error in IPC handler:`, error);
+      throw error;
+    }
+  };
 }
