@@ -1,3 +1,9 @@
+// Increase Node.js memory limit for better performance with large applications
+// This must be set before any other imports or it won't take effect
+if (!process.env.NODE_OPTIONS || !process.env.NODE_OPTIONS.includes('--max-old-space-size')) {
+  process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --max-old-space-size=4096';
+}
+
 import { app, BrowserWindow, dialog } from "electron";
 import * as path from "node:path";
 import { registerIpcHandlers } from "./ipc/ipc_host";
