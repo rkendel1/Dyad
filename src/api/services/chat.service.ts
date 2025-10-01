@@ -169,6 +169,50 @@ export class ChatService {
       initialCommitHash: updatedChat.initialCommitHash,
     };
   }
+
+  /**
+   * Get all messages for a chat
+   */
+  async getChatMessages(chatId: number): Promise<Message[]> {
+    const chat = await db.query.chats.findFirst({
+      where: eq(chats.id, chatId),
+      with: {
+        messages: {
+          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+        },
+      },
+    });
+
+    if (!chat) {
+      throw new Error(`Chat with ID ${chatId} not found`);
+    }
+
+    return chat.messages as Message[];
+  }
+
+  /**
+   * Create a new message in a chat
+   */
+  async createMessage(chatId: number, messageData: { content: string; role: 'user' | 'assistant' }): Promise<Message> {
+    const chat = await db.query.chats.findFirst({
+      where: eq(chats.id, chatId),
+    });
+
+    if (!chat) {
+      throw new Error(`Chat with ID ${chatId} not found`);
+    }
+
+    const [message] = await db
+      .insert(messages)
+      .values({
+        chatId,
+        content: messageData.content,
+        role: messageData.role,
+      })
+      .returning();
+
+    return message as Message;
+  }
 }
 
 /**

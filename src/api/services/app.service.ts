@@ -83,6 +83,24 @@ export class AppService {
   }
 
   /**
+   * Get application settings
+   */
+  async getAppSettings(appId: number): Promise<AppSettings> {
+    const app = await db.query.apps.findFirst({
+      where: eq(apps.id, appId),
+    });
+
+    if (!app) {
+      throw new Error(`App with ID ${appId} not found`);
+    }
+
+    return {
+      preferredPackageManager: (app.preferredPackageManager as "npm" | "yarn" | "pnpm" | "bun" | null) || null,
+      previewUrl: app.previewUrl || null,
+    };
+  }
+
+  /**
    * Update application settings
    */
   async updateAppSettings(appId: number, settings: Partial<AppSettings>): Promise<AppSettings> {
