@@ -1,15 +1,24 @@
 import { selectedComponentPreviewAtom } from "@/atoms/previewAtoms";
-import { useAtom } from "jotai";
-import { Code2, X } from "lucide-react";
+import { cliInputTextAtom } from "@/atoms/appAtoms";
+import { useAtom, useSetAtom } from "jotai";
+import { Code2, X, Terminal } from "lucide-react";
+import { showSuccess } from "@/lib/toast";
 
 export function SelectedComponentDisplay() {
   const [selectedComponent, setSelectedComponent] = useAtom(
     selectedComponentPreviewAtom,
   );
+  const setCliInputText = useSetAtom(cliInputTextAtom);
 
   if (!selectedComponent) {
     return null;
   }
+
+  const handleSendToTerminal = () => {
+    const componentText = `${selectedComponent.name} (${selectedComponent.relativePath}:${selectedComponent.lineNumber})`;
+    setCliInputText(componentText);
+    showSuccess("Component sent to terminal!");
+  };
 
   return (
     <div className="p-2 pb-1" data-testid="selected-component-display">
@@ -34,13 +43,25 @@ export function SelectedComponentDisplay() {
             </span>
           </div>
         </div>
-        <button
-          onClick={() => setSelectedComponent(null)}
-          className="ml-2 flex-shrink-0 rounded-full p-0.5 hover:bg-indigo-600/20"
-          title="Deselect component"
-        >
-          <X size={18} className="text-indigo-600 dark:text-indigo-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleSendToTerminal}
+            className="ml-2 flex-shrink-0 rounded-full p-0.5 hover:bg-indigo-600/20"
+            title="Send to terminal"
+          >
+            <Terminal
+              size={18}
+              className="text-indigo-600 dark:text-indigo-400"
+            />
+          </button>
+          <button
+            onClick={() => setSelectedComponent(null)}
+            className="flex-shrink-0 rounded-full p-0.5 hover:bg-indigo-600/20"
+            title="Deselect component"
+          >
+            <X size={18} className="text-indigo-600 dark:text-indigo-400" />
+          </button>
+        </div>
       </div>
     </div>
   );

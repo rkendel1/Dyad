@@ -249,12 +249,14 @@ function listenToProcess({
 }) {
   // Clean up function to remove all event listeners and prevent memory leaks
   const cleanupListeners = () => {
-    logger.debug(`Cleaning up event listeners for app ${appId} (PID: ${spawnedProcess.pid})`);
+    logger.debug(
+      `Cleaning up event listeners for app ${appId} (PID: ${spawnedProcess.pid})`,
+    );
     spawnedProcess.stdout?.removeAllListeners();
     spawnedProcess.stderr?.removeAllListeners();
     spawnedProcess.removeAllListeners("close");
     spawnedProcess.removeAllListeners("error");
-    
+
     // Close stdio streams to release resources
     try {
       spawnedProcess.stdout?.destroy();
