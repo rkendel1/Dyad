@@ -247,8 +247,26 @@ function listenToProcess({
   isNeon: boolean;
   event: Electron.IpcMainInvokeEvent;
 }) {
+  // Clean up function to remove all event listeners and prevent memory leaks
+  const cleanupListeners = () => {
+    logger.debug(`Cleaning up event listeners for app ${appId} (PID: ${spawnedProcess.pid})`);
+    spawnedProcess.stdout?.removeAllListeners();
+    spawnedProcess.stderr?.removeAllListeners();
+    spawnedProcess.removeAllListeners("close");
+    spawnedProcess.removeAllListeners("error");
+    
+    // Close stdio streams to release resources
+    try {
+      spawnedProcess.stdout?.destroy();
+      spawnedProcess.stderr?.destroy();
+      spawnedProcess.stdin?.destroy();
+    } catch (err) {
+      logger.warn(`Error destroying stdio streams for app ${appId}: ${err}`);
+    }
+  };
+
   // Log output
-  spawnedProcess.stdout?.on("data", async (data) => {
+  const stdoutHandler = async (data: Buffer) => {
     const message = util.stripVTControlCharacters(data.toString());
     logger.debug(
       `App ${appId} (PID: ${spawnedProcess.pid}) stdout: ${message}`,
@@ -303,9 +321,9 @@ function listenToProcess({
         });
       }
     }
-  });
+  };
 
-  spawnedProcess.stderr?.on("data", (data) => {
+  const stderrHandler = (data: Buffer) => {
     const message = util.stripVTControlCharacters(data.toString());
     logger.error(
       `App ${appId} (PID: ${spawnedProcess.pid}) stderr: ${message}`,
@@ -316,13 +334,17 @@ function listenToProcess({
       appId,
       timestamp: Date.now(),
     });
-  });
+  };
+
+  spawnedProcess.stdout?.on("data", stdoutHandler);
+  spawnedProcess.stderr?.on("data", stderrHandler);
 
   // Handle process exit/close
   spawnedProcess.on("close", (code, signal) => {
     logger.log(
       `App ${appId} (PID: ${spawnedProcess.pid}) process closed with code ${code}, signal ${signal}.`,
     );
+    cleanupListeners();
     removeAppIfCurrentProcess(appId, spawnedProcess);
   });
 
@@ -331,6 +353,7 @@ function listenToProcess({
     logger.error(
       `Error in app ${appId} (PID: ${spawnedProcess.pid}) process: ${err.message}`,
     );
+    cleanupListeners();
     removeAppIfCurrentProcess(appId, spawnedProcess);
     // Note: We don't throw here as the error is asynchronous. The caller got a success response already.
     // Consider adding ipcRenderer event emission to notify UI of the error.

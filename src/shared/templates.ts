@@ -66,16 +66,6 @@ export const localTemplatesData: Template[] = [
     isOfficial: true,
   },
   {
-    id: "saas-starter",
-    title: "SaaS Starter Template",
-    description:
-      "Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.",
-    imageUrl:
-      "https://github.com/user-attachments/assets/96258e4f-abce-4910-a62a-a9dff77965f2",
-    githubUrl: "https://github.com/ixartz/SaaS-Boilerplate",
-    isOfficial: true,
-  },
-  {
     id: "blog-mdx",
     title: "MDX Blog Template",
     description:

@@ -35,15 +35,6 @@ describe("Templates", () => {
     expect(stripeTemplate?.description).toContain("Stripe");
   });
 
-  it("should include new SaaS template", () => {
-    const saasTemplate = localTemplatesData.find(
-      (t) => t.id === "saas-starter",
-    );
-    expect(saasTemplate).toBeDefined();
-    expect(saasTemplate?.title).toBe("SaaS Starter Template");
-    expect(saasTemplate?.description).toContain("SaaS");
-  });
-
   it("should include new blog template", () => {
     const blogTemplate = localTemplatesData.find((t) => t.id === "blog-mdx");
     expect(blogTemplate).toBeDefined();
@@ -89,7 +80,6 @@ describe("Templates", () => {
     const newTemplates = localTemplatesData.filter((t) =>
       [
         "stripe-ecommerce",
-        "saas-starter",
         "blog-mdx",
         "auth-clerk",
         "dashboard-admin",
@@ -106,8 +96,8 @@ describe("Templates", () => {
 
   it("should have increased template count", () => {
     // Original templates: react, next, portal-mini-store (3)
-    // New templates: 7 additional
-    // Total should be 10
-    expect(localTemplatesData.length).toBe(10);
+    // New templates: 6 additional (saas-starter removed)
+    // Total should be 9
+    expect(localTemplatesData.length).toBe(9);
   });
 });

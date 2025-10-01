@@ -60,22 +60,6 @@ export const TEMPLATES: Template[] = [
     ],
   },
   {
-    id: "saas-starter",
-    title: "SaaS Starter Template",
-    description:
-      "Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.",
-    keywords: [
-      "saas",
-      "subscription",
-      "billing",
-      "multi-tenant",
-      "auth",
-      "authentication",
-      "dashboard",
-      "admin",
-    ],
-  },
-  {
     id: "blog-mdx",
     title: "MDX Blog Template",
     description:
@@ -106,6 +90,8 @@ export const TEMPLATES: Template[] = [
       "profile",
       "role",
       "permission",
+      "saas",
+      "subscription",
     ],
   },
   {
