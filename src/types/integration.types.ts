@@ -237,6 +237,13 @@ export interface SetupLocalSupabaseParams {
 }
 
 /**
+ * Stop local Supabase parameters
+ */
+export interface StopLocalSupabaseParams {
+  appId: number;
+}
+
+/**
  * Production promotion parameters
  */
 export interface ProductionPromotionParams {

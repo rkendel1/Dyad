@@ -15,6 +15,14 @@ describe("Local Supabase Integration", () => {
       const result = await getSupabaseProjectName("local-supabase");
       expect(result).toBe("Local Supabase");
     });
+
+    it('should return "Local Supabase (App X)" for local-supabase-X project ID', async () => {
+      const { getSupabaseProjectName } = await import(
+        "../supabase_admin/supabase_management_client"
+      );
+      const result = await getSupabaseProjectName("local-supabase-1");
+      expect(result).toBe("Local Supabase (App 1)");
+    });
   });
 
   describe("Local Supabase Configuration", () => {

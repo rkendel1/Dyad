@@ -115,21 +115,21 @@ export function SupabaseConnector({ appId }: { appId: number }) {
 
   if (
     settings?.supabase?.accessToken ||
-    currentProjectId === "local-supabase"
+    currentProjectId?.startsWith("local-supabase")
   ) {
     if (app?.supabaseProjectName) {
       return (
         <Card className="mt-1">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {currentProjectId === "local-supabase"
+              {currentProjectId?.startsWith("local-supabase")
                 ? "Local Supabase"
                 : "Supabase Project"}{" "}
               <Button
                 variant="outline"
                 onClick={() => {
                   const url =
-                    currentProjectId === "local-supabase"
+                    currentProjectId?.startsWith("local-supabase")
                       ? localStatus?.dashboardUrl || "http://localhost:3001"
                       : `https://supabase.com/dashboard/project/${app.supabaseProjectId}`;
                   IpcClient.getInstance().openExternalUrl(url);
@@ -139,7 +139,7 @@ export function SupabaseConnector({ appId }: { appId: number }) {
                 asChild
               >
                 <div className="flex items-center gap-2">
-                  {currentProjectId === "local-supabase" ? (
+                  {currentProjectId?.startsWith("local-supabase") ? (
                     <Server className="h-4 w-4" />
                   ) : (
                     <img
@@ -153,7 +153,7 @@ export function SupabaseConnector({ appId }: { appId: number }) {
               </Button>
             </CardTitle>
             <CardDescription>
-              {currentProjectId === "local-supabase"
+              {currentProjectId?.startsWith("local-supabase")
                 ? `This app is connected to local Supabase${localStatus?.isRunning ? " (running)" : " (not running)"}`
                 : `This app is connected to project: ${app.supabaseProjectName}`}
             </CardDescription>
@@ -162,14 +162,14 @@ export function SupabaseConnector({ appId }: { appId: number }) {
             <Button variant="destructive" onClick={handleUnsetProject}>
               Disconnect Project
             </Button>
-            {currentProjectId === "local-supabase" &&
+            {currentProjectId?.startsWith("local-supabase") &&
               localStatus?.isRunning && (
                 <Button
                   variant="outline"
                   className="ml-2"
                   onClick={async () => {
                     try {
-                      await IpcClient.getInstance().stopLocalSupabase();
+                      await IpcClient.getInstance().stopLocalSupabase({ appId });
                       toast.success("Local Supabase stopped");
                       setLocalStatus({ isRunning: false });
                     } catch (error) {

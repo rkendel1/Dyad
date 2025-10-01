@@ -11,6 +11,7 @@ import { handleSupabaseOAuthReturn } from "../../supabase_admin/supabase_return_
 import { safeSend } from "../utils/safe_sender";
 import {
   SetupLocalSupabaseParams,
+  StopLocalSupabaseParams,
   LocalSupabaseStatus,
   ProductionPromotionParams,
   ProductionPromotionStatus,
@@ -28,7 +29,39 @@ const logger = log.scope("supabase_handlers");
 const handle = createLoggedHandler(logger);
 const testOnlyHandle = createTestOnlyLoggedHandler(logger);
 
-// Local Supabase configuration
+// Port allocation strategy: Each app gets a unique port range
+// Base ports: 5432 (postgres), 8000 (api), 3001 (dashboard)
+// App ports: 5432 + (appId * 100), 8000 + (appId * 100), 3001 + (appId * 100)
+function getAppSupabaseConfig(appId: number) {
+  const postgresPort = 5432 + appId * 100;
+  const apiPort = 8000 + appId * 100;
+  const dashboardPort = 3001 + appId * 100;
+  
+  // Generate unique secrets for this app
+  // Use a deterministic approach based on appId for consistency
+  const jwtSecret = `your-super-secret-jwt-token-with-at-least-32-characters-long-app-${appId}`;
+  const dbPassword = `your-super-secret-and-long-postgres-password-app-${appId}`;
+  
+  // Use the standard Supabase demo tokens for local development
+  // These are safe to use in local development as they're well-known test tokens
+  const anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+  const serviceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU";
+  
+  return {
+    url: `http://localhost:${apiPort}`,
+    anonKey,
+    serviceRoleKey,
+    dashboardUrl: `http://localhost:${dashboardPort}`,
+    postgresUrl: `postgresql://postgres:${dbPassword}@localhost:${postgresPort}/postgres`,
+    postgresPort,
+    apiPort,
+    dashboardPort,
+    jwtSecret,
+    dbPassword,
+  };
+}
+
+// Legacy global configuration for backward compatibility
 const LOCAL_SUPABASE_CONFIG = {
   url: "http://localhost:8000",
   anonKey:
@@ -54,6 +87,19 @@ function isLocalSupabaseRunning(): boolean {
   try {
     const result = execSync(
       'docker-compose -f docker-compose.supabase.yml ps --services --filter "status=running"',
+      { encoding: "utf8", stdio: "pipe" },
+    );
+    return result.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function isAppSupabaseRunning(appId: number): boolean {
+  try {
+    // Check if any containers with the app-specific naming pattern are running
+    const result = execSync(
+      `docker ps --filter "name=dyad-supabase-${appId}-" --format "{{.Names}}"`,
       { encoding: "utf8", stdio: "pipe" },
     );
     return result.trim().length > 0;
@@ -168,6 +214,69 @@ async function startLocalSupabase(): Promise<void> {
   }
 }
 
+async function startAppSupabase(appId: number): Promise<void> {
+  if (!checkDockerInstalled()) {
+    throw new Error(
+      "Docker is not installed or not running. Please install Docker Desktop and ensure it's running.",
+    );
+  }
+
+  const config = getAppSupabaseConfig(appId);
+  const projectName = `dyad-supabase-${appId}`;
+  
+  try {
+    logger.info(`🚀 Starting Supabase containers for app ${appId}...`);
+    logger.info("📦 Pulling and starting services:");
+    logger.info("   - PostgreSQL Database");
+    logger.info("   - Kong API Gateway");
+    logger.info("   - GoTrue Auth");
+    logger.info("   - PostgREST API");
+    logger.info("   - Realtime Server");
+    logger.info("   - Storage API");
+    logger.info("   - Supabase Studio");
+
+    // Use docker-compose with project-name to create isolated containers
+    const composeCmd = `docker-compose -f docker-compose.supabase.yml -p ${projectName} up -d`;
+    
+    // Set environment variables for this specific instance
+    const env = {
+      ...process.env,
+      POSTGRES_PORT: String(config.postgresPort),
+      KONG_PORT: String(config.apiPort),
+      STUDIO_PORT: String(config.dashboardPort),
+      POSTGRES_PASSWORD: config.dbPassword,
+      JWT_SECRET: config.jwtSecret,
+    };
+    
+    execSync(composeCmd, {
+      stdio: "inherit",
+      cwd: process.cwd(),
+      env,
+    });
+    
+    logger.info("✅ Docker containers started, initializing services...");
+
+    // Wait for services to be ready
+    await waitForAppSupabaseReady(appId, config);
+
+    // Display connection information
+    logger.info("═══════════════════════════════════════════════════════");
+    logger.info(`✅ Supabase is ready for app ${appId}!`);
+    logger.info("═══════════════════════════════════════════════════════");
+    logger.info(`📊 Dashboard:        ${config.dashboardUrl}`);
+    logger.info(`🔗 API URL:          ${config.url}`);
+    logger.info(`🗄️  Database:         localhost:${config.postgresPort}`);
+    logger.info("═══════════════════════════════════════════════════════");
+  } catch (error) {
+    logger.error(`❌ Failed to start Supabase for app ${appId}:`, error);
+    throw new Error(
+      `Failed to start Supabase for app ${appId}: ${error}\n\n` +
+      `💡 Check Docker logs for more details:\n` +
+      `   docker-compose -p dyad-supabase-${appId} logs`,
+    );
+  }
+}
+
 async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
   const startTime = Date.now();
   const checkInterval = 2000; // Check every 2 seconds
@@ -277,6 +386,101 @@ async function waitForSupabaseReady(maxWaitTime = 60000): Promise<void> {
   );
 }
 
+async function waitForAppSupabaseReady(appId: number, config: ReturnType<typeof getAppSupabaseConfig>, maxWaitTime = 60000): Promise<void> {
+  const startTime = Date.now();
+  const checkInterval = 2000;
+  let lastStatus = "";
+
+  logger.info(
+    `⏳ Waiting for Supabase services to be ready for app ${appId} (max ${maxWaitTime / 1000}s)...`,
+  );
+
+  const checkService = async (
+    name: string,
+    url: string,
+    timeout = 5000,
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        signal: AbortSignal.timeout(timeout),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  while (Date.now() - startTime < maxWaitTime) {
+    try {
+      // Check if containers are running
+      if (!isAppSupabaseRunning(appId)) {
+        const currentStatus = `⏸️  Waiting for app ${appId} Supabase containers to start...`;
+        if (currentStatus !== lastStatus) {
+          logger.info(currentStatus);
+          lastStatus = currentStatus;
+        }
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+        continue;
+      }
+
+      // Check if Kong API Gateway is responding
+      const kongReady = await checkService(
+        "Kong API Gateway",
+        `${config.url}/health`,
+        5000,
+      );
+
+      if (kongReady) {
+        const currentStatus = "✅ API Gateway ready";
+        if (currentStatus !== lastStatus) {
+          logger.info(currentStatus);
+          lastStatus = currentStatus;
+        }
+
+        // Additional check for Studio dashboard
+        const studioReady = await checkService(
+          "Supabase Studio",
+          config.dashboardUrl,
+          3000,
+        );
+
+        if (studioReady) {
+          logger.info("✅ Supabase Studio ready");
+          
+          // Brief final wait to ensure everything is stable
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          return;
+        }
+
+        // API is ready but studio might need more time
+        const currentStudioStatus = "⏳ API ready, waiting for dashboard...";
+        if (currentStudioStatus !== lastStatus) {
+          logger.info(currentStudioStatus);
+          lastStatus = currentStudioStatus;
+        }
+      } else {
+        const currentStatus = "⏳ Waiting for API Gateway to be ready...";
+        if (currentStatus !== lastStatus) {
+          logger.info(currentStatus);
+          lastStatus = currentStatus;
+        }
+      }
+    } catch (error) {
+      logger.debug(`Still waiting for app ${appId} Supabase to be ready:`, error);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, checkInterval));
+  }
+
+  throw new Error(
+    `⏱️  Timeout waiting for app ${appId} Supabase to be ready (waited ${maxWaitTime / 1000}s).\n\n` +
+    `Services may have failed to start properly.\n\n` +
+    `💡 Check Docker logs for more details:\n` +
+    `   docker-compose -p dyad-supabase-${appId} logs`,
+  );
+}
+
 async function stopLocalSupabase(): Promise<void> {
   try {
     logger.info("🛑 Stopping Docker containers...");
@@ -291,6 +495,25 @@ async function stopLocalSupabase(): Promise<void> {
       `Failed to stop local Supabase: ${error}\n\n` +
       `💡 You can manually stop containers with:\n` +
       `   docker-compose -f docker-compose.supabase.yml down`,
+    );
+  }
+}
+
+async function stopAppSupabase(appId: number): Promise<void> {
+  try {
+    const projectName = `dyad-supabase-${appId}`;
+    logger.info(`🛑 Stopping Supabase containers for app ${appId}...`);
+    execSync(`docker-compose -f docker-compose.supabase.yml -p ${projectName} down`, {
+      stdio: "inherit",
+      cwd: process.cwd(),
+    });
+    logger.info(`✅ Supabase containers for app ${appId} stopped`);
+  } catch (error) {
+    logger.error(`❌ Failed to stop Supabase for app ${appId}:`, error);
+    throw new Error(
+      `Failed to stop Supabase for app ${appId}: ${error}\n\n` +
+      `💡 You can manually stop containers with:\n` +
+      `   docker-compose -p dyad-supabase-${appId} down`,
     );
   }
 }
@@ -391,33 +614,37 @@ export function registerSupabaseHandlers() {
     async (_, { appId }: SetupLocalSupabaseParams) => {
       logger.info(`🔧 Setting up local Supabase for app ${appId}`);
 
-      // Start local Supabase if not running
-      if (!isLocalSupabaseRunning()) {
-        await startLocalSupabase();
-      } else {
-        // Even if running, wait a bit to ensure it's fully ready
-        logger.info("♻️  Local Supabase is already running, checking readiness...");
-        await waitForSupabaseReady(10000); // Shorter wait if already running
-      }
-
       // Get the app to find its path
       const app = await db.select().from(apps).where(eq(apps.id, appId)).get();
       if (!app) {
         throw new Error(`App with ID ${appId} not found`);
       }
 
-      // Update the app to use local Supabase
+      // Start app-specific Supabase if not running
+      if (!isAppSupabaseRunning(appId)) {
+        await startAppSupabase(appId);
+      } else {
+        // Even if running, wait a bit to ensure it's fully ready
+        logger.info(`♻️  Supabase for app ${appId} is already running, checking readiness...`);
+        const config = getAppSupabaseConfig(appId);
+        await waitForAppSupabaseReady(appId, config, 10000); // Shorter wait if already running
+      }
+
+      // Get app-specific configuration
+      const config = getAppSupabaseConfig(appId);
+
+      // Update the app to use local Supabase with app-specific identifier
       await db
         .update(apps)
         .set({
-          supabaseProjectId: "local-supabase",
-          supabaseProjectName: "Local Supabase", // Set a clear name for local instance
+          supabaseProjectId: `local-supabase-${appId}`,
+          supabaseProjectName: `Local Supabase (App ${appId})`, // Set a clear name for this app's instance
         })
         .where(eq(apps.id, appId));
 
       logger.info("📝 Updating environment variables for local Supabase...");
 
-      // Update the app's environment variables with structured format
+      // Update the app's environment variables with app-specific credentials
       try {
         const { updateEnvironmentVariablesWithStructure } = await import(
           "../utils/app_env_var_utils"
@@ -425,12 +652,12 @@ export function registerSupabaseHandlers() {
         await updateEnvironmentVariablesWithStructure({
           appPath: app.path,
           envVars: {
-            POSTGRES_URL: LOCAL_SUPABASE_CONFIG.postgresUrl,
-            SUPABASE_URL: LOCAL_SUPABASE_CONFIG.url,
-            SUPABASE_ANON_KEY: LOCAL_SUPABASE_CONFIG.anonKey,
-            SUPABASE_SERVICE_ROLE_KEY: LOCAL_SUPABASE_CONFIG.serviceRoleKey,
-            NEXT_PUBLIC_SUPABASE_URL: LOCAL_SUPABASE_CONFIG.url,
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: LOCAL_SUPABASE_CONFIG.anonKey,
+            POSTGRES_URL: config.postgresUrl,
+            SUPABASE_URL: config.url,
+            SUPABASE_ANON_KEY: config.anonKey,
+            SUPABASE_SERVICE_ROLE_KEY: config.serviceRoleKey,
+            NEXT_PUBLIC_SUPABASE_URL: config.url,
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: config.anonKey,
           },
           isLocalSupabase: true,
         });
@@ -438,7 +665,7 @@ export function registerSupabaseHandlers() {
         // Fallback to simple update if structured update fails
         await updatePostgresUrlEnvVar({
           appPath: app.path,
-          connectionUri: LOCAL_SUPABASE_CONFIG.postgresUrl,
+          connectionUri: config.postgresUrl,
         });
       }
 
@@ -446,11 +673,12 @@ export function registerSupabaseHandlers() {
       logger.info(`✅ Successfully set up local Supabase for app ${appId}`);
       logger.info("═══════════════════════════════════════════════════════");
       logger.info("📝 Environment variables updated in .env.local");
-      logger.info(`📊 Dashboard: ${LOCAL_SUPABASE_CONFIG.dashboardUrl}`);
-      logger.info(`🔗 API URL: ${LOCAL_SUPABASE_CONFIG.url}`);
+      logger.info(`📊 Dashboard: ${config.dashboardUrl}`);
+      logger.info(`🔗 API URL: ${config.url}`);
+      logger.info(`🗄️  Database: localhost:${config.postgresPort}`);
       logger.info("═══════════════════════════════════════════════════════");
       logger.info("💡 Next steps:");
-      logger.info("   1. Your app is now connected to local Supabase");
+      logger.info("   1. Your app now has its own isolated Supabase instance");
       logger.info("   2. Use the dashboard to manage your database");
       logger.info("   3. When ready for production, use 'Promote to Production'");
       logger.info("═══════════════════════════════════════════════════════");
@@ -478,15 +706,15 @@ export function registerSupabaseHandlers() {
   );
 
   // Stop local Supabase
-  handle("supabase:stop-local", async () => {
-    logger.info("🛑 Stopping local Supabase...");
-    await stopLocalSupabase();
+  handle("supabase:stop-local", async (_, { appId }: StopLocalSupabaseParams) => {
+    logger.info(`🛑 Stopping Supabase for app ${appId}...`);
+    await stopAppSupabase(appId);
     logger.info("═══════════════════════════════════════════════════════");
-    logger.info("✅ Local Supabase stopped successfully");
+    logger.info(`✅ Supabase for app ${appId} stopped successfully`);
     logger.info("═══════════════════════════════════════════════════════");
-    logger.info("💡 All containers have been stopped");
+    logger.info("💡 Container stopped");
     logger.info("   Data is preserved in Docker volumes");
-    logger.info("   Run 'npm run supabase:start' to restart");
+    logger.info("   Restart by setting up local Supabase again");
     logger.info("═══════════════════════════════════════════════════════");
   });
 

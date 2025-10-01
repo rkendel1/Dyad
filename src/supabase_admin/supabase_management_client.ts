@@ -129,7 +129,12 @@ export async function getSupabaseProjectName(
     return "Fake Supabase Project";
   }
 
-  if (projectId === "local-supabase") {
+  if (projectId?.startsWith("local-supabase")) {
+    // Extract app ID if present
+    const match = projectId.match(/^local-supabase-(\d+)$/);
+    if (match) {
+      return `Local Supabase (App ${match[1]})`;
+    }
     return "Local Supabase";
   }
 
