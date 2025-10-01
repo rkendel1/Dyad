@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dyad Web Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .app-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .app-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .app-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .app-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .app-card-meta {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: #6c757d;
+        }
+
+        .button.danger {
+            background: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-item {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-item:hover {
+            background: #e9ecef;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Dyad Web Interface</h1>
+            <p>Manage your AI applications from the browser</p>
+        </div>
+
+        <div class="status">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Connecting...</span>
+            </div>
+            <div id="versionInfo"></div>
+        </div>
+
+        <div class="content">
+            <div id="errorContainer"></div>
+            
+            <div class="section">
+                <h2>Applications</h2>
+                <div id="appsContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading applications...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="chatsSection" style="display: none;">
+                <h2>Chats</h2>
+                <div id="chatsContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Dyad Web Interface - Connected to <code>http://localhost:3000</code></p>
+            <p>For more information, visit <a href="https://dyad.sh" target="_blank">dyad.sh</a></p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        let currentAppId = null;
+
+        // Check API health
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('statusDot').classList.remove('offline');
+                    document.getElementById('statusText').textContent = 'Connected to Dyad Desktop';
+                    
+                    // Get version info
+                    const versionResponse = await fetch(`${API_BASE_URL}/api/version`);
+                    const versionData = await versionResponse.json();
+                    document.getElementById('versionInfo').textContent = `v${versionData.data.version}`;
+                    
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('statusDot').classList.add('offline');
+                document.getElementById('statusText').textContent = 'Disconnected - Is Dyad Desktop running?';
+                showError('Failed to connect to Dyad Desktop. Please ensure Dyad Desktop is running.');
+                return false;
+            }
+        }
+
+        // Load applications
+        async function loadApps() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/apps`);
+                const data = await response.json();
+
+                const container = document.getElementById('appsContainer');
+                
+                if (data.success && data.data.apps.length > 0) {
+                    container.innerHTML = '<div class="apps-grid">' + 
+                        data.data.apps.map(app => `
+                            <div class="app-card" onclick="loadChats(${app.id})">
+                                <h3>${app.name}</h3>
+                                <p>${app.description || 'No description'}</p>
+                                <div class="app-card-meta">
+                                    Created ${new Date(app.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        `).join('') +
+                        '</div>';
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Applications Yet</h3>
+                            <p>Create your first app in Dyad Desktop to get started!</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading apps:', error);
+                showError('Failed to load applications');
+            }
+        }
+
+        // Load chats for an app
+        async function loadChats(appId) {
+            currentAppId = appId;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/apps/${appId}/chats`);
+                const data = await response.json();
+
+                const section = document.getElementById('chatsSection');
+                const container = document.getElementById('chatsContainer');
+                section.style.display = 'block';
+                
+                if (data.success && data.data.chats.length > 0) {
+                    container.innerHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <button class="button" onclick="createChat(${appId})">New Chat</button>
+                        </div>
+                        <div class="chat-list">` +
+                        data.data.chats.map(chat => `
+                            <div class="chat-item">
+                                <div>
+                                    <strong>${chat.title || 'Untitled Chat'}</strong>
+                                    <div style="font-size: 0.9rem; color: #666;">
+                                        Chat #${chat.id}
+                                    </div>
+                                </div>
+                                <button class="button danger" onclick="deleteChat(${chat.id})">Delete</button>
+                            </div>
+                        `).join('') +
+                        '</div>';
+                } else {
+                    container.innerHTML = `
+                        <button class="button" onclick="createChat(${appId})">Create First Chat</button>
+                        <div class="empty-state">
+                            <p>No chats yet for this application</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading chats:', error);
+                showError('Failed to load chats');
+            }
+        }
+
+        // Create a new chat
+        async function createChat(appId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/apps/${appId}/chats`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    loadChats(appId);
+                } else {
+                    showError('Failed to create chat');
+                }
+            } catch (error) {
+                console.error('Error creating chat:', error);
+                showError('Failed to create chat');
+            }
+        }
+
+        // Delete a chat
+        async function deleteChat(chatId) {
+            if (!confirm('Are you sure you want to delete this chat?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success && currentAppId) {
+                    loadChats(currentAppId);
+                } else {
+                    showError('Failed to delete chat');
+                }
+            } catch (error) {
+                console.error('Error deleting chat:', error);
+                showError('Failed to delete chat');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize
+        async function init() {
+            const connected = await checkHealth();
+            if (connected) {
+                await loadApps();
+            }
+        }
+
+        // Start the app
+        init();
+
+        // Refresh apps every 10 seconds
+        setInterval(() => {
+            if (currentAppId) {
+                loadChats(currentAppId);
+            } else {
+                loadApps();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
