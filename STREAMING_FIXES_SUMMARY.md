@@ -11,12 +11,14 @@ This implementation addresses severe freezing and memory leak issues caused by t
 **Location**: `src/ipc/handlers/chat_stream_handlers.ts`
 
 **Problem**: The chunking system was causing:
+
 - Severe memory leaks from accumulated chunk state
 - Application freezing due to complex chunk splitting logic
 - High CPU overhead from retry mechanisms and performance tracking
 - Excessive memory usage from buffering large responses in chunks
 
 **Solution**: Completely disabled chunking by:
+
 1. Simplified `handleChunkedDelivery()` to pass through responses without splitting
 2. Removed `chunkingState` Map that held references to large buffers
 3. Eliminated chunk check intervals and periodic chunking logic
@@ -42,12 +44,14 @@ async function handleChunkedDelivery(...) {
 ```
 
 **Memory Leak Fixes**:
+
 - Removed `chunkingState` Map (was never cleaned up properly)
 - Eliminated intermediate chunk objects that accumulated in memory
 - Removed performance tracking sessions that leaked references
 - Simplified stream processing to avoid temporary buffers
 
 **Impact**:
+
 - **Memory**: Eliminates memory leaks from chunk state accumulation
 - **Performance**: Prevents freezing from complex chunk splitting algorithms
 - **CPU**: Reduces overhead from retry logic and performance tracking
@@ -58,12 +62,14 @@ async function handleChunkedDelivery(...) {
 **Location**: `src/ipc/handlers/chat_stream_handlers.ts:processStreamChunks()`
 
 **Changes**:
+
 - Removed chunking state initialization
 - Removed periodic chunk check intervals
 - Removed chunking state cleanup in finally block
 - Direct response delivery without buffering
 
 **Benefits**:
+
 - Cleaner code with fewer moving parts
 - No state accumulation during streaming
 - Immediate response updates without buffering overhead
@@ -118,6 +124,7 @@ safeSend(
 ```
 
 **Impact**:
+
 - N/A - Chunking system has been disabled
 
 ### 3. **Performance: Skip Unnecessary Processing on Aborted Streams**
@@ -140,16 +147,18 @@ if (!abortController.signal.aborted) {
 ```
 
 **Impact**:
+
 - Reduced CPU usage when users cancel streams
 - Prevents errors from attempting to process aborted streams
 - Cleaner shutdown of cancelled operations
-    fullResponse,
-    chatId,
-    processResponseChunkUpdate,
-    true,
+  fullResponse,
+  chatId,
+  processResponseChunkUpdate,
+  true,
   );
-}
-```
+  }
+
+````
 
 **Impact**:
 
@@ -224,7 +233,7 @@ export function safeSend(
     log.debug(`safeSend: failed to send on channel "${channel}"...`);
   }
 }
-```
+````
 
 ## Testing Recommendations
 
@@ -359,6 +368,7 @@ Potential improvements identified but not implemented (out of scope):
 This PR addresses critical stability issues by **completely disabling the chunking system** that was causing severe memory leaks and application freezing. The changes are surgical and maintain full backwards compatibility while dramatically improving performance and stability.
 
 Key improvements:
+
 - **236 lines removed** from complex chunking logic
 - **Memory leaks eliminated** by removing chunk state tracking
 - **Freezing prevented** by removing complex splitting algorithms

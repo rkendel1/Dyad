@@ -41,7 +41,7 @@ this.recognition.continuous = options.continuous ?? true;
 **Change**: Enhanced the error message to be more helpful.
 
 ```typescript
-"Please select or create an app first before adding a GitHub repository."
+"Please select or create an app first before adding a GitHub repository.";
 ```
 
 **Explanation**: The original message only mentioned "select an app," but new users might not have any apps yet. The updated message guides them to either select an existing app OR create a new one first, making the required action clearer.
@@ -49,16 +49,19 @@ this.recognition.continuous = options.continuous ?? true;
 ## Testing
 
 ### CORS Fix
+
 - Tested HTTP API health endpoints - all pass successfully
 - Requests with no origin header are properly accepted
 - Web app can be opened directly from file system and will successfully connect to the API
 
 ### Voice Input Fix
+
 - The `continuous` property now defaults to `true`, allowing persistent voice input sessions
 - Users can override this by explicitly passing `continuous: false` in the options if needed
 - The change maintains backward compatibility while fixing the default behavior
 
 ### GitHub Repo Feature
+
 - The feature is fully implemented with proper IPC handlers
 - Error message is now more descriptive and helpful
 - The validation logic remains unchanged and correct
@@ -66,18 +69,21 @@ this.recognition.continuous = options.continuous ?? true;
 ## How to Verify
 
 ### Web App Connection
+
 1. Start Dyad Desktop
 2. Open `examples/web-app/index.html` directly in a browser (file:// protocol)
 3. Verify that the status shows "Connected to Dyad Desktop"
 4. Applications should load successfully
 
 ### Voice Input
+
 1. Start Dyad Desktop
 2. Use the "Speak to Code" feature
 3. Verify that the microphone stays active during speech
 4. Confirm that multiple sentences can be spoken without the mic shutting off
 
 ### GitHub Repo Feature
+
 1. Start Dyad Desktop
 2. Click "Add GitHub Repo" button
 3. If no app is selected, verify the error message is clear and helpful

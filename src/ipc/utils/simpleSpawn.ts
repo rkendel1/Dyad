@@ -45,7 +45,7 @@ export async function simpleSpawn({
       process.stderr?.removeListener("data", stderrHandler);
       process.removeAllListeners("close");
       process.removeAllListeners("error");
-      
+
       // Close stdio streams to release resources
       try {
         process.stdout?.destroy();

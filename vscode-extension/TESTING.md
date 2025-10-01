@@ -246,12 +246,12 @@ Test various inputs for commands:
 
 ---
 
-**Test Date**: ********\_********
+**Test Date**: **\*\*\*\***\_**\*\*\*\***
 
-**Tested By**: ********\_********
+**Tested By**: **\*\*\*\***\_**\*\*\*\***
 
-**VS Code Version**: ********\_********
+**VS Code Version**: **\*\*\*\***\_**\*\*\*\***
 
-**Dyad Desktop Version**: ********\_********
+**Dyad Desktop Version**: **\*\*\*\***\_**\*\*\*\***
 
 **Notes**:

@@ -65,7 +65,9 @@ function startSupabase() {
       console.error("❌ docker-compose.supabase.yml not found");
       console.error("═══════════════════════════════════════════════════════");
       console.error(`Expected location: ${composeFile}`);
-      console.error("Please ensure you are running this from the project root.");
+      console.error(
+        "Please ensure you are running this from the project root.",
+      );
       console.error("═══════════════════════════════════════════════════════");
       return false;
     }
@@ -109,7 +111,9 @@ function startSupabase() {
     console.error("   1. Make sure Docker Desktop is running");
     console.error("   2. Check if ports 5432, 8000, 3001 are available");
     console.error("   3. Try 'npm run supabase:stop' first, then start again");
-    console.error("   4. Check Docker logs: docker-compose -f docker-compose.supabase.yml logs");
+    console.error(
+      "   4. Check Docker logs: docker-compose -f docker-compose.supabase.yml logs",
+    );
     console.error("═══════════════════════════════════════════════════════");
     return false;
   }
