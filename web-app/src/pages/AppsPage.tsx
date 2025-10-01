@@ -2,6 +2,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dyadApiClient, DyadApp } from '../api/api-client';
 import { formatDistanceToNow } from 'date-fns';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 function AppsPage() {
   const { data: apps, isLoading, error } = useQuery<DyadApp[], Error>({
@@ -23,11 +26,20 @@ function AppsPage() {
       {apps && apps.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {apps.map((app) => (
-            <div key={app.id} className="bg-card text-card-foreground p-4 rounded-lg shadow-sm border border-border">
-              <h3 className="text-lg font-medium mb-2">{app.name}</h3>
-              <p className="text-sm text-muted-foreground mb-1">Path: {app.path}</p>
-              <p className="text-xs text-muted-foreground">Created: {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}</p>
-            </div>
+            <Card key={app.id}>
+              <CardHeader>
+                <CardTitle>{app.name}</CardTitle>
+                <CardDescription>Path: {app.path}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Created: {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}</p>
+              </CardContent>
+              <CardFooter>
+                <Link to={`/app/${app.id}`}> {/* Example link to an app detail page */}
+                  <Button variant="outline">View App</Button>
+                </Link>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       ) : (
