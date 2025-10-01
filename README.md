@@ -12,6 +12,32 @@ More info at: [http://dyad.sh/](http://dyad.sh/)
 - 🛠 **Bring your own keys**: Use your own AI API keys — no vendor lock-in.
 - 🖥️ **Cross-platform**: Easy to run on Mac or Windows.
 - 💻 **Built-in CLI**: Interactive command-line interface within the console for direct app interaction.
+- 🌐 **HTTP REST API**: Programmatic access via HTTP endpoints for integrations and automation.
+
+## 🌐 HTTP REST API
+
+Dyad includes a built-in HTTP REST API that provides programmatic access to all core functionality. The API enables:
+
+- **External Integrations**: Connect Dyad to other tools and workflows
+- **CLI Tools**: Build command-line interfaces for Dyad
+- **Automation**: Script complex operations using HTTP endpoints
+- **Web Applications**: Access Dyad from web browsers
+
+The API server starts automatically when Dyad launches and listens on `http://localhost:3000` by default.
+
+### Quick Start
+
+Check if the API is running:
+```bash
+curl http://localhost:3000/api/health
+```
+
+List all applications:
+```bash
+curl http://localhost:3000/api/apps
+```
+
+For complete API documentation, see [docs/HTTP_API.md](./docs/HTTP_API.md).
 
 ## 📦 Download
 

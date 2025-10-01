@@ -18,6 +18,7 @@ import { BackupManager } from "./backup_manager";
 import { getDatabasePath, initializeDatabase } from "./db";
 import { UserSettings } from "./lib/schemas";
 import { handleNeonOAuthReturn } from "./neon_admin/neon_return_handler";
+import { startHttpApiServer, stopHttpApiServer } from "./api/http/server";
 
 log.errorHandler.startCatching();
 log.eventLogger.startLogging();
@@ -78,6 +79,19 @@ export async function onReady() {
         host,
       },
     }); // additional configuration options available
+  }
+
+  // Start HTTP API server
+  try {
+    await startHttpApiServer({
+      enabled: true,
+      port: 3000,
+      host: 'localhost',
+    });
+    logger.info("HTTP API server started successfully");
+  } catch (error) {
+    logger.error("Failed to start HTTP API server:", error);
+    // Continue even if HTTP server fails to start
   }
 }
 
@@ -272,6 +286,16 @@ function handleDeepLinkReturn(url: string) {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
+  }
+});
+
+app.on("before-quit", async () => {
+  // Stop HTTP API server on quit
+  try {
+    await stopHttpApiServer();
+    logger.info("HTTP API server stopped");
+  } catch (error) {
+    logger.error("Error stopping HTTP API server:", error);
   }
 });
 
