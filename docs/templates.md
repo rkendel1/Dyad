@@ -43,18 +43,11 @@ Dyad provides a wide variety of starter templates to help you quickly build diff
 
 ### SaaS & Authentication Templates
 
-#### SaaS Starter Template
-
-- **ID**: `saas-starter`
-- **Description**: Full-stack SaaS boilerplate with authentication, subscription billing, multi-tenancy, and admin dashboard.
-- **Best for**: Software-as-a-Service applications, B2B platforms.
-- **Integrations**: Authentication, billing, multi-tenant architecture
-
 #### Authentication Template
 
 - **ID**: `auth-clerk`
 - **Description**: Complete authentication solution with Clerk, user profiles, role-based access, and protected routes.
-- **Best for**: Applications requiring robust user management.
+- **Best for**: Applications requiring robust user management, SaaS applications.
 - **Integrations**: Clerk, user management, role-based access control
 
 ### Content & Blog Templates

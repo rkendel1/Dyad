@@ -48,6 +48,8 @@ interface CodebaseTokenCache {
 
 // Cache expiration time (5 minutes)
 const CACHE_EXPIRATION_MS = 5 * 60 * 1000;
+// Maximum cache size to prevent unbounded growth
+const MAX_CACHE_SIZE = 50;
 
 // In-memory cache for codebase token counts
 const codebaseTokenCache = new Map<number, CodebaseTokenCache>();
@@ -67,6 +69,17 @@ function cleanupExpiredCacheEntries() {
   if (expiredCount > 0) {
     logger.log(
       `Cleaned up ${expiredCount} expired codebase token cache entries`,
+    );
+  }
+
+  // If cache is still too large, remove oldest entries
+  if (codebaseTokenCache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(codebaseTokenCache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const toRemove = entries.slice(0, codebaseTokenCache.size - MAX_CACHE_SIZE);
+    toRemove.forEach(([key]) => codebaseTokenCache.delete(key));
+    logger.log(
+      `Removed ${toRemove.length} oldest cache entries to enforce size limit`,
     );
   }
 }

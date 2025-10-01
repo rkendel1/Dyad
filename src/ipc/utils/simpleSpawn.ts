@@ -28,19 +28,39 @@ export async function simpleSpawn({
     let stdout = "";
     let stderr = "";
 
-    process.stdout?.on("data", (data) => {
+    const stdoutHandler = (data: Buffer) => {
       const output = data.toString();
       stdout += output;
       logger.info(output);
-    });
+    };
 
-    process.stderr?.on("data", (data) => {
+    const stderrHandler = (data: Buffer) => {
       const output = data.toString();
       stderr += output;
       logger.error(output);
-    });
+    };
+
+    const cleanupListeners = () => {
+      process.stdout?.removeListener("data", stdoutHandler);
+      process.stderr?.removeListener("data", stderrHandler);
+      process.removeAllListeners("close");
+      process.removeAllListeners("error");
+      
+      // Close stdio streams to release resources
+      try {
+        process.stdout?.destroy();
+        process.stderr?.destroy();
+        process.stdin?.destroy();
+      } catch (err) {
+        logger.warn(`Error destroying stdio streams: ${err}`);
+      }
+    };
+
+    process.stdout?.on("data", stdoutHandler);
+    process.stderr?.on("data", stderrHandler);
 
     process.on("close", (code) => {
+      cleanupListeners();
       if (code === 0) {
         logger.info(successMessage);
         resolve();
@@ -52,6 +72,7 @@ export async function simpleSpawn({
     });
 
     process.on("error", (err) => {
+      cleanupListeners();
       logger.error(`Failed to spawn command: ${command}`, err);
       const errorMessage = `Failed to spawn command: ${err.message}\n\nSTDOUT:\n${stdout}\n\nSTDERR:\n${stderr}`;
       reject(new Error(errorMessage));

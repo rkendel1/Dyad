@@ -25,10 +25,6 @@ describe("Template Integration", () => {
     expect(stripeTemplate.id).toBe("stripe-ecommerce");
     expect(stripeTemplate.title).toBe("Stripe E-commerce Template");
 
-    const saasTemplate = await getTemplateOrThrow("saas-starter");
-    expect(saasTemplate.id).toBe("saas-starter");
-    expect(saasTemplate.title).toBe("SaaS Starter Template");
-
     const blogTemplate = await getTemplateOrThrow("blog-mdx");
     expect(blogTemplate.id).toBe("blog-mdx");
     expect(blogTemplate.title).toBe("MDX Blog Template");
@@ -43,7 +39,6 @@ describe("Template Integration", () => {
   it("should have valid template structure for all new templates", async () => {
     const newTemplateIds = [
       "stripe-ecommerce",
-      "saas-starter",
       "blog-mdx",
       "auth-clerk",
       "dashboard-admin",
@@ -87,7 +82,6 @@ describe("Template Integration", () => {
 
     const hasSaas = templates.some(
       (t) =>
-        t.description.toLowerCase().includes("saas") ||
         t.description.toLowerCase().includes("subscription") ||
         t.description.toLowerCase().includes("auth"),
     );
