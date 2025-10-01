@@ -2,11 +2,18 @@ import * as vscode from 'vscode';
 import { DyadCli } from './dyadCli';
 import { DyadApi } from './dyadApi';
 import { DyadSidebarProvider } from './views/sidebar';
+import { CollaborationSidebarProvider } from './views/collaborationSidebar';
 import { matchTemplates, formatTemplateChoices, getBestTemplate } from './templateMatcher';
+import { CollaborationService } from './collaboration/collaborationService';
+import { CollaborationPanel } from './collaboration/collaborationPanel';
+import { DecoratorManager } from './collaboration/decoratorManager';
 
 let dyadCli: DyadCli;
 let dyadApi: DyadApi;
 let outputChannel: vscode.OutputChannel;
+let collaborationService: CollaborationService;
+let collaborationPanel: CollaborationPanel;
+let decoratorManager: DecoratorManager;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Dyad extension is now active');
@@ -19,6 +26,16 @@ export function activate(context: vscode.ExtensionContext) {
     dyadCli = new DyadCli();
     dyadApi = new DyadApi();
 
+    // Initialize collaboration services
+    collaborationService = new CollaborationService(outputChannel);
+    context.subscriptions.push(collaborationService);
+
+    collaborationPanel = new CollaborationPanel(context, collaborationService);
+    context.subscriptions.push(collaborationPanel);
+
+    decoratorManager = new DecoratorManager(collaborationService);
+    context.subscriptions.push(decoratorManager);
+
     // Check API health on activation
     checkDyadConnection();
 
@@ -27,6 +44,12 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerTreeDataProvider('dyadApps', sidebarProvider),
         vscode.window.registerTreeDataProvider('dyadActions', sidebarProvider)
+    );
+
+    // Register collaboration sidebar
+    const collaborationSidebarProvider = new CollaborationSidebarProvider(collaborationService);
+    context.subscriptions.push(
+        vscode.window.registerTreeDataProvider('dyadCollaboration', collaborationSidebarProvider)
     );
 
     // Register commands
@@ -481,6 +504,198 @@ export function activate(context: vscode.ExtensionContext) {
                 if (message.includes('not available') || message.includes('Cannot connect')) {
                     showDyadDesktopRequiredMessage();
                 }
+            }
+        })
+    );
+
+    // Register collaboration commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.startCollaboration', async () => {
+            try {
+                // Get apps
+                const apps = await dyadApi.getApps();
+                if (apps.length === 0) {
+                    vscode.window.showInformationMessage('No apps available. Create an app first.');
+                    return;
+                }
+
+                // Select app
+                const selectedApp = await vscode.window.showQuickPick(
+                    apps.map(app => ({ label: app.name, id: app.id })),
+                    { placeHolder: 'Select an app to collaborate on' }
+                );
+
+                if (!selectedApp) {
+                    return;
+                }
+
+                // Get user name
+                const userName = await vscode.window.showInputBox({
+                    prompt: 'Enter your name for this collaboration session',
+                    placeHolder: 'Your Name',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Name cannot be empty';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!userName) {
+                    return;
+                }
+
+                // Start collaboration session
+                outputChannel.appendLine(`Starting collaboration session for app: ${selectedApp.label}`);
+                const session = await collaborationService.startSession(
+                    selectedApp.id,
+                    selectedApp.label,
+                    userName
+                );
+
+                // Show collaboration panel
+                collaborationPanel.show();
+
+                // Show session info
+                vscode.window.showInformationMessage(
+                    `Collaboration session started! Session ID: ${session.id}`,
+                    'Copy Session ID',
+                    'Share Link'
+                ).then(action => {
+                    if (action === 'Copy Session ID') {
+                        vscode.env.clipboard.writeText(session.id);
+                        vscode.window.showInformationMessage('Session ID copied to clipboard');
+                    } else if (action === 'Share Link') {
+                        const link = `dyad://collaborate/${session.id}`;
+                        vscode.env.clipboard.writeText(link);
+                        vscode.window.showInformationMessage('Collaboration link copied to clipboard');
+                    }
+                });
+
+                outputChannel.appendLine(`Collaboration session created: ${session.id}`);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error starting collaboration: ${message}`);
+                vscode.window.showErrorMessage(`Failed to start collaboration: ${message}`);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.joinCollaboration', async () => {
+            try {
+                // Get session ID
+                const sessionId = await vscode.window.showInputBox({
+                    prompt: 'Enter the collaboration session ID',
+                    placeHolder: 'session-xxxxx-xxxxx',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Session ID cannot be empty';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!sessionId) {
+                    return;
+                }
+
+                // Get user name
+                const userName = await vscode.window.showInputBox({
+                    prompt: 'Enter your name for this collaboration session',
+                    placeHolder: 'Your Name',
+                    validateInput: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return 'Name cannot be empty';
+                        }
+                        return null;
+                    }
+                });
+
+                if (!userName) {
+                    return;
+                }
+
+                // Join collaboration session
+                outputChannel.appendLine(`Joining collaboration session: ${sessionId}`);
+                const session = await collaborationService.joinSession(sessionId, userName);
+
+                // Show collaboration panel
+                collaborationPanel.show();
+
+                vscode.window.showInformationMessage(
+                    `Joined collaboration session for app: ${session.appName}`
+                );
+
+                outputChannel.appendLine(`Joined collaboration session: ${sessionId}`);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error joining collaboration: ${message}`);
+                vscode.window.showErrorMessage(`Failed to join collaboration: ${message}`);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.leaveCollaboration', async () => {
+            try {
+                const session = collaborationService.getCurrentSession();
+                if (!session) {
+                    vscode.window.showInformationMessage('Not in an active collaboration session');
+                    return;
+                }
+
+                const confirm = await vscode.window.showWarningMessage(
+                    `Leave collaboration session for "${session.appName}"?`,
+                    'Leave',
+                    'Cancel'
+                );
+
+                if (confirm === 'Leave') {
+                    await collaborationService.leaveSession();
+                    vscode.window.showInformationMessage('Left collaboration session');
+                    outputChannel.appendLine('Left collaboration session');
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                outputChannel.appendLine(`Error leaving collaboration: ${message}`);
+                vscode.window.showErrorMessage(`Failed to leave collaboration: ${message}`);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.showCollaborationPanel', () => {
+            if (!collaborationService.isSessionActive()) {
+                vscode.window.showInformationMessage('No active collaboration session');
+                return;
+            }
+            collaborationPanel.show();
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('dyad.addInlineComment', async () => {
+            if (!collaborationService.isSessionActive()) {
+                vscode.window.showInformationMessage('Not in an active collaboration session');
+                return;
+            }
+
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showInformationMessage('No active editor');
+                return;
+            }
+
+            const line = editor.selection.active.line;
+            const comment = await vscode.window.showInputBox({
+                prompt: `Add comment for line ${line + 1}`,
+                placeHolder: 'Enter your comment...'
+            });
+
+            if (comment) {
+                collaborationService.addInlineComment(line, comment);
+                vscode.window.showInformationMessage(`Comment added to line ${line + 1}`);
             }
         })
     );

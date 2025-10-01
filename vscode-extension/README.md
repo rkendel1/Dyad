@@ -9,6 +9,11 @@ VS Code extension for running Dyad CLI commands and API calls with a sidebar for
 - **AI-Powered Template Selection**: Describe your app in natural language and get intelligent template suggestions
 - **One-Click Supabase Setup**: Quickly set up local Supabase integration for your apps
 - **Production Promotion**: Seamlessly promote your app from local to production Supabase
+- **Real-Time Collaboration**: Work with multiple developers on the same app simultaneously
+  - Live cursor tracking and selection highlights
+  - Integrated chat and inline comments
+  - Role-based access control (Editor, Reviewer, Viewer)
+  - Version history and change tracking
 - **Quick Actions Sidebar**: Access common Dyad actions from a dedicated sidebar
 - **Console Integration**: Open and interact with the Dyad console
 - **API Integration**: Make API calls to Dyad Desktop services
@@ -37,6 +42,13 @@ This extension contributes the following commands:
 ### Supabase Integration
 - `Dyad: Setup Local Supabase` - One-click setup for local Supabase integration
 - `Dyad: Promote to Production Supabase` - Promote your app to production Supabase environment
+
+### Collaboration
+- `Dyad: Start Collaboration Session` - Create a new collaboration session
+- `Dyad: Join Collaboration Session` - Join an existing collaboration session
+- `Dyad: Leave Collaboration Session` - Leave the current session
+- `Dyad: Show Collaboration Panel` - Display the collaboration chat and user panel
+- `Dyad: Add Inline Comment` - Add a comment to the current line
 
 ### Utilities
 - `Dyad: Open Console` - Open the Dyad console
@@ -98,6 +110,28 @@ This extension contributes the following commands:
 1. Use the `Dyad: Send CLI Command` command
 2. Enter your command in the input box
 3. The command will be sent to the Dyad CLI and results will appear in the Output panel
+
+### Using Real-Time Collaboration
+
+1. **Starting a Collaboration Session**:
+   - Run `Dyad: Start Collaboration Session`
+   - Select the app to collaborate on
+   - Enter your name
+   - Copy the Session ID or collaboration link to share with team members
+
+2. **Joining a Collaboration Session**:
+   - Get the Session ID from the session owner
+   - Run `Dyad: Join Collaboration Session`
+   - Enter the Session ID and your name
+   - Start collaborating!
+
+3. **Collaboration Features**:
+   - See live cursors and selections from all collaborators
+   - Chat in real-time using the Collaboration Panel
+   - Add inline comments to discuss code changes
+   - Track changes with automatic version history
+
+For detailed collaboration documentation, see [COLLABORATION.md](COLLABORATION.md)
 
 ## Troubleshooting
 
@@ -166,6 +200,7 @@ This extension contributes the following commands:
 ### Getting More Help
 
 - **View Logs**: Check the "Dyad" output channel for detailed logs
+- **Collaboration Guide**: See [COLLABORATION.md](COLLABORATION.md) for detailed collaboration documentation
 - **Report Issues**: [https://github.com/rkendel1/Dyad/issues](https://github.com/rkendel1/Dyad/issues)
 - **Community**: Join the discussion at [r/dyadbuilders](https://www.reddit.com/r/dyadbuilders/)
 
@@ -174,6 +209,7 @@ This extension contributes the following commands:
 The extension currently uses default values:
 - Dyad CLI path: `dyad` (assumed to be in PATH)
 - API base URL: `http://localhost:3000`
+- WebSocket server: `ws://localhost:3000` (for collaboration)
 
 These can be made configurable in future versions through VS Code settings.
 
@@ -182,10 +218,23 @@ These can be made configurable in future versions through VS Code settings.
 - The extension requires Dyad Desktop to be running for most features to work
 - Some CLI commands may not be available as Dyad is primarily a desktop application
 - Real-time status updates require manual refresh (automatic updates coming in future versions)
+- **Collaboration features require WebSocket server support in Dyad Desktop** (backend implementation needed)
 
 Please report issues at: [https://github.com/rkendel1/Dyad/issues](https://github.com/rkendel1/Dyad/issues)
 
 ## Release Notes
+
+### 0.2.0 (In Development)
+
+Added real-time collaboration features:
+- **Multi-user collaboration**: Work with team members on the same app simultaneously
+- **Live cursors and selections**: See where collaborators are editing in real-time
+- **Integrated chat**: Communicate with team members without leaving VS Code
+- **Inline comments**: Add and discuss comments directly on code
+- **Role-based access control**: Manage permissions with Editor, Reviewer, and Viewer roles
+- **Version history**: Track changes and revert to previous states
+- **Collaboration panel**: Dedicated UI for managing collaboration sessions
+- **Session management**: Start, join, and leave collaboration sessions easily
 
 ### 0.1.0
 

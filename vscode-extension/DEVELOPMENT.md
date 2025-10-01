@@ -239,19 +239,95 @@ The extension communicates with Dyad Desktop through:
 
 - **vscode**: VS Code extension API
 - **axios**: HTTP client for API calls
+- **socket.io-client**: WebSocket client for real-time collaboration
 - **TypeScript**: Language and compiler
+
+## Testing Collaboration Features
+
+### Using the Mock Server
+
+For testing collaboration without Dyad Desktop:
+
+1. **Install socket.io** (if not already installed):
+   ```bash
+   npm install socket.io
+   ```
+
+2. **Start the mock server**:
+   ```bash
+   npm run mock-server
+   ```
+
+3. **Open VS Code Extension Development Host** (F5)
+
+4. **Test collaboration**:
+   - Start a collaboration session
+   - Open another VS Code window and join the session
+   - Test cursor tracking, chat, and comments
+
+The mock server runs on `ws://localhost:3000` and simulates all collaboration features.
+
+### Testing with Dyad Desktop
+
+When Dyad Desktop has WebSocket support:
+
+1. Start Dyad Desktop
+2. Verify WebSocket server is running on port 3000
+3. Open VS Code with the extension
+4. Start/join collaboration sessions
+
+See [BACKEND_INTEGRATION.md](BACKEND_INTEGRATION.md) for backend implementation details.
+
+## Collaboration Architecture
+
+### Client-Side Components
+
+1. **CollaborationService**: Manages WebSocket connections and events
+2. **CollaborationPanel**: WebView UI for chat and user management
+3. **DecoratorManager**: Visual decorations for cursors and selections
+4. **CollaborationSidebarProvider**: Tree view for quick actions
+
+### Event Flow
+
+```
+User Action → CollaborationService → WebSocket → Server
+                                                     ↓
+Other Users ← EventEmitter ← WebSocket ← Broadcast
+```
+
+### File Structure
+
+```
+src/
+├── collaboration/
+│   ├── types.ts                  # Type definitions
+│   ├── collaborationService.ts   # Core service
+│   ├── collaborationPanel.ts     # UI panel
+│   └── decoratorManager.ts       # Visual decorations
+├── views/
+│   └── collaborationSidebar.ts   # Sidebar provider
+└── extension.ts                  # Main integration
+```
 
 ## Future Enhancements
 
 Potential improvements:
 - Configuration settings for Dyad path and API URL
-- Real-time status updates via WebSocket
+- ✅ Real-time status updates via WebSocket (Implemented)
 - Integrated terminal for CLI output
-- Chat interface within VS Code
+- ✅ Chat interface within VS Code (Implemented)
 - Code snippets for Dyad development
 - Debugging integration
 - Auto-refresh sidebar on app changes
 - Support for multiple Dyad instances
+- **Advanced Collaboration Features**:
+  - Operational Transformation for conflict-free editing
+  - GitHub OAuth integration
+  - Persistent sessions across restarts
+  - Audio/video calling
+  - Screen sharing
+  - Code review tools
+  - Analytics and metrics
 
 ## Troubleshooting
 

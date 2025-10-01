@@ -1,8 +1,8 @@
 {
   "name": "dyad-vscode",
   "displayName": "Dyad",
-  "description": "VS Code extension for running Dyad CLI commands and API calls with a sidebar for quick actions",
-  "version": "0.1.0",
+  "description": "VS Code extension for running Dyad CLI commands and API calls with real-time collaboration support",
+  "version": "0.2.0",
   "publisher": "dyad",
   "repository": {
     "type": "git",
@@ -61,6 +61,31 @@
       {
         "command": "dyad.promoteToProduction",
         "title": "Dyad: Promote to Production Supabase"
+      },
+      {
+        "command": "dyad.startCollaboration",
+        "title": "Dyad: Start Collaboration Session",
+        "icon": "$(live-share)"
+      },
+      {
+        "command": "dyad.joinCollaboration",
+        "title": "Dyad: Join Collaboration Session",
+        "icon": "$(sign-in)"
+      },
+      {
+        "command": "dyad.leaveCollaboration",
+        "title": "Dyad: Leave Collaboration Session",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "dyad.showCollaborationPanel",
+        "title": "Dyad: Show Collaboration Panel",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "dyad.addInlineComment",
+        "title": "Dyad: Add Inline Comment",
+        "icon": "$(comment)"
       }
     ],
     "viewsContainers": {
@@ -81,6 +106,10 @@
         {
           "id": "dyadActions",
           "name": "Quick Actions"
+        },
+        {
+          "id": "dyadCollaboration",
+          "name": "Collaboration"
         }
       ]
     }
@@ -93,7 +122,8 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
     "test-sanity": "node ./scripts/sanity-check.js",
-    "package": "vsce package"
+    "package": "vsce package",
+    "mock-server": "node mock-collaboration-server.js"
   },
   "devDependencies": {
     "@types/node": "^20.x",
@@ -101,11 +131,12 @@
     "@typescript-eslint/eslint-plugin": "^6.x",
     "@typescript-eslint/parser": "^6.x",
     "@vscode/test-electron": "^2.3.x",
+    "@vscode/vsce": "^2.x",
     "eslint": "^8.x",
-    "typescript": "^5.x",
-    "@vscode/vsce": "^2.x"
+    "typescript": "^5.x"
   },
   "dependencies": {
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "socket.io-client": "^4.8.1"
   }
 }
