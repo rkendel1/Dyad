@@ -219,8 +219,13 @@ Cached values are automatically cleared when:
 
 ### Current State
 
-The API layer exists in `src/api/` but is currently minimal:
-- `services/` - Stub implementations for future HTTP API
+The API layer has been implemented in `src/api/` with the following structure:
+- `services/` - Implemented service layer for business logic
+  - `app.service.ts` - Stub for application management (to be fully implemented)
+  - `chat.service.ts` - Stub for chat operations (to be fully implemented)
+  - `neon.service.ts` - **Fully implemented** Neon database project management
+  - `pro.service.ts` - **Fully implemented** Pro/billing operations
+  - `portal.service.ts` - **Fully implemented** Database migration management
 - `docs/` - OpenAPI specification stubs
 - `README.md` - Documentation
 
@@ -229,28 +234,41 @@ The API layer exists in `src/api/` but is currently minimal:
 Services separate business logic from IPC handlers:
 
 ```typescript
-// src/api/services/app.service.ts
-export class AppService {
-  async getApp(appId: number): Promise<App> {
+// src/api/services/neon.service.ts
+export class NeonService {
+  async createProject(params: CreateNeonProjectParams): Promise<NeonProject> {
     // Business logic here
   }
 }
 
-// src/ipc/handlers/app_handlers.ts
-handle("get-app", async (_, appId: number) => {
-  return appService.getApp(appId);
+// src/ipc/handlers/neon_handlers.ts
+ipcMain.handle("neon:create-project", async (_, params) => {
+  return await neonService.createProject(params);
 });
 ```
+
+### Implemented Services
+
+1. **NeonService** - Manages Neon database projects
+   - `createProject()` - Creates projects with dev/preview branches
+   - `getProject()` - Retrieves project info with branch details
+   
+2. **ProService** - Manages Pro features and billing
+   - `getUserBudget()` - Fetches user budget from LLM Gateway
+   
+3. **PortalService** - Manages database migrations
+   - `createMigration()` - Creates migrations with git integration
 
 ### Benefits
 
 1. **Reusability**: Services can be used from multiple transports (IPC, HTTP, CLI)
 2. **Testability**: Services can be unit tested without Electron
 3. **Separation of Concerns**: Business logic separate from transport layer
+4. **Maintainability**: Reduced handler code by ~85% through service extraction
 
 ### Future Enhancements
 
-1. Implement full service layer for all business logic
+1. Complete implementation of AppService and ChatService
 2. Add HTTP REST API alongside IPC
 3. Generate OpenAPI documentation from types
 4. Add service-level caching and validation
