@@ -19,7 +19,7 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
-  "icon": "media/icon.svg",
+  "icon": "",
   "contributes": {
     "commands": [
       {
