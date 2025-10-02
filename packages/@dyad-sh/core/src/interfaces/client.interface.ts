@@ -55,6 +55,16 @@ export interface AppApi {
    * Update application settings
    */
   updateAppSettings(appId: number, settings: AppSettings): Promise<AppSettings>;
+
+  /**
+   * Get file content from an application
+   */
+  getFileContent(appId: number, filePath: string): Promise<string>;
+
+  /**
+   * Update file content in an application
+   */
+  updateFileContent(appId: number, filePath: string, content: string): Promise<void>;
 }
 
 /**

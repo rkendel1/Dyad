@@ -105,6 +105,39 @@ class HttpAppApi implements AppApi {
     return data.data;
   }
 
+  async getFileContent(appId: number, filePath: string): Promise<string> {
+    const response = await fetch(
+      `${this.baseUrl}/api/apps/${appId}/files/${filePath}`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    const data: ApiResponse<{ path: string; content: string }> = await response.json();
+    if (!data.success || !data.data) {
+      throw new Error(data.error?.message || "Failed to read file");
+    }
+    return data.data.content;
+  }
+
+  async updateFileContent(
+    appId: number,
+    filePath: string,
+    content: string
+  ): Promise<void> {
+    const response = await fetch(
+      `${this.baseUrl}/api/apps/${appId}/files/${filePath}`,
+      {
+        method: "PUT",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ content }),
+      }
+    );
+    const data: ApiResponse<void> = await response.json();
+    if (!data.success) {
+      throw new Error(data.error?.message || "Failed to update file");
+    }
+  }
+
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
