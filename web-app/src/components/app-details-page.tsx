@@ -29,6 +29,7 @@ export function AppDetailsPage() {
   const appId = params?.id ? parseInt(params.id as string, 10) : null;
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const [messageInput, setMessageInput] = useState("");
+  const [isRetrying, setIsRetrying] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
 
@@ -213,6 +214,34 @@ export function AppDetailsPage() {
     }
   };
 
+  const handleRetry = async () => {
+    if (!selectedChatId || !messages || messages.length === 0) return;
+    
+    setIsRetrying(true);
+    try {
+      // Find the last user message
+      const lastUserMessage = [...messages].reverse().find(m => m.role === "user");
+      if (!lastUserMessage) {
+        console.error("No user message found to retry");
+        return;
+      }
+      
+      // Resend the message
+      await dyadClient.chats.sendMessage({
+        chatId: selectedChatId,
+        content: lastUserMessage.content,
+      });
+      
+      // Invalidate queries to refresh
+      queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
+      queryClient.invalidateQueries({ queryKey: ["proposal", selectedChatId] });
+    } catch (error) {
+      console.error("Failed to retry message:", error);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   // --- Streaming/Batching UI logic ---
   // If the last assistant message is empty or changing, show a typing indicator
   const isAssistantTyping = (() => {
@@ -358,6 +387,8 @@ export function AppDetailsPage() {
                 isAssistantTyping={isAssistantTyping}
                 chatContentRef={chatContentRef}
                 messagesEndRef={messagesEndRef}
+                onRetry={handleRetry}
+                isRetrying={isRetrying}
               />
               
               {selectedChatId && (

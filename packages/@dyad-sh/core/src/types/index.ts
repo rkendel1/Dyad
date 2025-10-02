@@ -36,6 +36,8 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   createdAt: string | Date;
+  approvalState?: "approved" | "rejected" | null;
+  commitHash?: string | null;
 }
 
 /**

@@ -138,16 +138,26 @@ DELETE /api/chats/:id                 - Delete chat
 ## Future Enhancements
 
 Potential features to add for complete parity:
-1. **File System Access**: View and edit app files
-2. **Settings Management**: Configure app settings
-3. **Template Library**: Browse and use templates
-4. **Real-time Collaboration**: Multiple users editing same app
-5. **Streaming Responses**: SSE or WebSockets for AI responses
-6. **Voice Input**: Browser-based speech recognition
-7. **GitHub Integration**: Connect and sync with repositories
-8. **Database Management**: Neon/Supabase integration UI
-9. **Deployment**: One-click deploy to Vercel/Netlify
-10. **Authentication**: User accounts and project sharing
+1. **File Diff Viewer**: Show actual code diffs for proposed changes *(in progress)*
+2. **File Browser**: View and navigate app files  
+3. **Settings Management**: Configure app settings
+4. **Template Library**: Browse and use templates
+5. **Real-time Collaboration**: Multiple users editing same app
+6. **Streaming Responses**: SSE or WebSockets for AI responses
+7. **Voice Input**: Browser-based speech recognition
+8. **GitHub Integration**: Connect and sync with repositories
+9. **Database Management**: Neon/Supabase integration UI
+10. **Deployment**: One-click deploy to Vercel/Netlify
+11. **Authentication**: User accounts and project sharing
+
+## Implemented File Management Features
+
+✅ **Accept/Reject Proposals** - View and approve/reject AI-proposed code changes  
+✅ **Retry Messages** - Resend last message to get alternative AI responses  
+✅ **Commit Information** - View approval status and git commit hashes  
+✅ **Enhanced Proposal Display** - Color-coded file changes with detailed summaries
+
+See [WEB_APP_FILE_MANAGEMENT.md](./WEB_APP_FILE_MANAGEMENT.md) for detailed documentation.
 
 ## Testing
 
@@ -166,6 +176,12 @@ Potential features to add for complete parity:
 - [ ] Loading states show during operations
 - [ ] Back navigation works
 - [ ] Responsive design on mobile
+- [ ] Proposals display with file changes
+- [ ] Accept proposal applies changes and shows commit hash
+- [ ] Reject proposal dismisses the proposal
+- [ ] Retry button resends last user message
+- [ ] Approval state shows on approved/rejected messages
+- [ ] Commit hash displays in abbreviated format
 
 ### Build Verification
 ```bash
@@ -210,5 +226,8 @@ The web app now provides essential parity with the desktop application for core 
 - ✅ Real-time updates
 - ✅ Responsive design
 - ✅ Error handling
+- ✅ Accept/Reject proposals
+- ✅ Retry messages
+- ✅ View commit information
 
 This creates a solid foundation for users to access Dyad from any device with a browser while the desktop app handles the backend operations.
