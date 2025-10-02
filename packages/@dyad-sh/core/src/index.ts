@@ -23,4 +23,4 @@ export {
 } from "./clients/factory";
 
 // Export cache
-export { MemoryCache, createCache } from "./cache";
+export { MemoryCache, LocalStorageCache, IndexedDBCache, createCache } from "./cache";
