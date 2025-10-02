@@ -18,7 +18,7 @@
   "author": "Will Chen",
   "license": "MIT",
   "dependencies": {
-    "@dyad-sh/core": "file:../core"
+    "dyad-sh-core": "0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

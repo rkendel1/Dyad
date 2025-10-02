@@ -1,10 +1,10 @@
 /**
  * Dyad Client for Web App
  * 
- * Uses @dyad-sh/core package for consistent API access
+ * Uses dyad-sh-core package for consistent API access
  */
 
-import { createHttpClient } from "@dyad-sh/core";
+import { createHttpClient } from "dyad-sh-core";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -20,10 +20,10 @@ export const dyadClient = createHttpClient({
 /**
  * Export the DyadClient type for convenience
  */
-export type { DyadClient } from "@dyad-sh/core";
+export type { DyadClient } from "dyad-sh-core";
 
 /**
- * Export commonly used types from @dyad-sh/core
+ * Export commonly used types from dyad-sh-core
  */
 export type {
   App,
@@ -32,4 +32,4 @@ export type {
   CreateAppParams,
   CreateAppResult,
   AppSettings,
-} from "@dyad-sh/core";
+} from "dyad-sh-core";

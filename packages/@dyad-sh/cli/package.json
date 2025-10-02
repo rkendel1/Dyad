@@ -1,8 +1,9 @@
 {
-  "name": "@dyad-sh/cli",
+  "name": "dyad-sh-cli",
   "version": "0.1.0",
   "description": "Command-line interface for Dyad - AI App Builder",
   "main": "dist/index.js",
+    "access": "public",
   "bin": {
     "dyad": "./dist/cli.js"
   },
@@ -20,7 +21,7 @@
   "author": "Will Chen",
   "license": "MIT",
   "dependencies": {
-    "@dyad-sh/core": "file:../core"
+    "dyad-sh-core": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

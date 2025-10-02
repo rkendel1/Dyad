@@ -21,7 +21,7 @@ import {
   type Cache,
   createCache,
   type CacheOptions,
-} from "@dyad-sh/core";
+} from "dyad-sh-core";
 
 /**
  * SDK Configuration
@@ -357,4 +357,4 @@ export type {
   CreateChatParams,
   SendMessageParams,
   AppSettings,
-} from "@dyad-sh/core";
+} from "dyad-sh-core";

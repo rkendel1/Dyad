@@ -1,9 +1,8 @@
-import type { NextConfig } from "next";
+const withTM = require('next-transpile-modules')(['dyad-sh-core']);
 
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = withTM({
   reactStrictMode: true,
-  // Allow connecting to localhost API
   async rewrites() {
     return [
       {
@@ -12,6 +11,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-};
+});
 
-export default nextConfig;
+module.exports = nextConfig;

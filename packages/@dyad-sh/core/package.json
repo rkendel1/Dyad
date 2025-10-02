@@ -1,8 +1,9 @@
 {
-  "name": "@dyad-sh/core",
+  "name": "dyad-sh-core",
   "version": "0.1.0",
   "description": "Core types and interfaces for Dyad - AI app builder",
   "main": "dist/index.js",
+      "access": "public",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
