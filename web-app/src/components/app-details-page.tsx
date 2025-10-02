@@ -21,6 +21,7 @@ import {
   Send,
   Trash2,
   Loader2,
+  Bot,
 } from "lucide-react";
 
 export function AppDetailsPage() {
@@ -31,6 +32,7 @@ export function AppDetailsPage() {
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   // Fetch app details
   const {
@@ -104,10 +106,28 @@ export function AppDetailsPage() {
     },
   });
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive, unless user is scrolling up
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!isUserScrolling) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isUserScrolling]);
+
+  // Listen for user scroll to disable auto-scroll
+  const chatContentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = chatContentRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      // If user is near the bottom, auto-scroll is enabled
+      const threshold = 120;
+      const atBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      setIsUserScrolling(!atBottom);
+    };
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Select first chat if available
   useEffect(() => {
@@ -142,6 +162,28 @@ export function AppDetailsPage() {
       deleteAppMutation.mutate();
     }
   };
+
+  // --- Streaming/Batching UI logic ---
+  // If the last assistant message is empty or changing, show a typing indicator
+  const isAssistantTyping = (() => {
+    if (!messages || messages.length === 0) return false;
+    const last = messages[messages.length - 1];
+    // If the last message is from assistant and is empty or just whitespace, or if the previous message is from user and the last is assistant with short content
+    if (last.role === "assistant" && (!last.content || last.content.trim() === "")) {
+      return true;
+    }
+    // If the last assistant message is very short and the previous message is from user, treat as streaming
+    if (
+      last.role === "assistant" &&
+      last.content &&
+      last.content.length < 5 &&
+      messages.length > 1 &&
+      messages[messages.length - 2].role === "user"
+    ) {
+      return true;
+    }
+    return false;
+  })();
 
   if (appLoading) {
     return (
@@ -305,7 +347,11 @@ export function AppDetailsPage() {
                     : "Select a chat"}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto">
+              <CardContent
+                className="flex-1 overflow-y-auto"
+                ref={chatContentRef}
+                style={{ minHeight: 0, maxHeight: "calc(100vh - 250px)" }}
+              >
                 {!selectedChatId && (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
                     <div className="text-center">
@@ -334,7 +380,7 @@ export function AppDetailsPage() {
                         <p>No messages yet. Start the conversation!</p>
                       </div>
                     )}
-                    {messages.map((message) => (
+                    {messages.map((message, idx) => (
                       <div
                         key={message.id}
                         className={`flex ${
@@ -361,6 +407,18 @@ export function AppDetailsPage() {
                         </div>
                       </div>
                     ))}
+                    {/* Typing indicator for streaming/AI response */}
+                    {isAssistantTyping && (
+                      <div className="flex justify-start">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg max-w-[60%]">
+                          <Bot className="h-4 w-4 animate-bounce text-primary" />
+                          <span className="text-sm text-muted-foreground">
+                            AI is typing...
+                          </span>
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        </div>
+                      </div>
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
                 )}
