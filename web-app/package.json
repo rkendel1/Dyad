@@ -9,7 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@dyad-sh/nextjs-webpack-component-tagger": "0.8.0",
+    "@dyad-sh/react-vite-component-tagger": "0.8.0",
+>>>>>>> 4afa930ebcfaa619ba03940ff300e851fa9831f9
     "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/postcss": "^4.1.14",
     "@tanstack/react-query": "^5.56.2",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.1",
@@ -20,6 +26,7 @@
     "geist": "^1.5.1",
     "lucide-react": "^0.487.0",
     "next": "^15.5.4",
+    "next-transpile-modules": "^10.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.1.0"
