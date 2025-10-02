@@ -1,0 +1,30 @@
+{
+  "name": "@dyad-sh/react",
+  "version": "0.1.0",
+  "description": "React hooks for Dyad - AI app builder",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "dyad",
+    "react",
+    "hooks"
+  ],
+  "author": "Will Chen",
+  "license": "MIT",
+  "peerDependencies": {
+    "@dyad-sh/core": "file:../core",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.10",
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "dist/**/*"
+  ]
+}
