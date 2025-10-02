@@ -53,13 +53,13 @@ export function AppsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-100 via-purple-50 to-fuchsia-100 dark:from-violet-950 dark:via-purple-950 dark:to-fuchsia-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+      <header className="border-b bg-card backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-foreground">
                 🚀 Dyad Web Interface
               </h1>
               <p className="text-muted-foreground mt-1">
@@ -121,7 +121,7 @@ export function AppsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{error.message}</p>
+              <p className="text-sm mb-4">{error.message}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Make sure Dyad Desktop is running at{" "}
                 <code className="bg-muted px-1 py-0.5 rounded">
@@ -137,7 +137,7 @@ export function AppsPage() {
             {apps.map((app) => (
               <Card
                 key={app.id}
-                className="hover:shadow-lg transition-shadow bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+                className="hover:shadow-lg transition-all hover:border-primary/50 bg-card border-border"
               >
                 <CardHeader>
                   <CardTitle className="line-clamp-1">{app.name}</CardTitle>
@@ -164,7 +164,7 @@ export function AppsPage() {
         )}
 
         {!isLoading && !error && apps && apps.length === 0 && (
-          <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+          <Card className="bg-card border-border">
             <CardContent className="py-16">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎨</div>
@@ -186,7 +186,7 @@ export function AppsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-16 py-8 border-t bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+      <footer className="mt-16 py-8 border-t bg-card backdrop-blur-sm">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>
             Dyad - Free, local, open-source AI app builder •{" "}
