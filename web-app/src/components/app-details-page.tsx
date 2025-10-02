@@ -23,6 +23,7 @@ import {
   Loader2,
   Bot,
 } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 export function AppDetailsPage() {
   const params = useParams();
@@ -221,9 +222,9 @@ export function AppDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-100 via-purple-50 to-fuchsia-100 dark:from-violet-950 dark:via-purple-950 dark:to-fuchsia-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+      <header className="border-b bg-card backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -236,7 +237,7 @@ export function AppDetailsPage() {
                 Back
               </Button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-foreground">
                   {app.name}
                 </h1>
                 <p className="text-sm text-muted-foreground">{app.path}</p>
@@ -259,11 +260,11 @@ export function AppDetailsPage() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 h-[calc(100vh-120px)]">
+      <div className="container mx-auto px-4 py-6 h-[calc(100vh-88px)]">
         <div className="grid grid-cols-12 gap-4 h-full">
           {/* Chat List Sidebar */}
           <div className="col-span-3">
-            <Card className="h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+            <Card className="h-full bg-card border-border">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Chats</CardTitle>
@@ -280,7 +281,7 @@ export function AppDetailsPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="overflow-y-auto max-h-[calc(100vh-250px)]">
+              <CardContent className="overflow-y-auto max-h-[calc(100vh-200px)]">
                 {chatsLoading && (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -303,10 +304,10 @@ export function AppDetailsPage() {
                     {chats.map((chat) => (
                       <div
                         key={chat.id}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors group ${
+                        className={`p-3 rounded-lg cursor-pointer transition-all group ${
                           selectedChatId === chat.id
                             ? "bg-primary/10 border-2 border-primary"
-                            : "hover:bg-muted border-2 border-transparent"
+                            : "hover:bg-accent border-2 border-transparent"
                         }`}
                         onClick={() => setSelectedChatId(chat.id)}
                       >
@@ -338,8 +339,8 @@ export function AppDetailsPage() {
 
           {/* Chat Messages Area */}
           <div className="col-span-9">
-            <Card className="h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex flex-col">
-              <CardHeader>
+            <Card className="h-full bg-card border-border flex flex-col">
+              <CardHeader className="border-b">
                 <CardTitle className="text-lg">
                   {selectedChatId
                     ? chats?.find((c) => c.id === selectedChatId)?.title ||
@@ -348,9 +349,8 @@ export function AppDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent
-                className="flex-1 overflow-y-auto"
+                className="flex-1 overflow-y-auto p-4"
                 ref={chatContentRef}
-                style={{ minHeight: 0, maxHeight: "calc(100vh - 250px)" }}
               >
                 {!selectedChatId && (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -374,13 +374,13 @@ export function AppDetailsPage() {
                   </div>
                 )}
                 {selectedChatId && messages && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-w-4xl mx-auto">
                     {messages.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         <p>No messages yet. Start the conversation!</p>
                       </div>
                     )}
-                    {messages.map((message, idx) => (
+                    {messages.map((message) => (
                       <div
                         key={message.id}
                         className={`flex ${
@@ -390,16 +390,39 @@ export function AppDetailsPage() {
                         }`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                          className={`max-w-[85%] rounded-lg px-4 py-3 ${
                             message.role === "user"
                               ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
+                              : "bg-muted text-foreground"
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap">
-                            {message.content}
-                          </p>
-                          <p className="text-xs opacity-70 mt-1">
+                          {message.role === "assistant" ? (
+                            <div>
+                              {message.content && message.content.length > 500 ? (
+                                <div>
+                                  <p className="font-semibold text-xs uppercase tracking-wide mb-2 opacity-70">
+                                    Summary
+                                  </p>
+                                  <MarkdownRenderer content={message.content.substring(0, 500) + "..."} />
+                                  <details className="mt-2">
+                                    <summary className="cursor-pointer text-xs text-primary hover:underline">
+                                      Show full message
+                                    </summary>
+                                    <div className="mt-2">
+                                      <MarkdownRenderer content={message.content} />
+                                    </div>
+                                  </details>
+                                </div>
+                              ) : (
+                                <MarkdownRenderer content={message.content || ""} />
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {message.content}
+                            </p>
+                          )}
+                          <p className="text-xs opacity-70 mt-2">
                             {formatDistanceToNow(new Date(message.createdAt), {
                               addSuffix: true,
                             })}
@@ -410,7 +433,7 @@ export function AppDetailsPage() {
                     {/* Typing indicator for streaming/AI response */}
                     {isAssistantTyping && (
                       <div className="flex justify-start">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg max-w-[60%]">
+                        <div className="flex items-center gap-2 px-4 py-3 bg-muted rounded-lg max-w-[60%]">
                           <Bot className="h-4 w-4 animate-bounce text-primary" />
                           <span className="text-sm text-muted-foreground">
                             AI is typing...
@@ -424,37 +447,31 @@ export function AppDetailsPage() {
                 )}
               </CardContent>
               {selectedChatId && (
-                <CardFooter className="border-t pt-4">
+                <CardFooter className="border-t pt-4 bg-card">
                   <form
                     onSubmit={handleSendMessage}
-                    className="flex flex-col gap-2 w-full"
+                    className="flex gap-2 w-full"
                   >
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        placeholder="Type your message..."
-                        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                        disabled={sendMessageMutation.isPending}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={
-                          !messageInput.trim() || sendMessageMutation.isPending
-                        }
-                      >
-                        {sendMessageMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Note: AI responses may take a moment to appear. Messages
-                      refresh every 2 seconds.
-                    </p>
+                    <input
+                      type="text"
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      placeholder="Type your message..."
+                      className="flex-1 px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
+                      disabled={sendMessageMutation.isPending}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={
+                        !messageInput.trim() || sendMessageMutation.isPending
+                      }
+                    >
+                      {sendMessageMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
                   </form>
                 </CardFooter>
               )}

@@ -1,13 +1,7 @@
-<<<<<<< HEAD
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-=======
-const withTM = require('next-transpile-modules')(['dyad-sh-core']);
-
-/** @type {import('next').NextConfig} */
-const nextConfig = withTM({
->>>>>>> 4afa930ebcfaa619ba03940ff300e851fa9831f9
   reactStrictMode: true,
+  transpilePackages: ['dyad-sh-core'],
   async rewrites() {
     return [
       {
@@ -16,6 +10,6 @@ const nextConfig = withTM({
       },
     ];
   },
-});
+};
 
 module.exports = nextConfig;
