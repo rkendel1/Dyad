@@ -6,6 +6,20 @@ Dyad is a local, open-source AI app builder. It's fast, private, and fully under
 
 More info at: [http://dyad.sh/](http://dyad.sh/)
 
+---
+
+## 📋 Pull Request Review Report
+
+**New!** A comprehensive review of all contributions is now available: [**COMPREHENSIVE_PR_REVIEW_REPORT.md**](./COMPREHENSIVE_PR_REVIEW_REPORT.md)
+
+This report includes:
+- Detailed analysis of all merged pull requests
+- Feature summaries and technical documentation
+- Code statistics and impact assessments
+- Architecture improvements and enhancements
+
+---
+
 ## 🚀 Features
 
 - ⚡️ **Local**: Fast, private and no lock-in.
