@@ -6,6 +6,7 @@
 
 import { Router } from "express";
 import * as chatController from "../controllers/chat.controller";
+import * as proposalController from "../controllers/proposal.controller";
 import { validateBody } from "../middleware/validation";
 
 const router = Router();
@@ -46,6 +47,21 @@ router.post(
   validateBody(chatController.createMessageSchema),
   chatController.createMessage,
 );
+
+/**
+ * GET /api/chats/:chatId/proposal - Get proposal for chat
+ */
+router.get("/:chatId/proposal", proposalController.getProposal);
+
+/**
+ * POST /api/chats/:chatId/proposal/approve - Approve proposal
+ */
+router.post("/:chatId/proposal/approve", proposalController.approveProposal);
+
+/**
+ * POST /api/chats/:chatId/proposal/reject - Reject proposal
+ */
+router.post("/:chatId/proposal/reject", proposalController.rejectProposal);
 
 /**
  * App-specific chat endpoints

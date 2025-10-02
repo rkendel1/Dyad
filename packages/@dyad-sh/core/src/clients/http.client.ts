@@ -22,6 +22,8 @@ import type {
   SendMessageParams,
   HealthResponse,
   AppSettings,
+  ProposalResult,
+  ApproveProposalResult,
 } from "../types";
 
 /**
@@ -198,6 +200,54 @@ class HttpChatApi implements ChatApi {
       throw new Error(data.error?.message || "Failed to send message");
     }
     return data.data;
+  }
+
+  async getProposal(chatId: number): Promise<ProposalResult | null> {
+    const response = await fetch(
+      `${this.baseUrl}/api/chats/${chatId}/proposal`,
+      {
+        headers: this.getHeaders(),
+      }
+    );
+    const data: ApiResponse<ProposalResult | null> = await response.json();
+    if (!data.success) {
+      throw new Error(data.error?.message || "Failed to fetch proposal");
+    }
+    return data.data || null;
+  }
+
+  async approveProposal(
+    chatId: number,
+    messageId: number
+  ): Promise<ApproveProposalResult> {
+    const response = await fetch(
+      `${this.baseUrl}/api/chats/${chatId}/proposal/approve`,
+      {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ messageId }),
+      }
+    );
+    const data: ApiResponse<ApproveProposalResult> = await response.json();
+    if (!data.success || !data.data) {
+      throw new Error(data.error?.message || "Failed to approve proposal");
+    }
+    return data.data;
+  }
+
+  async rejectProposal(chatId: number, messageId: number): Promise<void> {
+    const response = await fetch(
+      `${this.baseUrl}/api/chats/${chatId}/proposal/reject`,
+      {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ messageId }),
+      }
+    );
+    const data: ApiResponse<void> = await response.json();
+    if (!data.success) {
+      throw new Error(data.error?.message || "Failed to reject proposal");
+    }
   }
 
   private getHeaders(): HeadersInit {

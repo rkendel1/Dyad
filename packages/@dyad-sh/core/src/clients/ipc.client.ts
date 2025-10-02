@@ -22,6 +22,8 @@ import type {
   SendMessageParams,
   HealthResponse,
   AppSettings,
+  ProposalResult,
+  ApproveProposalResult,
 } from "../types";
 
 /**
@@ -112,6 +114,21 @@ class IpcChatApi implements ChatApi {
     throw new Error(
       "Direct message sending not supported via IPC. Use the streaming API instead."
     );
+  }
+
+  async getProposal(chatId: number): Promise<ProposalResult | null> {
+    return this.ipcRenderer.invoke("get-proposal", { chatId });
+  }
+
+  async approveProposal(
+    chatId: number,
+    messageId: number
+  ): Promise<ApproveProposalResult> {
+    return this.ipcRenderer.invoke("approve-proposal", { chatId, messageId });
+  }
+
+  async rejectProposal(chatId: number, messageId: number): Promise<void> {
+    return this.ipcRenderer.invoke("reject-proposal", { chatId, messageId });
   }
 }
 
