@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { dyadApiClient, DyadApp } from "@/lib/api-client";
+import { dyadClient, type App } from "@/lib/dyad-client";
 import { formatDistanceToNow } from "date-fns";
 import {
   Card,
@@ -24,9 +24,9 @@ export function AppsPage() {
     data: apps,
     isLoading,
     error,
-  } = useQuery<DyadApp[], Error>({
+  } = useQuery<App[], Error>({
     queryKey: ["dyadApps"],
-    queryFn: () => dyadApiClient.getApps(),
+    queryFn: () => dyadClient.apps.listApps(),
     retry: 3,
     retryDelay: 1000,
   });
@@ -35,7 +35,7 @@ export function AppsPage() {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        await dyadApiClient.checkHealth();
+        await dyadClient.checkHealth();
         setConnectionStatus("connected");
       } catch (error) {
         setConnectionStatus("disconnected");

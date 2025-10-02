@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { dyadApiClient, DyadApp, Chat, Message } from "@/lib/api-client";
+import { dyadClient, type App, type Chat, type Message } from "@/lib/dyad-client";
 import { formatDistanceToNow } from "date-fns";
 import {
   Card,
@@ -37,9 +37,9 @@ export function AppDetailsPage() {
     data: app,
     isLoading: appLoading,
     error: appError,
-  } = useQuery<DyadApp, Error>({
+  } = useQuery<App, Error>({
     queryKey: ["app", appId],
-    queryFn: () => dyadApiClient.getApp(appId!),
+    queryFn: () => dyadClient.apps.getApp(appId!),
     enabled: appId !== null,
   });
 
@@ -50,7 +50,7 @@ export function AppDetailsPage() {
     error: chatsError,
   } = useQuery<Chat[], Error>({
     queryKey: ["chats", appId],
-    queryFn: () => dyadApiClient.listChats(appId!),
+    queryFn: () => dyadClient.chats.listChats(appId!),
     enabled: appId !== null,
   });
 
@@ -61,14 +61,14 @@ export function AppDetailsPage() {
     error: messagesError,
   } = useQuery<Message[], Error>({
     queryKey: ["messages", selectedChatId],
-    queryFn: () => dyadApiClient.getChatMessages(selectedChatId!),
+    queryFn: () => dyadClient.chats.getChatMessages(selectedChatId!),
     enabled: selectedChatId !== null,
     refetchInterval: 2000, // Poll for new messages every 2 seconds
   });
 
   // Create chat mutation
   const createChatMutation = useMutation({
-    mutationFn: () => dyadApiClient.createChat(appId!),
+    mutationFn: () => dyadClient.chats.createChat({ appId: appId! }),
     onSuccess: (newChat) => {
       queryClient.invalidateQueries({ queryKey: ["chats", appId] });
       setSelectedChatId(newChat.id);
@@ -78,7 +78,7 @@ export function AppDetailsPage() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: (content: string) =>
-      dyadApiClient.sendMessage(selectedChatId!, content),
+      dyadClient.chats.sendMessage({ chatId: selectedChatId!, content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
       setMessageInput("");
@@ -87,7 +87,7 @@ export function AppDetailsPage() {
 
   // Delete chat mutation
   const deleteChatMutation = useMutation({
-    mutationFn: (chatId: number) => dyadApiClient.deleteChat(chatId),
+    mutationFn: (chatId: number) => dyadClient.chats.deleteChat(chatId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chats", appId] });
       if (selectedChatId) {
@@ -98,7 +98,7 @@ export function AppDetailsPage() {
 
   // Delete app mutation
   const deleteAppMutation = useMutation({
-    mutationFn: () => dyadApiClient.deleteApp(appId!),
+    mutationFn: () => dyadClient.apps.deleteApp(appId!),
     onSuccess: () => {
       router.push("/");
     },
