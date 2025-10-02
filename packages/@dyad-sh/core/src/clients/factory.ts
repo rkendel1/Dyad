@@ -6,6 +6,7 @@
 
 import type { DyadClient, ClientConfig } from "../interfaces/client.interface";
 import { HttpClient } from "./http.client";
+import { IpcClient } from "./ipc.client";
 
 /**
  * Client detection result
@@ -32,11 +33,21 @@ export async function detectBackend(
 ): Promise<ClientDetectionResult> {
   // Check if running in Electron environment
   if (typeof window !== "undefined" && (window as any).electron) {
-    return {
-      type: "ipc",
-      available: false,
-      error: "IPC client not yet implemented - use HTTP client",
-    };
+    try {
+      const client = new IpcClient(config);
+      await client.connect();
+      return {
+        type: "ipc",
+        available: true,
+        client,
+      };
+    } catch (error) {
+      return {
+        type: "ipc",
+        available: false,
+        error: error instanceof Error ? error.message : "IPC client initialization failed",
+      };
+    }
   }
 
   // Try HTTP connection
@@ -88,7 +99,9 @@ export async function createDyadClient(
   }
 
   if (type === "ipc") {
-    throw new Error("IPC client not yet implemented");
+    const client = new IpcClient(config);
+    await client.connect();
+    return client;
   }
 
   // Auto-detect
@@ -111,4 +124,14 @@ export async function createDyadClient(
  */
 export function createHttpClient(config: ClientConfig = {}): DyadClient {
   return new HttpClient(config);
+}
+
+/**
+ * Create IPC client directly
+ * 
+ * @param config Client configuration
+ * @returns IPC client instance
+ */
+export function createIpcClient(config: ClientConfig = {}): DyadClient {
+  return new IpcClient(config);
 }
