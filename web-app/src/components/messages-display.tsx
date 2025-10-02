@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { AlertCircle, Bot, Loader2, MessageSquare } from "lucide-react";
+import { AlertCircle, Bot, Loader2, MessageSquare, CheckCircle, XCircle, GitCommit, RotateCcw } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { formatDistanceToNow } from "date-fns";
 import type { Message } from "@/lib/dyad-client";
@@ -15,6 +16,8 @@ interface MessagesDisplayProps {
   isAssistantTyping: boolean;
   chatContentRef: React.RefObject<HTMLDivElement | null>;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 }
 
 export function MessagesDisplay({
@@ -25,6 +28,8 @@ export function MessagesDisplay({
   isAssistantTyping,
   chatContentRef,
   messagesEndRef,
+  onRetry,
+  isRetrying = false,
 }: MessagesDisplayProps) {
   if (!selectedChatId) {
     return (
@@ -61,6 +66,11 @@ export function MessagesDisplay({
       </CardContent>
     );
   }
+
+  // Find the last user message for retry functionality
+  const lastUserMessage = messages && messages.length > 0 
+    ? [...messages].reverse().find(m => m.role === "user")
+    : null;
 
   return (
     <CardContent
@@ -109,6 +119,32 @@ export function MessagesDisplay({
                   ) : (
                     <MarkdownRenderer content={message.content || ""} />
                   )}
+                  
+                  {/* Show approval state and commit info for assistant messages */}
+                  {message.approvalState && (
+                    <div className="mt-3 pt-2 border-t border-border/40 flex items-center gap-2 text-xs">
+                      {message.approvalState === "approved" ? (
+                        <>
+                          <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          <span className="text-green-600 dark:text-green-400">Approved</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-3 w-3 text-red-600 dark:text-red-400" />
+                          <span className="text-red-600 dark:text-red-400">Rejected</span>
+                        </>
+                      )}
+                      {message.commitHash && (
+                        <>
+                          <span className="mx-1">·</span>
+                          <GitCommit className="h-3 w-3" />
+                          <span className="font-mono opacity-70">
+                            {message.commitHash.substring(0, 7)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm whitespace-pre-wrap break-words">
@@ -134,6 +170,32 @@ export function MessagesDisplay({
             </div>
           </div>
         )}
+        
+        {/* Retry button - shown if there are messages and a retry handler */}
+        {lastUserMessage && onRetry && !isAssistantTyping && (
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              disabled={isRetrying}
+              className="gap-2"
+            >
+              {isRetrying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Retry Last Message
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
     </CardContent>
