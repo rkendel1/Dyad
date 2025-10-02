@@ -13,6 +13,19 @@ More info at: [http://dyad.sh/](http://dyad.sh/)
 - 🖥️ **Cross-platform**: Easy to run on Mac or Windows.
 - 💻 **Built-in CLI**: Interactive command-line interface within the console for direct app interaction.
 - 🌐 **HTTP REST API**: Programmatic access via HTTP endpoints for integrations and automation.
+- 📱 **Enhanced Preview**: Size presets, screenshots, history tracking, and quick actions for efficient development.
+
+## 📱 Enhanced Preview Features
+
+The preview panel includes powerful features to streamline your development workflow:
+
+- **Size Presets**: Test responsive layouts at common device sizes (mobile, tablet, desktop)
+- **Screenshots**: Capture preview states for documentation and sharing
+- **History Tracking**: Quick navigation to recently visited URLs
+- **Quick Launch Menu**: Fast access to common preview operations
+- **Keyboard Shortcuts**: Productivity shortcuts with helpful guide
+
+See [Enhanced Preview Features Guide](./docs/ENHANCED_PREVIEW_FEATURES.md) for detailed documentation.
 
 ## 🌐 HTTP REST API
 

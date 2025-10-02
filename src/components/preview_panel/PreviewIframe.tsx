@@ -50,6 +50,12 @@ import {
 import { useRunApp } from "@/hooks/useRunApp";
 import { useShortcut } from "@/hooks/useShortcut";
 import { showSuccess, showError } from "@/lib/toast";
+import { PreviewSizePresets } from "./PreviewSizePresets";
+import { PreviewScreenshotButton } from "./PreviewScreenshotButton";
+import { PreviewHistoryMenu } from "./PreviewHistoryMenu";
+import { PreviewQuickLaunch } from "./PreviewQuickLaunch";
+import { PreviewKeyboardShortcuts } from "./PreviewKeyboardShortcuts";
+import { addToPreviewHistoryAtom } from "@/atoms/previewHistoryAtoms";
 
 interface ErrorBannerProps {
   error: string | undefined;
@@ -170,6 +176,15 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
   const [isEditingUrl, setIsEditingUrl] = useState(false);
   const [editedUrl, setEditedUrl] = useState("");
 
+  // Preview size state
+  const [previewSize, setPreviewSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+
+  // History tracking
+  const addToHistory = useSetAtom(addToPreviewHistoryAtom);
+
   //detect if the user is using Mac
   const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 
@@ -185,6 +200,17 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
       setIsPicking(false);
     }
   }, [selectedComponentPreview]);
+
+  // Track navigation history
+  useEffect(() => {
+    if (appUrl && selectedAppId) {
+      addToHistory({
+        url: appUrl,
+        appId: selectedAppId,
+        timestamp: Date.now(),
+      });
+    }
+  }, [appUrl, selectedAppId, addToHistory]);
 
   // Deactivate CSS selector when it's not being used
   useEffect(() => {
@@ -847,7 +873,48 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-1">
+        <div className="flex space-x-1 items-center">
+          <PreviewQuickLaunch
+            onRestart={onRestart}
+            onCleanRestart={() => restartApp({ removeNodeModules: true })}
+            onRefresh={handleReload}
+            onOpenExternal={() => {
+              if (originalUrl) {
+                IpcClient.getInstance().openExternalPreview(originalUrl);
+              }
+            }}
+            onOpenBrowser={() => {
+              if (originalUrl) {
+                IpcClient.getInstance().openExternalUrl(originalUrl);
+              }
+            }}
+            disabled={!originalUrl}
+          />
+          <PreviewSizePresets
+            onSizeChange={(width, height) => {
+              if (width === -1 && height === -1) {
+                setPreviewSize(null);
+              } else {
+                setPreviewSize({ width, height });
+              }
+            }}
+            disabled={!originalUrl}
+          />
+          <PreviewScreenshotButton
+            iframeRef={iframeRef}
+            disabled={!originalUrl}
+            appId={selectedAppId}
+          />
+          <PreviewHistoryMenu
+            appId={selectedAppId}
+            onNavigate={(url) => {
+              // Navigate to historical URL
+              if (iframeRef.current) {
+                iframeRef.current.src = url;
+              }
+            }}
+            disabled={!selectedAppId}
+          />
           <button
             onClick={onRestart}
             className="flex items-center space-x-1 px-3 py-1 rounded-md text-sm hover:bg-[var(--background-darkest)] transition-colors"
@@ -891,6 +958,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
           >
             <ExternalLink size={16} />
           </button>
+          <PreviewKeyboardShortcuts />
         </div>
       </div>
 
@@ -995,19 +1063,39 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
             </p>
           </div>
         ) : (
-          <iframe
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-downloads"
-            data-testid="preview-iframe-element"
-            onLoad={() => {
-              setErrorMessage(undefined);
+          <div
+            className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900"
+            style={{
+              overflow: previewSize ? "auto" : "hidden",
             }}
-            ref={iframeRef}
-            key={reloadKey}
-            title={`Preview for App ${selectedAppId}`}
-            className="w-full h-full border-none bg-white dark:bg-gray-950"
-            src={appUrl}
-            allow="clipboard-read; clipboard-write; fullscreen; microphone; camera; display-capture; geolocation; autoplay; picture-in-picture"
-          />
+          >
+            <iframe
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-downloads"
+              data-testid="preview-iframe-element"
+              onLoad={() => {
+                setErrorMessage(undefined);
+              }}
+              ref={iframeRef}
+              key={reloadKey}
+              title={`Preview for App ${selectedAppId}`}
+              className="border-none bg-white dark:bg-gray-950"
+              style={
+                previewSize
+                  ? {
+                      width: `${previewSize.width}px`,
+                      height: `${previewSize.height}px`,
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                    }
+                  : {
+                      width: "100%",
+                      height: "100%",
+                    }
+              }
+              src={appUrl}
+              allow="clipboard-read; clipboard-write; fullscreen; microphone; camera; display-capture; geolocation; autoplay; picture-in-picture"
+            />
+          </div>
         )}
       </div>
     </div>
