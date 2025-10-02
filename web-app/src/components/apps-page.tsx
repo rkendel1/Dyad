@@ -13,7 +13,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 
 export function AppsPage() {
   const [connectionStatus, setConnectionStatus] = useState<
