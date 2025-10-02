@@ -69,10 +69,12 @@ Core library containing shared types, interfaces, and client implementations.
 **Location**: `packages/@dyad-sh/core`
 
 **Exports**:
-- Type definitions (`App`, `Chat`, `Message`, etc.)
+- Type definitions (`App`, `Chat`, `Message`, `StreamChunk`, `CacheEntry`, etc.)
 - Client interface (`DyadClient`, `AppApi`, `ChatApi`, `SettingsApi`)
 - HTTP client implementation (`HttpClient`)
-- Client factory functions (`createDyadClient`, `detectBackend`)
+- IPC client implementation (`IpcClient`)
+- Client factory functions (`createDyadClient`, `createHttpClient`, `createIpcClient`, `detectBackend`)
+- Cache implementation (`MemoryCache`, `createCache`)
 
 **Dependencies**: None (pure TypeScript)
 
@@ -98,6 +100,60 @@ Command-line interface for Dyad.
 **Dependencies**: `@dyad-sh/core`
 
 **Usage**:
+```bash
+dyad apps list
+dyad apps create "My App"
+dyad chats list --app-id 1
+```
+
+### @dyad-sh/react
+
+React hooks for Dyad client integration.
+
+**Location**: `packages/@dyad-sh/react`
+
+**Provides**: Convenient React hooks for using Dyad clients
+
+**Dependencies**: `@dyad-sh/core`, `react`
+
+**Usage**:
+```typescript
+import { createHttpClient } from "@dyad-sh/core";
+import { useApps, useChats } from "@dyad-sh/react";
+
+const client = createHttpClient({ baseUrl: "http://localhost:3000" });
+
+function MyComponent() {
+  const { apps, isLoading, createApp } = useApps(client);
+  
+  // Use apps data...
+}
+```
+
+### @dyad-sh/sdk
+
+High-level SDK for third-party integrations.
+
+**Location**: `packages/@dyad-sh/sdk`
+
+**Provides**: Simplified API with caching and auto-retry
+
+**Dependencies**: `@dyad-sh/core`
+
+**Usage**:
+```typescript
+import { createDyadSDK } from "@dyad-sh/sdk";
+
+const sdk = createDyadSDK({
+  baseUrl: "http://localhost:3000",
+  cache: true,
+  autoRetry: true,
+});
+
+await sdk.connect();
+const apps = await sdk.apps.list();
+```
+
 ```bash
 dyad apps list
 dyad chats create 1
@@ -224,6 +280,91 @@ const client = createIpcClient();
 const apps = await client.apps.listApps();
 ```
 
+#### Using Caching
+
+```typescript
+import { createHttpClient, createCache } from "@dyad-sh/core";
+
+const client = createHttpClient({
+  baseUrl: "http://localhost:3000",
+});
+
+const cache = createCache({
+  ttl: 300000, // 5 minutes
+  maxSize: 100,
+});
+
+// Cache apps
+const cacheKey = "apps:list";
+let apps = await cache.get(cacheKey);
+
+if (!apps) {
+  apps = await client.apps.listApps();
+  await cache.set(cacheKey, apps);
+}
+```
+
+#### Using React Hooks
+
+```typescript
+import { createHttpClient } from "@dyad-sh/core";
+import { useApps, useChats, useMessages } from "@dyad-sh/react";
+
+const client = createHttpClient({ baseUrl: "http://localhost:3000" });
+
+function AppsComponent() {
+  const { apps, isLoading, error, createApp, deleteApp } = useApps(client);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      {apps.map((app) => (
+        <div key={app.id}>
+          {app.name}
+          <button onClick={() => deleteApp(app.id)}>Delete</button>
+        </div>
+      ))}
+      <button onClick={() => createApp({ name: "New App" })}>
+        Create App
+      </button>
+    </div>
+  );
+}
+```
+
+#### Using the SDK
+
+```typescript
+import { createDyadSDK } from "@dyad-sh/sdk";
+
+const sdk = createDyadSDK({
+  baseUrl: "http://localhost:3000",
+  cache: true, // Enable caching
+  autoRetry: true, // Auto-retry failed requests
+  maxRetries: 3,
+});
+
+// Connect to backend
+await sdk.connect();
+
+// Use simplified API
+const apps = await sdk.apps.list();
+const app = await sdk.apps.get(1);
+await sdk.apps.create({ name: "My App" });
+
+const chats = await sdk.chats.list(1);
+const messages = await sdk.chats.getMessages(1);
+await sdk.chats.sendMessage({ chatId: 1, content: "Hello!" });
+
+// Clear cache when needed
+await sdk.clearCache();
+
+// Disconnect
+await sdk.disconnect();
+```
+
 #### CLI Application
 
 ```typescript
@@ -337,26 +478,41 @@ describe("Integration", () => {
 - [x] Add configuration support
 - [x] Build and test CLI package
 
-### Phase 3: Desktop Integration (Next)
+### Phase 3: Desktop Integration ✅ (Complete)
 
-- [ ] Create `IpcClient` implementation
-- [ ] Update desktop app to use client interface
-- [ ] Maintain backward compatibility
-- [ ] Test both IPC and HTTP modes
+- [x] Create `IpcClient` implementation
+- [x] Update desktop app to use client interface
+- [x] Maintain backward compatibility
+- [x] Test both IPC and HTTP modes
 
-### Phase 4: Web App Migration (Next)
+### Phase 4: Web App Migration ✅ (Complete)
 
-- [ ] Update web-app to use `@dyad-sh/core`
-- [ ] Remove duplicate type definitions
-- [ ] Improve error handling
-- [ ] Add React hooks
+- [x] Update web-app to use `@dyad-sh/core`
+- [x] Remove duplicate type definitions
+- [x] Improve error handling
+- [x] Web-app builds successfully
 
-### Phase 5: Advanced Features (Future)
+### Phase 5: Advanced Features ✅ (Complete)
 
-- [ ] WebSocket support for real-time updates
-- [ ] Streaming responses for chat messages
-- [ ] Offline support and caching
-- [ ] SDK for third-party integrations
+- [x] WebSocket support interfaces
+- [x] Streaming response types
+- [x] Offline caching support (MemoryCache)
+- [x] SDK for third-party integrations
+
+### Phase 6: Additional Packages ✅ (Complete)
+
+- [x] Create `@dyad-sh/react` package with React hooks
+- [x] Create `@dyad-sh/sdk` high-level SDK package
+- [x] Add comprehensive documentation
+
+### Phase 7: Future Enhancements
+
+- [ ] WebSocket client implementation
+- [ ] Streaming client with Server-Sent Events
+- [ ] LocalStorage and IndexedDB cache implementations
+- [ ] Mobile client (`@dyad-sh/mobile`)
+- [ ] Vue composables package (`@dyad-sh/vue`)
+- [ ] Browser extension support
 
 ## Contributing
 
