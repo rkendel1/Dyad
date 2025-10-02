@@ -172,6 +172,43 @@ export interface WebSocketEventHandlers {
 }
 
 /**
+ * Server-Sent Events (SSE) support types
+ */
+
+/**
+ * SSE connection state
+ */
+export type SSEState = "connecting" | "connected" | "disconnected";
+
+/**
+ * SSE message event
+ */
+export interface SSEMessage {
+  data: string;
+  id?: string;
+  event?: string;
+  retry?: number;
+}
+
+/**
+ * SSE event handlers
+ */
+export interface SSEEventHandlers {
+  onOpen?: () => void;
+  onMessage?: (message: SSEMessage) => void;
+  onError?: (error: Error) => void;
+  onClose?: () => void;
+}
+
+/**
+ * SSE connection options
+ */
+export interface SSEOptions {
+  withCredentials?: boolean;
+  headers?: Record<string, string>;
+}
+
+/**
  * Offline caching support types
  */
 

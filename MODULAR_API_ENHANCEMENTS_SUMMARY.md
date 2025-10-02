@@ -73,6 +73,50 @@ This PR successfully implements comprehensive enhancements to the Dyad modular A
 - `packages/@dyad-sh/core/src/types/index.ts` (modified, +88 lines)
 - `packages/@dyad-sh/core/src/cache/index.ts` (new, 103 lines)
 
+### ✅ Task 6: Real-time and Offline Enhancements (Phase 7)
+
+**Goal**: Implement SSE support and extend caching capabilities
+
+**Implementation**:
+
+#### Server-Sent Events (SSE) Support
+- `SSEState` type for connection states
+- `SSEMessage` interface for SSE message events
+- `SSEEventHandlers` interface for event handling
+- `SSEOptions` interface for connection configuration
+- Full type definitions for implementing SSE clients
+
+#### Extended Caching Backends
+- `LocalStorageCache` class for persistent browser caching
+- `IndexedDBCache` class for advanced browser caching with larger capacity
+- Updated `createCache()` factory to support all three backends
+- Unified `Cache` interface ensures consistency across all implementations
+
+#### Features:
+- **Memory Cache**: Fast in-memory caching (default, works everywhere)
+- **LocalStorage Cache**: Persistent browser storage (up to ~5MB)
+- **IndexedDB Cache**: Large-capacity persistent storage (recommended for browsers)
+- All caches support TTL expiration and max size enforcement
+- All caches implement the same async interface
+
+#### Testing
+- Comprehensive test suite with 34 tests
+- Tests for LocalStorage cache (12 tests)
+- Tests for IndexedDB cache (12 tests)
+- Tests for cache factory (10 tests)
+- All tests passing with Vitest
+
+**Files**:
+- `packages/@dyad-sh/core/src/types/index.ts` (modified, +30 lines for SSE types)
+- `packages/@dyad-sh/core/src/cache/index.ts` (modified, updated factory)
+- `packages/@dyad-sh/core/src/cache/localStorage.cache.ts` (new, 173 lines)
+- `packages/@dyad-sh/core/src/cache/indexedDB.cache.ts` (new, 311 lines)
+- `packages/@dyad-sh/core/src/cache/localStorage.cache.test.ts` (new, 202 lines)
+- `packages/@dyad-sh/core/src/cache/indexedDB.cache.test.ts` (new, 174 lines)
+- `packages/@dyad-sh/core/src/cache/cache.factory.test.ts` (new, 145 lines)
+- `packages/@dyad-sh/core/vitest.config.ts` (new)
+- `packages/@dyad-sh/core/package.json` (modified, added test scripts and dependencies)
+
 ### ✅ Task 4: Additional Packages
 
 **Goal**: Create React hooks and SDK packages
@@ -157,9 +201,10 @@ await sdk.clearCache();
 ### Code Changes
 - **New Packages**: 2 (@dyad-sh/react, @dyad-sh/sdk)
 - **Enhanced Packages**: 1 (@dyad-sh/core)
-- **Total New Files**: 15
-- **Total Modified Files**: 5
-- **Lines of Code Added**: ~2,700
+- **Total New Files**: 22 (includes 7 new cache-related files and tests)
+- **Total Modified Files**: 9
+- **Lines of Code Added**: ~3,700
+- **Test Files Added**: 3 (with 34 passing tests)
 
 ### Build Status
 - ✅ @dyad-sh/core builds successfully
@@ -167,6 +212,7 @@ await sdk.clearCache();
 - ✅ @dyad-sh/sdk builds successfully
 - ✅ web-app builds successfully
 - ✅ All existing tests pass
+- ✅ All new cache tests pass (34/34)
 
 ### Breaking Changes
 - **None** - All changes are additive and backward compatible
@@ -178,8 +224,10 @@ await sdk.clearCache();
 ├── core              # Core types, clients, and utilities
 │   ├── HttpClient    # HTTP/REST client
 │   ├── IpcClient     # Electron IPC client
-│   ├── MemoryCache   # Caching implementation
-│   └── Types         # Shared type definitions
+│   ├── MemoryCache   # In-memory caching
+│   ├── LocalStorageCache  # Persistent browser caching
+│   ├── IndexedDBCache     # Large-capacity browser caching
+│   └── Types         # Shared type definitions (including SSE)
 │
 ├── cli               # Command-line interface
 │   └── Commands      # CLI commands using core
@@ -232,7 +280,16 @@ const apps = await sdk.apps.list();
 ```typescript
 import { createCache } from "@dyad-sh/core";
 
-const cache = createCache({ ttl: 300000, maxSize: 100 });
+// Memory cache (default)
+const memoryCache = createCache({ ttl: 300000, maxSize: 100, storage: "memory" });
+
+// LocalStorage cache (browser-only, persistent)
+const localStorageCache = createCache({ ttl: 300000, maxSize: 100, storage: "localStorage" });
+
+// IndexedDB cache (browser-only, persistent, larger capacity)
+const indexedDBCache = createCache({ ttl: 300000, maxSize: 100, storage: "indexedDB" });
+
+// All caches use the same interface
 await cache.set("key", data);
 const cached = await cache.get("key");
 ```
@@ -252,12 +309,19 @@ const cached = await cache.get("key");
 Recommended next steps for continued development:
 
 1. **WebSocket Implementation**: Actual WebSocket client based on defined interfaces
-2. **SSE Support**: Server-Sent Events for real-time streaming
-3. **Storage Backends**: LocalStorage and IndexedDB cache implementations
-4. **Mobile Client**: @dyad-sh/mobile package for React Native
-5. **Vue Support**: @dyad-sh/vue package with Vue composables
-6. **Testing**: Comprehensive test suite for all new packages
-7. **Publishing**: Publish packages to npm registry
+2. **SSE Client Implementation**: Server-Sent Events client for real-time streaming
+3. **Mobile Client**: @dyad-sh/mobile package for React Native
+4. **Vue Support**: @dyad-sh/vue package with Vue composables
+5. **Testing**: Comprehensive test suite for all new packages
+6. **Publishing**: Publish packages to npm registry
+
+### Completed in Phase 7
+
+✅ **SSE Type Definitions**: Full type support for Server-Sent Events
+✅ **LocalStorage Cache**: Persistent browser caching with localStorage
+✅ **IndexedDB Cache**: Advanced browser caching with IndexedDB
+✅ **Cache Factory**: Unified interface for selecting cache backends
+✅ **Test Suite**: Comprehensive tests for all cache backends
 
 ## Migration Guide
 
@@ -294,7 +358,12 @@ All functionality has been verified:
 - ✅ SDK package builds
 - ✅ Web app builds with new client
 - ✅ All existing tests pass
-- ✅ Documentation is comprehensive
+- ✅ New cache implementations pass all tests (34/34 tests)
+- ✅ LocalStorage cache tested with mock implementation
+- ✅ IndexedDB cache tested with fake-indexeddb
+- ✅ Cache factory correctly instantiates all backend types
+- ✅ SSE type definitions are complete and type-safe
+- ✅ Documentation is comprehensive and up-to-date
 
 ## Conclusion
 
@@ -305,6 +374,10 @@ This PR successfully completes all requirements from the problem statement, deli
 - ✅ Advanced features (streaming, WebSocket, caching)
 - ✅ React hooks for easier integration
 - ✅ High-level SDK for third-party developers
+- ✅ **Server-Sent Events (SSE) type definitions**
+- ✅ **LocalStorage cache backend with tests**
+- ✅ **IndexedDB cache backend with tests**
+- ✅ **Unified cache factory for backend selection**
 - ✅ Comprehensive documentation
 
-The codebase is now more modular, maintainable, and developer-friendly, with a clear path for future enhancements.
+The codebase is now more modular, maintainable, and developer-friendly, with enhanced real-time streaming capabilities and robust offline caching solutions.

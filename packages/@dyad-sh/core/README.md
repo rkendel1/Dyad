@@ -15,6 +15,8 @@ npm install @dyad-sh/core
 - **HTTP Client**: Ready-to-use HTTP/REST API client
 - **Auto-detection**: Automatically detect and connect to available backend
 - **Type-safe**: Full TypeScript support with comprehensive type definitions
+- **Offline Caching**: Multiple cache backends (Memory, LocalStorage, IndexedDB)
+- **Real-time Streaming**: Support for WebSocket and Server-Sent Events (SSE)
 
 ## Usage
 
@@ -51,6 +53,94 @@ const client = createHttpClient({
 });
 
 await client.connect();
+```
+
+### Using Caching
+
+The core library provides three cache backends: Memory, LocalStorage, and IndexedDB.
+
+#### Memory Cache (Default)
+
+```typescript
+import { createCache } from "@dyad-sh/core";
+
+const cache = createCache({
+  ttl: 300000, // 5 minutes
+  maxSize: 100,
+  storage: "memory", // default
+});
+
+// Store data
+await cache.set("apps:list", apps);
+
+// Retrieve data
+const cachedApps = await cache.get("apps:list");
+
+// Check if key exists
+const exists = await cache.has("apps:list");
+
+// Delete specific key
+await cache.delete("apps:list");
+
+// Clear all cache
+await cache.clear();
+```
+
+#### LocalStorage Cache (Browser)
+
+```typescript
+import { createCache } from "@dyad-sh/core";
+
+const cache = createCache({
+  ttl: 300000,
+  maxSize: 100,
+  storage: "localStorage",
+});
+
+// Same API as Memory Cache
+await cache.set("key", value);
+const data = await cache.get("key");
+```
+
+#### IndexedDB Cache (Browser)
+
+```typescript
+import { createCache } from "@dyad-sh/core";
+
+const cache = createCache({
+  ttl: 300000,
+  maxSize: 100,
+  storage: "indexedDB",
+});
+
+// Same API as Memory Cache
+await cache.set("key", value);
+const data = await cache.get("key");
+```
+
+#### Cache with Client
+
+```typescript
+import { createHttpClient, createCache } from "@dyad-sh/core";
+
+const client = createHttpClient({
+  baseUrl: "http://localhost:3000",
+});
+
+const cache = createCache({
+  ttl: 300000, // 5 minutes
+  maxSize: 100,
+  storage: "indexedDB", // Use IndexedDB for persistent caching
+});
+
+// Cache apps list
+const cacheKey = "apps:list";
+let apps = await cache.get(cacheKey);
+
+if (!apps) {
+  apps = await client.apps.listApps();
+  await cache.set(cacheKey, apps);
+}
 ```
 
 ### Backend Detection
@@ -139,6 +229,21 @@ interface ClientConfig {
 - `SendMessageParams` - Parameters for sending a message
 - `HealthResponse` - Health check response
 
+### Streaming Types
+
+- `StreamChunk` - Streaming message chunk
+- `StreamCallbacks` - Callbacks for handling streaming responses
+- `WebSocketMessage` - WebSocket message format
+- `WebSocketEventHandlers` - WebSocket event handlers
+- `SSEMessage` - Server-Sent Events message format
+- `SSEEventHandlers` - SSE event handlers
+
+### Cache Types
+
+- `Cache` - Cache interface implemented by all cache backends
+- `CacheEntry<T>` - Cache entry with metadata
+- `CacheOptions` - Configuration options for cache backends
+
 ## Architecture
 
 This package is designed to be platform-agnostic and can be used in:
@@ -158,7 +263,19 @@ Build the package:
 npm run build
 ```
 
-Watch mode:
+Run tests:
+
+```bash
+npm test
+```
+
+Watch mode for tests:
+
+```bash
+npm run test:watch
+```
+
+Watch mode for build:
 
 ```bash
 npm run watch

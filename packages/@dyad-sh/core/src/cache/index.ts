@@ -5,6 +5,8 @@
  */
 
 import type { Cache, CacheEntry, CacheOptions } from "../types";
+import { LocalStorageCache } from "./localStorage.cache";
+import { IndexedDBCache } from "./indexedDB.cache";
 
 /**
  * In-memory cache implementation
@@ -97,5 +99,19 @@ export class MemoryCache implements Cache {
  * Create a cache instance
  */
 export function createCache(options: CacheOptions = {}): Cache {
-  return new MemoryCache(options);
+  const storage = options.storage || "memory";
+  
+  switch (storage) {
+    case "localStorage":
+      return new LocalStorageCache(options);
+    case "indexedDB":
+      return new IndexedDBCache(options);
+    case "memory":
+    default:
+      return new MemoryCache(options);
+  }
 }
+
+// Export all cache implementations
+export { LocalStorageCache } from "./localStorage.cache";
+export { IndexedDBCache } from "./indexedDB.cache";
