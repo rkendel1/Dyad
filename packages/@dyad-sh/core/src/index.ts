@@ -21,3 +21,6 @@ export {
   createIpcClient,
   type ClientDetectionResult,
 } from "./clients/factory";
+
+// Export cache
+export { MemoryCache, createCache } from "./cache";

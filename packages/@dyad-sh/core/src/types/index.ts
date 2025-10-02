@@ -117,3 +117,90 @@ export interface AppSettings {
   preferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null;
   previewUrl?: string | null;
 }
+
+/**
+ * Streaming support types
+ */
+
+/**
+ * Streaming message chunk
+ */
+export interface StreamChunk {
+  type: "chunk" | "end" | "error";
+  content?: string;
+  error?: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Streaming callback options
+ */
+export interface StreamCallbacks {
+  onChunk?: (chunk: string) => void;
+  onEnd?: () => void;
+  onError?: (error: string) => void;
+  onMetadata?: (metadata: Record<string, any>) => void;
+}
+
+/**
+ * WebSocket support types
+ */
+
+/**
+ * WebSocket connection state
+ */
+export type WebSocketState = "connecting" | "connected" | "disconnecting" | "disconnected";
+
+/**
+ * WebSocket message
+ */
+export interface WebSocketMessage {
+  type: string;
+  payload: any;
+  id?: string;
+  timestamp?: number;
+}
+
+/**
+ * WebSocket event handlers
+ */
+export interface WebSocketEventHandlers {
+  onOpen?: () => void;
+  onClose?: () => void;
+  onError?: (error: Error) => void;
+  onMessage?: (message: WebSocketMessage) => void;
+}
+
+/**
+ * Offline caching support types
+ */
+
+/**
+ * Cache entry
+ */
+export interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl?: number; // Time to live in milliseconds
+  key: string;
+}
+
+/**
+ * Cache options
+ */
+export interface CacheOptions {
+  ttl?: number; // Default TTL in milliseconds
+  maxSize?: number; // Maximum number of entries
+  storage?: "memory" | "localStorage" | "indexedDB";
+}
+
+/**
+ * Cache interface
+ */
+export interface Cache {
+  get<T>(key: string): Promise<T | null>;
+  set<T>(key: string, value: T, ttl?: number): Promise<void>;
+  delete(key: string): Promise<void>;
+  clear(): Promise<void>;
+  has(key: string): Promise<boolean>;
+}
