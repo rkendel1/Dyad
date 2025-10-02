@@ -380,7 +380,7 @@ export function AppDetailsPage() {
                         <p>No messages yet. Start the conversation!</p>
                       </div>
                     )}
-                    {messages.map((message, idx) => (
+                    {messages.map((message) => (
                       <div
                         key={message.id}
                         className={`flex ${

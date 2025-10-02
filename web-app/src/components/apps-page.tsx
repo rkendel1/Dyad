@@ -41,7 +41,7 @@ export function AppsPage() {
       try {
         await dyadClient.checkHealth();
         setConnectionStatus("connected");
-      } catch (error) {
+      } catch {
         setConnectionStatus("disconnected");
       }
     };
