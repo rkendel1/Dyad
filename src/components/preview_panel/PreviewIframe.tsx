@@ -53,6 +53,8 @@ import { showSuccess, showError } from "@/lib/toast";
 import { PreviewSizePresets } from "./PreviewSizePresets";
 import { PreviewScreenshotButton } from "./PreviewScreenshotButton";
 import { PreviewHistoryMenu } from "./PreviewHistoryMenu";
+import { PreviewQuickLaunch } from "./PreviewQuickLaunch";
+import { PreviewKeyboardShortcuts } from "./PreviewKeyboardShortcuts";
 import { addToPreviewHistoryAtom } from "@/atoms/previewHistoryAtoms";
 
 interface ErrorBannerProps {
@@ -872,6 +874,22 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
 
         {/* Action Buttons */}
         <div className="flex space-x-1 items-center">
+          <PreviewQuickLaunch
+            onRestart={onRestart}
+            onCleanRestart={() => restartApp({ removeNodeModules: true })}
+            onRefresh={handleReload}
+            onOpenExternal={() => {
+              if (originalUrl) {
+                IpcClient.getInstance().openExternalPreview(originalUrl);
+              }
+            }}
+            onOpenBrowser={() => {
+              if (originalUrl) {
+                IpcClient.getInstance().openExternalUrl(originalUrl);
+              }
+            }}
+            disabled={!originalUrl}
+          />
           <PreviewSizePresets
             onSizeChange={(width, height) => {
               if (width === -1 && height === -1) {
@@ -940,6 +958,7 @@ export const PreviewIframe = ({ loading }: { loading: boolean }) => {
           >
             <ExternalLink size={16} />
           </button>
+          <PreviewKeyboardShortcuts />
         </div>
       </div>
 
