@@ -32,4 +32,10 @@ export type {
   CreateAppParams,
   CreateAppResult,
   AppSettings,
+  ProposalResult,
+  CodeProposal,
+  ActionProposal,
+  FileChange,
+  SqlQuery,
+  SecurityRisk,
 } from "dyad-sh-core";
