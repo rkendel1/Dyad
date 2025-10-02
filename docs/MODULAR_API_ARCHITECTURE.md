@@ -69,12 +69,12 @@ Core library containing shared types, interfaces, and client implementations.
 **Location**: `packages/@dyad-sh/core`
 
 **Exports**:
-- Type definitions (`App`, `Chat`, `Message`, `StreamChunk`, `CacheEntry`, etc.)
+- Type definitions (`App`, `Chat`, `Message`, `StreamChunk`, `CacheEntry`, `SSEMessage`, etc.)
 - Client interface (`DyadClient`, `AppApi`, `ChatApi`, `SettingsApi`)
 - HTTP client implementation (`HttpClient`)
 - IPC client implementation (`IpcClient`)
 - Client factory functions (`createDyadClient`, `createHttpClient`, `createIpcClient`, `detectBackend`)
-- Cache implementation (`MemoryCache`, `createCache`)
+- Cache implementations (`MemoryCache`, `LocalStorageCache`, `IndexedDBCache`, `createCache`)
 
 **Dependencies**: None (pure TypeScript)
 
@@ -289,9 +289,15 @@ const client = createHttpClient({
   baseUrl: "http://localhost:3000",
 });
 
+// Choose cache backend based on environment
+// - "memory": Fast, but data lost on page reload
+// - "localStorage": Persistent, but limited to ~5MB
+// - "indexedDB": Persistent, larger storage capacity
+
 const cache = createCache({
   ttl: 300000, // 5 minutes
   maxSize: 100,
+  storage: "indexedDB", // or "memory" or "localStorage"
 });
 
 // Cache apps
@@ -302,6 +308,11 @@ if (!apps) {
   apps = await client.apps.listApps();
   await cache.set(cacheKey, apps);
 }
+
+// Using different cache backends
+const memoryCache = createCache({ storage: "memory" }); // Default
+const localStorageCache = createCache({ storage: "localStorage" }); // Browser-only
+const indexedDBCache = createCache({ storage: "indexedDB" }); // Browser-only, recommended
 ```
 
 #### Using React Hooks
@@ -505,11 +516,18 @@ describe("Integration", () => {
 - [x] Create `@dyad-sh/sdk` high-level SDK package
 - [x] Add comprehensive documentation
 
-### Phase 7: Future Enhancements
+### Phase 7: Real-time and Offline Enhancements ✅ (Complete)
+
+- [x] Server-Sent Events (SSE) type definitions
+- [x] LocalStorage cache implementation
+- [x] IndexedDB cache implementation
+- [x] Unified cache factory with backend selection
+- [x] Comprehensive test suite for all cache backends
+
+### Phase 8: Future Enhancements
 
 - [ ] WebSocket client implementation
-- [ ] Streaming client with Server-Sent Events
-- [ ] LocalStorage and IndexedDB cache implementations
+- [ ] SSE client implementation
 - [ ] Mobile client (`@dyad-sh/mobile`)
 - [ ] Vue composables package (`@dyad-sh/vue`)
 - [ ] Browser extension support
