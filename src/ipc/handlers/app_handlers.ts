@@ -1033,11 +1033,18 @@ export function registerAppHandlers() {
               `Removing node_modules for app ${appId} at ${nodeModulesPath}`,
             );
             if (fs.existsSync(nodeModulesPath)) {
-              await fsPromises.rm(nodeModulesPath, {
-                recursive: true,
-                force: true,
-              });
-              logger.log(`Successfully removed node_modules for app ${appId}`);
+              try {
+                await fsPromises.rm(nodeModulesPath, {
+                  recursive: true,
+                  force: true,
+                });
+                logger.log(`Successfully removed node_modules for app ${appId}`);
+              } catch (e: any) { // Catch the error here
+                logger.warn(
+                  `Failed to remove node_modules for app ${appId}. This might be due to file locks. Proceeding with restart. Error: ${e.message}`,
+                );
+                // Do NOT re-throw the error, allow the app to continue restarting
+              }
             } else {
               logger.log(`No node_modules directory found for app ${appId}`);
             }
@@ -1275,7 +1282,7 @@ export function registerAppHandlers() {
         const newAppPath = getDyadAppPath(appPath);
         // Only move files if needed
         if (newAppPath !== oldAppPath) {
-          // Move app files
+          // Move files
           try {
             // Check if destination directory already exists
             if (fs.existsSync(newAppPath)) {
