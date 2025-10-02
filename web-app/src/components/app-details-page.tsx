@@ -23,6 +23,7 @@ import {
   Loader2,
   Bot,
 } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 export function AppDetailsPage() {
   const params = useParams();
@@ -396,29 +397,25 @@ export function AppDetailsPage() {
                           }`}
                         >
                           {message.role === "assistant" ? (
-                            <div className="prose prose-sm max-w-none dark:prose-invert">
-                              <div className="whitespace-pre-wrap break-words">
-                                {message.content && message.content.length > 500 ? (
-                                  <div>
-                                    <p className="font-semibold text-xs uppercase tracking-wide mb-2 opacity-70">
-                                      Summary
-                                    </p>
-                                    <p className="text-sm">
-                                      {message.content.substring(0, 500)}...
-                                    </p>
-                                    <details className="mt-2">
-                                      <summary className="cursor-pointer text-xs text-primary hover:underline">
-                                        Show full message
-                                      </summary>
-                                      <div className="mt-2 text-sm">
-                                        {message.content}
-                                      </div>
-                                    </details>
-                                  </div>
-                                ) : (
-                                  <p className="text-sm">{message.content}</p>
-                                )}
-                              </div>
+                            <div>
+                              {message.content && message.content.length > 500 ? (
+                                <div>
+                                  <p className="font-semibold text-xs uppercase tracking-wide mb-2 opacity-70">
+                                    Summary
+                                  </p>
+                                  <MarkdownRenderer content={message.content.substring(0, 500) + "..."} />
+                                  <details className="mt-2">
+                                    <summary className="cursor-pointer text-xs text-primary hover:underline">
+                                      Show full message
+                                    </summary>
+                                    <div className="mt-2">
+                                      <MarkdownRenderer content={message.content} />
+                                    </div>
+                                  </details>
+                                </div>
+                              ) : (
+                                <MarkdownRenderer content={message.content || ""} />
+                              )}
                             </div>
                           ) : (
                             <p className="text-sm whitespace-pre-wrap break-words">
