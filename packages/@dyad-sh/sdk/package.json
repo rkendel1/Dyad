@@ -1,0 +1,29 @@
+{
+  "name": "@dyad-sh/sdk",
+  "version": "0.1.0",
+  "description": "High-level SDK for Dyad - AI app builder",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "dyad",
+    "sdk",
+    "ai",
+    "builder"
+  ],
+  "author": "Will Chen",
+  "license": "MIT",
+  "dependencies": {
+    "@dyad-sh/core": "file:../core"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "dist/**/*"
+  ]
+}
