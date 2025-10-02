@@ -14,7 +14,7 @@ import type {
   CreateAppParams,
   CreateChatParams,
   SendMessageParams,
-} from "@dyad-sh/core";
+} from "dyad-sh-core";
 
 /**
  * Hook to use Dyad client instance

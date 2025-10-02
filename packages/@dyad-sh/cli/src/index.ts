@@ -4,4 +4,4 @@
  * CLI entry point
  */
 
-export { createHttpClient } from "@dyad-sh/core";
+export { createHttpClient } from "dyad-sh-core";

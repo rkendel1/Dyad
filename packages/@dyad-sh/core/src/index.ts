@@ -1,5 +1,5 @@
 /**
- * @dyad-sh/core
+ * 
  * 
  * Core library for Dyad - AI App Builder
  * Provides shared types, interfaces, and client implementations for all platforms

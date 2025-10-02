@@ -6,7 +6,7 @@
  * Command-line interface for Dyad - AI App Builder
  */
 
-import { createHttpClient, type DyadClient } from "@dyad-sh/core";
+import { createHttpClient, type DyadClient } from "dyad-sh-core";
 
 /**
  * CLI Configuration
