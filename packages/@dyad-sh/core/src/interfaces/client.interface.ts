@@ -17,6 +17,8 @@ import type {
   SendMessageParams,
   HealthResponse,
   AppSettings,
+  ProposalResult,
+  ApproveProposalResult,
 } from "../types";
 
 /**
@@ -89,6 +91,21 @@ export interface ChatApi {
    * Send a message to a chat
    */
   sendMessage(params: SendMessageParams): Promise<Message>;
+
+  /**
+   * Get proposal for a chat (if any)
+   */
+  getProposal(chatId: number): Promise<ProposalResult | null>;
+
+  /**
+   * Approve a proposal
+   */
+  approveProposal(chatId: number, messageId: number): Promise<ApproveProposalResult>;
+
+  /**
+   * Reject a proposal
+   */
+  rejectProposal(chatId: number, messageId: number): Promise<void>;
 }
 
 /**

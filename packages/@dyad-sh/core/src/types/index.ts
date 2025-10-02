@@ -241,3 +241,68 @@ export interface Cache {
   clear(): Promise<void>;
   has(key: string): Promise<boolean>;
 }
+
+/**
+ * Proposal-related types
+ */
+
+export interface FileChange {
+  name: string;
+  path: string;
+  summary: string;
+  type: "write" | "rename" | "delete";
+  isServerFunction: boolean;
+}
+
+export interface SqlQuery {
+  content: string;
+  description?: string;
+}
+
+export interface SecurityRisk {
+  severity: "low" | "medium" | "high";
+  description: string;
+}
+
+export interface CodeProposal {
+  type: "code-proposal";
+  title: string;
+  securityRisks: SecurityRisk[];
+  filesChanged: FileChange[];
+  packagesAdded: string[];
+  sqlQueries: SqlQuery[];
+}
+
+export type SuggestedAction =
+  | { id: "restart-app" }
+  | { id: "summarize-in-new-chat" }
+  | { id: "write-code-properly" }
+  | { id: "refactor-file"; path: string }
+  | { id: "rebuild" }
+  | { id: "restart" }
+  | { id: "refresh" }
+  | { id: "keep-going" };
+
+export interface ActionProposal {
+  type: "action-proposal";
+  actions: SuggestedAction[];
+}
+
+export interface TipProposal {
+  type: "tip-proposal";
+  title: string;
+  description: string;
+}
+
+export type Proposal = CodeProposal | ActionProposal | TipProposal;
+
+export interface ProposalResult {
+  proposal: Proposal;
+  chatId: number;
+  messageId: number;
+}
+
+export interface ApproveProposalResult {
+  extraFiles?: string[];
+  extraFilesError?: string;
+}

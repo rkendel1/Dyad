@@ -3,12 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { dyadClient, type App, type Chat, type Message } from "@/lib/dyad-client";
-import { formatDistanceToNow } from "date-fns";
+import { dyadClient, type App, type Chat, type Message, type ProposalResult } from "@/lib/dyad-client";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,14 +14,13 @@ import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
   ArrowLeft,
-  MessageSquare,
-  Plus,
-  Send,
-  Trash2,
   Loader2,
-  Bot,
+  Trash2,
 } from "lucide-react";
-import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { ChatSidebar } from "@/components/chat-sidebar";
+import { MessagesDisplay } from "@/components/messages-display";
+import { MessageInput } from "@/components/message-input";
+import { ProposalDisplay } from "@/components/proposal-display";
 
 export function AppDetailsPage() {
   const params = useParams();
@@ -57,7 +54,7 @@ export function AppDetailsPage() {
     enabled: appId !== null,
   });
 
-  // Fetch messages for selected chat
+  // Fetch messages for selected chat - only when chat is selected and not streaming
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -66,7 +63,28 @@ export function AppDetailsPage() {
     queryKey: ["messages", selectedChatId],
     queryFn: () => dyadClient.chats.getChatMessages(selectedChatId!),
     enabled: selectedChatId !== null,
-    refetchInterval: 2000, // Poll for new messages every 2 seconds
+    refetchInterval: (query) => {
+      // Only poll if we have messages and the last message is from assistant (might be streaming)
+      const data = query.state.data;
+      if (!data || data.length === 0) return false;
+      const lastMessage = data[data.length - 1];
+      // If last message is from assistant and is short or empty, it might be streaming
+      if (lastMessage.role === "assistant" && (!lastMessage.content || lastMessage.content.length < 10)) {
+        return 1000; // Poll every 1 second during streaming
+      }
+      // Otherwise poll less frequently
+      return 5000; // Poll every 5 seconds for new messages
+    },
+  });
+
+  // Fetch proposal for selected chat
+  const {
+    data: proposal,
+  } = useQuery<ProposalResult | null, Error>({
+    queryKey: ["proposal", selectedChatId],
+    queryFn: () => dyadClient.chats.getProposal(selectedChatId!),
+    enabled: selectedChatId !== null,
+    refetchInterval: 3000, // Check for proposals every 3 seconds
   });
 
   // Create chat mutation
@@ -84,6 +102,7 @@ export function AppDetailsPage() {
       dyadClient.chats.sendMessage({ chatId: selectedChatId!, content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
+      queryClient.invalidateQueries({ queryKey: ["proposal", selectedChatId] });
       setMessageInput("");
     },
   });
@@ -104,6 +123,24 @@ export function AppDetailsPage() {
     mutationFn: () => dyadClient.apps.deleteApp(appId!),
     onSuccess: () => {
       router.push("/");
+    },
+  });
+
+  // Approve proposal mutation
+  const approveProposalMutation = useMutation({
+    mutationFn: () => dyadClient.chats.approveProposal(selectedChatId!, proposal!.messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", selectedChatId] });
+      queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
+    },
+  });
+
+  // Reject proposal mutation
+  const rejectProposalMutation = useMutation({
+    mutationFn: () => dyadClient.chats.rejectProposal(selectedChatId!, proposal!.messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", selectedChatId] });
+      queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
     },
   });
 
@@ -164,12 +201,24 @@ export function AppDetailsPage() {
     }
   };
 
+  const handleApproveProposal = () => {
+    if (proposal) {
+      approveProposalMutation.mutate();
+    }
+  };
+
+  const handleRejectProposal = () => {
+    if (proposal) {
+      rejectProposalMutation.mutate();
+    }
+  };
+
   // --- Streaming/Batching UI logic ---
   // If the last assistant message is empty or changing, show a typing indicator
   const isAssistantTyping = (() => {
     if (!messages || messages.length === 0) return false;
     const last = messages[messages.length - 1];
-    // If the last message is from assistant and is empty or just whitespace, or if the previous message is from user and the last is assistant with short content
+    // If the last message is from assistant and is empty or just whitespace
     if (last.role === "assistant" && (!last.content || last.content.trim() === "")) {
       return true;
     }
@@ -264,77 +313,16 @@ export function AppDetailsPage() {
         <div className="grid grid-cols-12 gap-4 h-full">
           {/* Chat List Sidebar */}
           <div className="col-span-3">
-            <Card className="h-full bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Chats</CardTitle>
-                  <Button
-                    size="sm"
-                    onClick={handleCreateChat}
-                    disabled={createChatMutation.isPending}
-                  >
-                    {createChatMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="overflow-y-auto max-h-[calc(100vh-200px)]">
-                {chatsLoading && (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                )}
-                {chatsError && (
-                  <div className="text-sm text-destructive">
-                    <AlertCircle className="h-4 w-4 inline mr-2" />
-                    Failed to load chats
-                  </div>
-                )}
-                {chats && chats.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    No chats yet. Create one to start!
-                  </div>
-                )}
-                {chats && chats.length > 0 && (
-                  <div className="space-y-2">
-                    {chats.map((chat) => (
-                      <div
-                        key={chat.id}
-                        className={`p-3 rounded-lg cursor-pointer transition-all group ${
-                          selectedChatId === chat.id
-                            ? "bg-primary/10 border-2 border-primary"
-                            : "hover:bg-accent border-2 border-transparent"
-                        }`}
-                        onClick={() => setSelectedChatId(chat.id)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {chat.title || `Chat ${chat.id}`}
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteChat(chat.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ChatSidebar
+              chats={chats}
+              selectedChatId={selectedChatId}
+              isLoading={chatsLoading}
+              error={chatsError}
+              onSelectChat={setSelectedChatId}
+              onCreateChat={handleCreateChat}
+              onDeleteChat={handleDeleteChat}
+              isCreating={createChatMutation.isPending}
+            />
           </div>
 
           {/* Chat Messages Area */}
@@ -348,132 +336,38 @@ export function AppDetailsPage() {
                     : "Select a chat"}
                 </CardTitle>
               </CardHeader>
-              <CardContent
-                className="flex-1 overflow-y-auto p-4"
-                ref={chatContentRef}
-              >
-                {!selectedChatId && (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <div className="text-center">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Select a chat to view messages</p>
-                    </div>
-                  </div>
-                )}
-                {selectedChatId && messagesLoading && (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                )}
-                {selectedChatId && messagesError && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center text-destructive">
-                      <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                      <p>Failed to load messages</p>
-                    </div>
-                  </div>
-                )}
-                {selectedChatId && messages && (
-                  <div className="space-y-4 max-w-4xl mx-auto">
-                    {messages.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p>No messages yet. Start the conversation!</p>
-                      </div>
-                    )}
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.role === "user"
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[85%] rounded-lg px-4 py-3 ${
-                            message.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-foreground"
-                          }`}
-                        >
-                          {message.role === "assistant" ? (
-                            <div>
-                              {message.content && message.content.length > 500 ? (
-                                <div>
-                                  <p className="font-semibold text-xs uppercase tracking-wide mb-2 opacity-70">
-                                    Summary
-                                  </p>
-                                  <MarkdownRenderer content={message.content.substring(0, 500) + "..."} />
-                                  <details className="mt-2">
-                                    <summary className="cursor-pointer text-xs text-primary hover:underline">
-                                      Show full message
-                                    </summary>
-                                    <div className="mt-2">
-                                      <MarkdownRenderer content={message.content} />
-                                    </div>
-                                  </details>
-                                </div>
-                              ) : (
-                                <MarkdownRenderer content={message.content || ""} />
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {message.content}
-                            </p>
-                          )}
-                          <p className="text-xs opacity-70 mt-2">
-                            {formatDistanceToNow(new Date(message.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {/* Typing indicator for streaming/AI response */}
-                    {isAssistantTyping && (
-                      <div className="flex justify-start">
-                        <div className="flex items-center gap-2 px-4 py-3 bg-muted rounded-lg max-w-[60%]">
-                          <Bot className="h-4 w-4 animate-bounce text-primary" />
-                          <span className="text-sm text-muted-foreground">
-                            AI is typing...
-                          </span>
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        </div>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                )}
-              </CardContent>
+              
+              {/* Proposal Display */}
+              {proposal && selectedChatId && (
+                <div className="p-4 border-b">
+                  <ProposalDisplay
+                    proposal={proposal}
+                    onApprove={handleApproveProposal}
+                    onReject={handleRejectProposal}
+                    isApproving={approveProposalMutation.isPending}
+                    isRejecting={rejectProposalMutation.isPending}
+                  />
+                </div>
+              )}
+
+              <MessagesDisplay
+                messages={messages}
+                selectedChatId={selectedChatId}
+                isLoading={messagesLoading}
+                error={messagesError}
+                isAssistantTyping={isAssistantTyping}
+                chatContentRef={chatContentRef}
+                messagesEndRef={messagesEndRef}
+              />
+              
               {selectedChatId && (
-                <CardFooter className="border-t pt-4 bg-card">
-                  <form
-                    onSubmit={handleSendMessage}
-                    className="flex gap-2 w-full"
-                  >
-                    <input
-                      type="text"
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-                      disabled={sendMessageMutation.isPending}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={
-                        !messageInput.trim() || sendMessageMutation.isPending
-                      }
-                    >
-                      {sendMessageMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </form>
-                </CardFooter>
+                <MessageInput
+                  value={messageInput}
+                  onChange={setMessageInput}
+                  onSubmit={handleSendMessage}
+                  disabled={sendMessageMutation.isPending}
+                  isLoading={sendMessageMutation.isPending}
+                />
               )}
             </Card>
           </div>
