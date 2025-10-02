@@ -1,0 +1,27 @@
+{
+  "name": "@dyad-sh/core",
+  "version": "0.1.0",
+  "description": "Core types and interfaces for Dyad - AI app builder",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "dyad",
+    "core",
+    "types",
+    "api"
+  ],
+  "author": "Will Chen",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {},
+  "files": [
+    "dist/**/*"
+  ]
+}
