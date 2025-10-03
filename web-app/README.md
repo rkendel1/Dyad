@@ -21,19 +21,45 @@ A Next.js-based web interface for managing Dyad AI applications.
 
 ## Getting Started
 
-1. Install dependencies:
+### Prerequisites
 
-```bash
-npm install
-```
+- Node.js 20 or higher
+- Dyad Desktop application running on `localhost:3000`
 
-2. Start the development server:
+### Installation & Running
 
-```bash
-npm run dev
-```
+1. **Install dependencies:**
 
-3. Open [http://localhost:5175](http://localhost:5175) in your browser.
+   From the root of the Dyad repository:
+
+   ```bash
+   npm install
+   ```
+
+   This will install dependencies for all workspace packages, including the web app.
+
+2. **Start the development server:**
+
+   **Option 1 - Using the interactive launcher (recommended):**
+
+   ```bash
+   npm run start:interactive
+   ```
+
+   Then select option 2 (Web App) or 3 (Both Apps)
+
+   **Option 2 - Direct start from web-app directory:**
+
+   ```bash
+   cd web-app
+   npm run dev
+   ```
+
+3. **Open your browser:**
+
+   Navigate to [http://localhost:5175](http://localhost:5175)
+
+   The interactive launcher will automatically open your browser when ready.
 
 ## Environment Variables
 
@@ -86,6 +112,8 @@ The web app connects to these Dyad Desktop API endpoints:
 - `DELETE /api/chats/:id` - Delete a chat
 
 ## Development
+
+All commands use npm for consistency:
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production

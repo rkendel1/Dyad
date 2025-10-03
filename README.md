@@ -43,17 +43,36 @@ For complete API documentation, see [docs/HTTP_API.md](./docs/HTTP_API.md).
 
 ## 🛠️ Development
 
-For developers who want to run Dyad from source, we provide an interactive launcher:
+For developers who want to run Dyad from source:
 
-```bash
-npm run start:interactive
-```
+### Quick Start
 
-This will prompt you to choose:
+1. **Install dependencies:**
 
-- **Desktop App** - Full Electron application
-- **Web App** - Next.js web interface on port 5175
-- **Both** - Run both simultaneously
+   ```bash
+   npm install
+   ```
+
+2. **Start Dyad:**
+
+   **Interactive Launcher** (recommended):
+
+   ```bash
+   npm run start:interactive
+   ```
+
+   This will prompt you to choose:
+
+   - **Desktop App** - Full Electron application
+   - **Web App** - Next.js web interface on port 5175
+   - **Both** - Run both simultaneously
+
+   **Direct Start:**
+
+   ```bash
+   npm start          # Start desktop app
+   npm run dev        # Start in development mode
+   ```
 
 For detailed setup and contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
