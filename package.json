@@ -158,7 +158,6 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
-    "dyad-sh-core": "0.1.0",
     "electron-log": "^5.3.3",
     "electron-playwright-helpers": "^1.7.1",
     "electron-squirrel-startup": "^1.0.1",
