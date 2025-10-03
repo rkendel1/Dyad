@@ -25,8 +25,8 @@ Dyad uses npm for all package management operations:
 ### Default Ports
 
 Apps use the following default port configuration:
-- **Desktop Apps**: Port range 5174-5274 (starting at 5174)
-- **Web App**: Port 5175
+- **Desktop Apps**: Port range 5174-5274 (starting at 5174, excluding 5175 which is reserved for web app)
+- **Web App**: Port 5175 (reserved and excluded from dynamic allocation)
 
 You can customize the port range in Settings > Workflow Settings > Port Range.
 

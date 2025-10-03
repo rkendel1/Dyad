@@ -48,7 +48,7 @@ function printOptions() {
   print("Please select what you would like to start:", colors.bright);
   console.log("");
   print("  1. Desktop App (Electron)", colors.green);
-  print("     → Full-featured desktop application on port 5174", colors.reset);
+  print("     → Full-featured desktop application (uses dynamic ports 5174-5274, excluding 5175)", colors.reset);
   console.log("");
   print("  2. Web App (Next.js)", colors.blue);
   print("     → Browser-based interface on port 5175", colors.reset);
