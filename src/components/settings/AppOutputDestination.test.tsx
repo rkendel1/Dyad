@@ -11,6 +11,7 @@ vi.mock("@/ipc/ipc_client", () => ({
       getApp: vi.fn(),
       showItemInFolder: vi.fn(),
       renameApp: vi.fn(),
+      selectDirectory: vi.fn(),
     })),
   },
 }));
@@ -134,6 +135,65 @@ describe("AppOutputDestination", () => {
     await waitFor(() => {
       const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
+    });
+  });
+
+  it("should allow browsing for directory", async () => {
+    const mockGetApp = vi.fn().mockResolvedValue({
+      id: 1,
+      name: "Test App",
+      path: "/path/to/test/app",
+    });
+
+    const mockSelectDirectory = vi.fn().mockResolvedValue({
+      path: "/new/path/to/app",
+    });
+
+    const mockIpcClient = {
+      getApp: mockGetApp,
+      showItemInFolder: vi.fn(),
+      renameApp: vi.fn(),
+      selectDirectory: mockSelectDirectory,
+    };
+
+    vi.mocked(IpcClient.getInstance).mockReturnValue(
+      mockIpcClient as any,
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AppOutputDestination appId={1} />
+      </QueryClientProvider>
+    );
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText("/path/to/test/app")).toBeInTheDocument();
+    });
+
+    // Click edit button
+    const editButton = screen.getByRole("button", { name: /edit path/i });
+    fireEvent.click(editButton);
+
+    // Wait for browse button to appear
+    await waitFor(() => {
+      const browseButton = screen.getByRole("button", { name: /browse for directory/i });
+      expect(browseButton).toBeInTheDocument();
+    });
+
+    // Click browse button
+    const browseButton = screen.getByRole("button", { name: /browse for directory/i });
+    fireEvent.click(browseButton);
+
+    // Check that selectDirectory was called
+    await waitFor(() => {
+      expect(mockSelectDirectory).toHaveBeenCalled();
+    });
+
+    // Check that the input value was updated
+    await waitFor(() => {
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("/new/path/to/app");
     });
   });
 });
