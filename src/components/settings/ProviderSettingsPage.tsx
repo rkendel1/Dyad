@@ -161,6 +161,87 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
     }
   };
 
+  // --- Multi-Key Handlers ---
+  const handleSaveMultiKey = async (key: any) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const existingKeys = settings?.providerSettings?.[provider]?.apiKeys || [];
+      // Deactivate all other keys if this is the first or being set as active
+      const updatedKeys = existingKeys.map((k) => ({
+        ...k,
+        isActive: false,
+      }));
+      updatedKeys.push(key);
+
+      await updateSettings({
+        providerSettings: {
+          ...settings?.providerSettings,
+          [provider]: {
+            ...settings?.providerSettings?.[provider],
+            apiKeys: updatedKeys,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error("Error saving multi-key:", error);
+      setSaveError(error.message || "Failed to save API key.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteMultiKey = async (keyId: string) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const existingKeys = settings?.providerSettings?.[provider]?.apiKeys || [];
+      const updatedKeys = existingKeys.filter((k) => k.id !== keyId);
+
+      await updateSettings({
+        providerSettings: {
+          ...settings?.providerSettings,
+          [provider]: {
+            ...settings?.providerSettings?.[provider],
+            apiKeys: updatedKeys,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error("Error deleting multi-key:", error);
+      setSaveError(error.message || "Failed to delete API key.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleActivateMultiKey = async (keyId: string) => {
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const existingKeys = settings?.providerSettings?.[provider]?.apiKeys || [];
+      const updatedKeys = existingKeys.map((k) => ({
+        ...k,
+        isActive: k.id === keyId,
+      }));
+
+      await updateSettings({
+        providerSettings: {
+          ...settings?.providerSettings,
+          [provider]: {
+            ...settings?.providerSettings?.[provider],
+            apiKeys: updatedKeys,
+          },
+        },
+      });
+    } catch (error: any) {
+      console.error("Error activating multi-key:", error);
+      setSaveError(error.message || "Failed to activate API key.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Effect to clear input error when input changes
   useEffect(() => {
     if (saveError) {
@@ -279,6 +360,9 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
             onApiKeyInputChange={setApiKeyInput}
             onSaveKey={handleSaveKey}
             onDeleteKey={handleDeleteKey}
+            onSaveMultiKey={handleSaveMultiKey}
+            onDeleteMultiKey={handleDeleteMultiKey}
+            onActivateMultiKey={handleActivateMultiKey}
             isDyad={isDyad}
           />
         )}

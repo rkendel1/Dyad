@@ -123,6 +123,17 @@ export function readSettings(): UserSettings {
           encryptionType,
         };
       }
+      // Decrypt multiple API keys if present
+      if (combinedSettings.providerSettings[provider].apiKeys) {
+        combinedSettings.providerSettings[provider].apiKeys =
+          combinedSettings.providerSettings[provider].apiKeys.map((key) => ({
+            ...key,
+            secret: {
+              value: decrypt(key.secret),
+              encryptionType: key.secret.encryptionType,
+            },
+          }));
+      }
       // Decrypt Vertex service account key if present
       const v = combinedSettings.providerSettings[
         provider
@@ -190,6 +201,14 @@ export function writeSettings(settings: Partial<UserSettings>): void {
         newSettings.providerSettings[provider].apiKey = encrypt(
           newSettings.providerSettings[provider].apiKey.value,
         );
+      }
+      // Encrypt multiple API keys if present
+      if (newSettings.providerSettings[provider].apiKeys) {
+        newSettings.providerSettings[provider].apiKeys =
+          newSettings.providerSettings[provider].apiKeys.map((key) => ({
+            ...key,
+            secret: encrypt(key.secret.value),
+          }));
       }
       // Encrypt Vertex service account key if present
       const v = newSettings.providerSettings[provider] as VertexProviderSetting;

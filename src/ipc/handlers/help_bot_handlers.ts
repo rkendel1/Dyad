@@ -1,6 +1,8 @@
 import { ipcMain } from "electron";
 import { streamText, Tool } from "ai";
 import { readSettings } from "../../main/settings";
+import { getActiveApiKey } from "../../lib/api-key-utils";
+import { getEnvVar } from "../utils/read_env";
 
 import log from "electron-log";
 import { safeSend } from "../utils/safe_sender";
@@ -45,7 +47,18 @@ export function registerHelpBotHandlers() {
         const abortController = new AbortController();
         activeHelpStreams.set(sessionId, abortController);
         const settings = await readSettings();
-        const apiKey = settings.providerSettings?.["auto"]?.apiKey?.value;
+        
+        // Build envVars for auto provider
+        const envVars: Record<string, string | undefined> = {};
+        // Note: "auto" provider typically doesn't have an env var, but we'll handle it generically
+        const autoEnvVar = getEnvVar("DYAD_API_KEY"); // or whatever the env var name is
+        if (autoEnvVar) {
+          envVars["DYAD_API_KEY"] = autoEnvVar;
+        }
+        
+        const activeKey = getActiveApiKey("auto", settings, envVars);
+        const apiKey = activeKey?.value;
+        
         const provider = createOpenAI({
           baseURL: "https://helpchat.dyad.sh/v1",
           apiKey,
