@@ -45,8 +45,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
   const [customAppName, setCustomAppName] = useState<string>("");
   const [nameExists, setNameExists] = useState<boolean>(false);
   const [isCheckingName, setIsCheckingName] = useState<boolean>(false);
-  const [installCommand, setInstallCommand] = useState("pnpm install");
-  const [startCommand, setStartCommand] = useState("pnpm dev");
+  const [installCommand, setInstallCommand] = useState("npm install");
+  const [startCommand, setStartCommand] = useState("npm run dev");
   const [importMode, setImportMode] = useState<"folder" | "github">("folder");
   const [githubUrl, setGithubUrl] = useState<string>("");
   const navigate = useNavigate();
@@ -174,8 +174,8 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
     setHasAiRules(null);
     setCustomAppName("");
     setNameExists(false);
-    setInstallCommand("pnpm install");
-    setStartCommand("pnpm dev");
+    setInstallCommand("npm install");
+    setStartCommand("npm run dev");
     setGithubUrl("");
     setGithubUrlError("");
   };
@@ -394,7 +394,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                       <Input
                         value={installCommand}
                         onChange={(e) => setInstallCommand(e.target.value)}
-                        placeholder="pnpm install"
+                        placeholder="npm install"
                         disabled={
                           importAppMutation.isPending ||
                           importFromGithubMutation.isPending
@@ -406,7 +406,7 @@ export function ImportAppDialog({ isOpen, onClose }: ImportAppDialogProps) {
                       <Input
                         value={startCommand}
                         onChange={(e) => setStartCommand(e.target.value)}
-                        placeholder="pnpm dev"
+                        placeholder="npm run dev"
                         disabled={
                           importAppMutation.isPending ||
                           importFromGithubMutation.isPending

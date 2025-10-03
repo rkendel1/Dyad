@@ -36,7 +36,7 @@ export interface App {
  * Application settings
  */
 export interface AppSettings {
-  preferredPackageManager: "npm" | "yarn" | "pnpm" | "bun" | null;
+  preferredPackageManager: "npm" | null;
   previewUrl: string | null;
   installCommand: string | null;
   startCommand: string | null;

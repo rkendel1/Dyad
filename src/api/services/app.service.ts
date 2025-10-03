@@ -98,13 +98,10 @@ export class AppService {
 
     return {
       preferredPackageManager:
-        (app.preferredPackageManager as
-          | "npm"
-          | "yarn"
-          | "pnpm"
-          | "bun"
-          | null) || null,
+        (app.preferredPackageManager as "npm" | null) || null,
       previewUrl: app.previewUrl || null,
+      installCommand: app.installCommand || null,
+      startCommand: app.startCommand || null,
     };
   }
 
@@ -142,13 +139,10 @@ export class AppService {
 
     return {
       preferredPackageManager:
-        (updatedApp?.preferredPackageManager as
-          | "npm"
-          | "yarn"
-          | "pnpm"
-          | "bun"
-          | null) || null,
+        (updatedApp?.preferredPackageManager as "npm" | null) || null,
       previewUrl: updatedApp?.previewUrl || null,
+      installCommand: updatedApp?.installCommand || null,
+      startCommand: updatedApp?.startCommand || null,
     };
   }
 

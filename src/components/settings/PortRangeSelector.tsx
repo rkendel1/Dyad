@@ -147,6 +147,8 @@ export function PortRangeSelector() {
           {settings.portRange?.max || 5274}
           <br />
           Apps can now use any available port in this range (default: 5174-5274).
+          <br />
+          Note: Port 5175 is reserved for the web app and will be excluded from dynamic allocation.
         </div>
       </div>
     </div>
