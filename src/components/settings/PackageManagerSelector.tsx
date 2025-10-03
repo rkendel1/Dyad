@@ -17,7 +17,7 @@ export function PackageManagerSelector() {
   }
 
   const handlePackageManagerChange = async (
-    value: "npm" | "yarn" | "pnpm" | "bun",
+    value: "npm",
   ) => {
     try {
       await updateSettings({ preferredPackageManager: value });
@@ -45,16 +45,11 @@ export function PackageManagerSelector() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="npm">npm</SelectItem>
-              <SelectItem value="yarn">yarn</SelectItem>
-              <SelectItem value="pnpm">pnpm</SelectItem>
-              <SelectItem value="bun">bun</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Choose which package manager Dyad should use for installing
-          dependencies and running scripts. If not set, Dyad will auto-detect
-          based on your project's lock files.
+          Dyad uses npm for installing dependencies and running scripts.
         </div>
       </div>
     </div>
