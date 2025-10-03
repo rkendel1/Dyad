@@ -22,8 +22,11 @@ import {
   Trash2,
   Loader2,
   Bot,
+  FileText,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FileBrowser } from "@/components/file-browser";
 
 export function AppDetailsPage() {
   const params = useParams();
@@ -261,6 +264,19 @@ export function AppDetailsPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 h-[calc(100vh-88px)]">
+        <Tabs defaultValue="chat" className="h-full flex flex-col">
+          <TabsList className="mb-4">
+            <TabsTrigger value="chat">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="files">
+              <FileText className="h-4 w-4 mr-2" />
+              Files
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="chat" className="flex-1 overflow-hidden">
         <div className="grid grid-cols-12 gap-4 h-full">
           {/* Chat List Sidebar */}
           <div className="col-span-3">
@@ -478,6 +494,12 @@ export function AppDetailsPage() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="files" className="flex-1 overflow-hidden">
+            <FileBrowser appId={appId!} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
