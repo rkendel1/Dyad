@@ -26,6 +26,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { NeonConfigure } from "./NeonConfigure";
 import { AppPackageManagerSelector } from "@/components/settings/AppPackageManagerSelector";
 import { AppPreviewUrlInput } from "@/components/settings/AppPreviewUrlInput";
+import { AppCommandInput } from "@/components/settings/AppCommandInput";
+import { AppOutputDestination } from "@/components/settings/AppOutputDestination";
 
 const EnvironmentVariablesTitle = () => (
   <div className="flex items-center gap-2">
@@ -411,6 +413,8 @@ export const ConfigurePanel = () => {
           <CardContent className="space-y-4">
             <AppPackageManagerSelector appId={selectedAppId} />
             <AppPreviewUrlInput appId={selectedAppId} />
+            <AppCommandInput appId={selectedAppId} />
+            <AppOutputDestination appId={selectedAppId} />
           </CardContent>
         </Card>
       )}

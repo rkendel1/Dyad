@@ -310,6 +310,8 @@ export class IpcClient {
     settings: {
       preferredPackageManager?: "npm" | "yarn" | "pnpm" | "bun" | null;
       previewUrl?: string | null;
+      installCommand?: string | null;
+      startCommand?: string | null;
     };
   }) {
     return this.ipcRenderer.invoke("update-app-settings", params);

@@ -38,6 +38,8 @@ export interface App {
 export interface AppSettings {
   preferredPackageManager: "npm" | "yarn" | "pnpm" | "bun" | null;
   previewUrl: string | null;
+  installCommand: string | null;
+  startCommand: string | null;
 }
 
 /**
