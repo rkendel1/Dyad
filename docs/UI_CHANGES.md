@@ -3,6 +3,8 @@
 ## Overview
 This document describes the UI changes made to support multi-API key management and enhanced token usage features.
 
+![Multi-API Key Management UI](https://github.com/user-attachments/assets/5d63556e-81af-4842-9fdc-8db6967a8cb4)
+
 ## 1. API Key Configuration Page
 
 ### Active Key Display

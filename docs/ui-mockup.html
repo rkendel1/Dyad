@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Key Management UI Mockup</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a1a1a; margin-top: 0; }
+        h2 { color: #333; font-size: 20px; margin-top: 24px; }
+        .active-key {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .active-key h3 {
+            color: #059669;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .active-key h3::before {
+            content: '✓';
+            margin-right: 8px;
+            font-weight: bold;
+        }
+        .key-name { font-weight: 600; color: #1a1a1a; }
+        .key-value { 
+            font-family: 'Monaco', 'Courier New', monospace; 
+            color: #666; 
+            font-size: 13px;
+        }
+        .key-source { color: #666; font-size: 12px; margin-top: 4px; }
+        .accordion {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .accordion-header {
+            background: #f9fafb;
+            padding: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-content {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .key-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .key-info { flex: 1; }
+        .key-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .badge {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        .btn:hover { background: #f3f4f6; }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-danger {
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        .btn-danger:hover { background: #fee2e2; }
+        .add-key-form {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .token-bar {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+        .token-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        .token-bar-visual {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+        }
+        .token-segment {
+            height: 100%;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .tooltip {
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 10;
+            max-width: 320px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .tooltip-grid {
+            display: grid;
+            grid-template-columns: 20px 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .icon { width: 16px; height: 16px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h1>🔑 Multi-API Key Management UI</h1>
+    
+    <div class="container">
+        <h2>1. Active Key Display</h2>
+        <div class="active-key">
+            <h3>Active API Key</h3>
+            <div class="key-name">Personal OpenAI Key</div>
+            <div class="key-value">sk-pr...4XYZ</div>
+            <div class="key-source">Source: Managed Keys</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>2. Manage API Keys</h2>
+        <div class="accordion">
+            <div class="accordion-header">
+                Manage API Keys
+                <span>▼</span>
+            </div>
+            <div class="accordion-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <strong>API Keys</strong>
+                    <button class="btn btn-primary">+ Add Key</button>
+                </div>
+
+                <div class="key-card">
+                    <div class="key-info">
+                        <div class="key-title">
+                            <span class="key-name">Personal OpenAI Key</span>
+                            <span class="badge">Active</span>
+                        </div>
+                        <div class="key-value">sk-pr...4XYZ</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-danger">🗑️</button>
+                    </div>
+                </div>
+
+                <div class="key-card">
+                    <div class="key-info">
+                        <div class="key-title">
+                            <span class="key-name">Work Account</span>
+                        </div>
+                        <div class="key-value">sk-wo...8ABC</div>
+                    </div>
+                    <div>
+                        <button class="btn">✓ Activate</button>
+                        <button class="btn btn-danger">🗑️</button>
+                    </div>
+                </div>
+
+                <div class="add-key-form" style="display: none;" id="addKeyForm">
+                    <input type="text" class="input" placeholder="Key name (e.g., 'Personal', 'Work')">
+                    <input type="password" class="input" placeholder="API Key">
+                    <div>
+                        <button class="btn btn-primary">Save Key</button>
+                        <button class="btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-header">
+                API Key from Environment Variable
+                <span>▼</span>
+            </div>
+            <div class="accordion-content">
+                <div style="background: #f3f4f6; padding: 12px; border-radius: 6px;">
+                    <strong>Environment Variable Key (OPENAI_API_KEY)</strong>
+                    <div class="key-value" style="margin-top: 4px;">sk-en...9ENV</div>
+                    <div style="color: #f59e0b; font-size: 12px; margin-top: 8px;">
+                        ⚠️ This key is available but not active (overridden by managed key).
+                    </div>
+                </div>
+                <p style="color: #666; font-size: 12px; margin-top: 12px; margin-bottom: 0;">
+                    This key is set outside the application. Requires app restart to detect changes.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>3. Token Bar with Warning</h2>
+        <div class="token-bar">
+            <div class="token-info">
+                <span>Tokens: 104,857 <span style="color: #3b82f6; cursor: help;">ℹ️</span></span>
+                <span>82% of 128K</span>
+            </div>
+            <div class="token-bar-visual">
+                <div class="token-segment" style="width: 15%; background: #3b82f6;"></div>
+                <div class="token-segment" style="width: 25%; background: #10b981;"></div>
+                <div class="token-segment" style="width: 12%; background: #f59e0b;"></div>
+                <div class="token-segment" style="width: 18%; background: #8b5cf6;"></div>
+                <div class="token-segment" style="width: 12%; background: #fbbf24;"></div>
+            </div>
+            <div class="warning">
+                ⚠️ Token usage is high (82%). Consider: 
+                <button class="btn" style="margin-left: 8px;">Clear Chat History</button>, 
+                starting a new chat, or reducing codebase context.
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>4. Token Tooltip (Hover State)</h2>
+        <div class="tooltip">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <strong>Token Usage Breakdown</strong>
+                <a href="#" style="color: #60a5fa;">ℹ️</a>
+            </div>
+            <div class="tooltip-grid">
+                <span style="color: #3b82f6;">💬</span>
+                <span>Message History</span>
+                <span>15,420</span>
+
+                <span style="color: #10b981;">📄</span>
+                <span>Codebase</span>
+                <span>25,800</span>
+
+                <span style="color: #f59e0b;">🔗</span>
+                <span>Mentioned Apps</span>
+                <span>1,200</span>
+
+                <span style="color: #8b5cf6;">🤖</span>
+                <span>System Prompt</span>
+                <span>1,811</span>
+
+                <span style="color: #fbbf24;">✏️</span>
+                <span>Current Input</span>
+                <span>1,000</span>
+            </div>
+            <div style="border-top: 1px solid #374151; padding-top: 8px; margin-top: 8px; display: flex; justify-content: space-between;">
+                <strong>Total</strong>
+                <strong>45,231</strong>
+            </div>
+            <div style="border-top: 1px solid #374151; padding-top: 8px; margin-top: 8px; font-size: 11px; color: #9ca3af;">
+                <strong>Note:</strong> Token usage is calculated per chat session, not cumulatively.<br><br>
+                To reduce usage: start a new chat, clear history, minimize codebase context, or reduce message history.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple toggle for add key form
+        document.querySelector('.btn-primary').addEventListener('click', function(e) {
+            if (e.target.textContent.includes('Add Key')) {
+                e.stopPropagation();
+                document.getElementById('addKeyForm').style.display = 'block';
+                e.target.textContent = '− Cancel';
+                e.target.classList.remove('btn-primary');
+            }
+        });
+    </script>
+</body>
+</html>
