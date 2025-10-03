@@ -108,7 +108,15 @@ userData/
 # Local Supabase volumes (Docker volumes for local development)
 volumes/storage/
 
+# App code directory - user applications
+app-code/*
+!app-code/README.md
+
+# Auth service dependencies
+services/auth/node_modules/
+
 # Generated files
 openapi.json
-quality-report.txtweb-app/.next/
+quality-report.txt
+web-app/.next/
 web-app/out/

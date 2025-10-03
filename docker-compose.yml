@@ -1,0 +1,369 @@
+# Dyad Development Environment
+# Comprehensive stack including Supabase and development tools
+
+services:
+  # ============================================
+  # SUPABASE SERVICES
+  # ============================================
+  
+  # PostgreSQL Database for Supabase
+  supabase-db:
+    image: supabase/postgres:15.1.1.91
+    container_name: dyad-supabase-db
+    restart: unless-stopped
+    ports:
+      - "54321:5432"
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}
+      POSTGRES_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      PGUSER: supabase_admin
+      POSTGRES_USER: supabase_admin
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      - supabase-data:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal
+    networks:
+      - dyad-network
+
+  # Kong API Gateway (Supabase API endpoint)
+  supabase-kong:
+    image: kong:2.8.1
+    container_name: dyad-supabase-kong
+    restart: unless-stopped
+    ports:
+      - "54322:8000/tcp"  # Auth API
+      - "8443:8443/tcp"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+    volumes:
+      - ./volumes/api/kong.yml:/var/lib/kong/kong.yml:ro
+    depends_on:
+      - supabase-auth
+    networks:
+      - dyad-network
+
+  # GoTrue Auth
+  supabase-auth:
+    image: supabase/gotrue:v2.159.4
+    container_name: dyad-supabase-auth
+    depends_on:
+      - supabase-db
+    restart: unless-stopped
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:54322
+
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}@supabase-db:5432/postgres?search_path=auth
+
+      GOTRUE_SITE_URL: http://localhost:3000
+      GOTRUE_URI_ALLOW_LIST: ""
+      GOTRUE_DISABLE_SIGNUP: false
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters-long}
+
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: true
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: false
+      GOTRUE_MAILER_AUTOCONFIRM: true
+      GOTRUE_MAILER_URLPATHS_INVITE: "http://localhost:3000/auth/v1/verify"
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: "http://localhost:3000/auth/v1/verify"
+      GOTRUE_MAILER_URLPATHS_RECOVERY: "http://localhost:3000/auth/v1/verify"
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "http://localhost:3000/auth/v1/verify"
+
+      GOTRUE_EXTERNAL_PHONE_ENABLED: true
+      GOTRUE_SMS_AUTOCONFIRM: true
+    networks:
+      - dyad-network
+
+  # PostgREST API
+  supabase-rest:
+    image: postgrest/postgrest:v12.0.1
+    container_name: dyad-supabase-rest
+    depends_on:
+      - supabase-db
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}@supabase-db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage,graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${SUPABASE_JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters-long}
+      PGRST_APP_SETTINGS_JWT_EXP: 3600
+    command:
+      - postgrest
+    networks:
+      - dyad-network
+
+  # Realtime (Supabase Realtime subscriptions)
+  supabase-realtime:
+    image: supabase/realtime:v2.33.53
+    container_name: dyad-supabase-realtime
+    depends_on:
+      - supabase-db
+    restart: unless-stopped
+    ports:
+      - "54323:4000"  # Realtime port
+    environment:
+      PORT: 4000
+      DB_HOST: supabase-db
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+      DB_ENC_KEY: supabaserealtime
+      API_JWT_SECRET: ${SUPABASE_JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters-long}
+      FLY_ALLOC_ID: fly123
+      FLY_APP_NAME: realtime
+      SECRET_KEY_BASE: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      ERL_AFLAGS: -proto_dist inet_tcp
+      ENABLE_TAILSCALE: "false"
+      DNS_NODES: "''"
+    command: >
+      sh -c "/app/bin/migrate && /app/bin/realtime eval 'Realtime.Release.seeds(Realtime.Repo)' && /app/bin/server"
+    networks:
+      - dyad-network
+
+  # Storage (Supabase Storage for assets/uploads)
+  supabase-storage:
+    image: supabase/storage-api:v1.11.7
+    container_name: dyad-supabase-storage
+    depends_on:
+      - supabase-db
+      - supabase-rest
+      - supabase-imgproxy
+    restart: unless-stopped
+    environment:
+      ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+      POSTGREST_URL: http://supabase-rest:3000
+      PGRST_JWT_SECRET: ${SUPABASE_JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters-long}
+      DATABASE_URL: postgres://supabase_storage_admin:${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}@supabase-db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: stub
+      GLOBAL_S3_BUCKET: stub
+      ENABLE_IMAGE_TRANSFORMATION: "true"
+      IMGPROXY_URL: http://supabase-imgproxy:5001
+    volumes:
+      - ./volumes/storage:/var/lib/storage:z
+    networks:
+      - dyad-network
+
+  # Image Proxy for Storage transformations
+  supabase-imgproxy:
+    image: darthsim/imgproxy:v3.8.0
+    container_name: dyad-supabase-imgproxy
+    healthcheck:
+      test: ["CMD", "imgproxy", "health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    environment:
+      IMGPROXY_BIND: ":5001"
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /
+      IMGPROXY_USE_ETAG: "true"
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+    volumes:
+      - ./volumes/storage:/var/lib/storage:z
+    networks:
+      - dyad-network
+
+  # Meta API (Edge Functions support)
+  supabase-meta:
+    image: supabase/postgres-meta:v0.84.2
+    container_name: dyad-supabase-meta
+    depends_on:
+      - supabase-db
+    restart: unless-stopped
+    ports:
+      - "54324:8080"  # Edge Functions port
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: supabase-db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: supabase_admin
+      PG_META_DB_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}
+    networks:
+      - dyad-network
+
+  # Supabase Studio Dashboard
+  supabase-studio:
+    image: supabase/studio:20241223-b1bbcf7
+    container_name: dyad-supabase-studio
+    restart: unless-stopped
+    ports:
+      - "3001:3000/tcp"
+    environment:
+      STUDIO_PG_META_URL: http://supabase-meta:8080
+      POSTGRES_PASSWORD: ${SUPABASE_POSTGRES_PASSWORD:-your-super-secret-and-long-postgres-password}
+
+      DEFAULT_ORGANIZATION_NAME: Default Organization
+      DEFAULT_PROJECT_NAME: Default Project
+
+      SUPABASE_URL: http://supabase-kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:54322
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU}
+    depends_on:
+      - supabase-meta
+    networks:
+      - dyad-network
+
+  # ============================================
+  # DEVELOPMENT SERVICES
+  # ============================================
+
+  # Code Server - Web-based VS Code IDE
+  code-server:
+    image: codercom/code-server:latest
+    container_name: dyad-code-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PASSWORD=${CODE_SERVER_PASSWORD:-dyad123}
+      - SUDO_PASSWORD=${CODE_SERVER_PASSWORD:-dyad123}
+    volumes:
+      - ./app-code:/home/coder/project
+      - code-server-data:/home/coder/.local/share/code-server
+    networks:
+      - dyad-network
+
+  # Dyad Test Server - For running and testing apps
+  dyad-test-server:
+    image: node:20-alpine
+    container_name: dyad-test-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    working_dir: /app
+    volumes:
+      - ./app-code:/app
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+    networks:
+      - dyad-network
+
+  # PostgreSQL - Main database for Dyad applications
+  postgres:
+    image: postgres:15-alpine
+    container_name: dyad-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dyad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dyad_password}
+      POSTGRES_DB: ${POSTGRES_DB:-dyad_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - dyad-network
+
+  # pgAdmin - PostgreSQL management interface
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dyad-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@dyad.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-dyad123}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - dyad-network
+
+  # Auth Service - Authentication and authorization service
+  auth-service:
+    image: node:20-alpine
+    container_name: dyad-auth-service
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    working_dir: /app
+    volumes:
+      - ./services/auth:/app
+    command: sh -c "npm install && npm start"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - JWT_SECRET=${AUTH_JWT_SECRET:-dyad-auth-secret-key}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-dyad}:${POSTGRES_PASSWORD:-dyad_password}@postgres:5432/${POSTGRES_DB:-dyad_db}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - dyad-network
+
+  # Redis - In-memory data structure store
+  redis:
+    image: redis:7-alpine
+    container_name: dyad-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - dyad-network
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  # Supabase volumes
+  supabase-data:
+    driver: local
+  
+  # Development service volumes
+  postgres-data:
+    driver: local
+  pgadmin-data:
+    driver: local
+  redis-data:
+    driver: local
+  code-server-data:
+    driver: local
+
+# ============================================
+# NETWORKS
+# ============================================
+networks:
+  dyad-network:
+    driver: bridge
