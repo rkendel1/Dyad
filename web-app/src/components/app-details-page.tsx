@@ -27,6 +27,7 @@ import {
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FileBrowser } from "@/components/file-browser";
+import { toast } from "sonner";
 
 export function AppDetailsPage() {
   const params = useParams();
@@ -78,6 +79,10 @@ export function AppDetailsPage() {
     onSuccess: (newChat) => {
       queryClient.invalidateQueries({ queryKey: ["chats", appId] });
       setSelectedChatId(newChat.id);
+      toast.success("Chat created successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to create chat: ${error.message}`);
     },
   });
 
@@ -88,6 +93,10 @@ export function AppDetailsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", selectedChatId] });
       setMessageInput("");
+      toast.success("Message sent");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to send message: ${error.message}`);
     },
   });
 
@@ -99,6 +108,10 @@ export function AppDetailsPage() {
       if (selectedChatId) {
         setSelectedChatId(null);
       }
+      toast.success("Chat deleted");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete chat: ${error.message}`);
     },
   });
 
@@ -106,7 +119,11 @@ export function AppDetailsPage() {
   const deleteAppMutation = useMutation({
     mutationFn: () => dyadClient.apps.deleteApp(appId!),
     onSuccess: () => {
+      toast.success("App deleted successfully");
       router.push("/");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete app: ${error.message}`);
     },
   });
 

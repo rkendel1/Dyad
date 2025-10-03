@@ -5,7 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { dyadApiClient } from "@/lib/api-client";
 import { FileTree } from "./file-tree";
 import { FileEditor } from "./file-editor";
-import { Loader2, FolderOpen, AlertCircle } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { FolderOpen, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface FileBrowserProps {
   appId: number;
@@ -45,6 +47,10 @@ export function FileBrowser({ appId }: FileBrowserProps) {
       queryClient.invalidateQueries({
         queryKey: ["file-content", appId, selectedFile],
       });
+      toast.success("File saved successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to save file: ${error.message}`);
     },
   });
 
@@ -55,7 +61,7 @@ export function FileBrowser({ appId }: FileBrowserProps) {
   if (filesLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -100,7 +106,7 @@ export function FileBrowser({ appId }: FileBrowserProps) {
       <div className="flex-1 overflow-hidden">
         {contentLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <Spinner size="lg" />
           </div>
         ) : contentError ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 text-red-500">
