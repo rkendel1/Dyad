@@ -54,6 +54,7 @@ npm run start:interactive
 ```
 
 This will prompt you to select:
+
 - Desktop App only (Electron)
 - Web App only (Next.js on port 5175)
 - Both apps simultaneously

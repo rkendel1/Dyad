@@ -50,6 +50,7 @@ npm run start:interactive
 ```
 
 This will prompt you to choose:
+
 - **Desktop App** - Full Electron application
 - **Web App** - Next.js web interface on port 5175
 - **Both** - Run both simultaneously
