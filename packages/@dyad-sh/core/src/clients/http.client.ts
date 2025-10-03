@@ -103,6 +103,19 @@ class HttpAppApi implements AppApi {
     return data.data;
   }
 
+  async updateAppPath(appId: number, path: string): Promise<App> {
+    const response = await fetch(`${this.baseUrl}/api/apps/${appId}/path`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ path }),
+    });
+    const data: ApiResponse<App> = await response.json();
+    if (!data.success || !data.data) {
+      throw new Error(data.error?.message || "Failed to update app path");
+    }
+    return data.data;
+  }
+
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { AppOutputDestination } from "@/components/settings/AppOutputDestination";
 import { IpcClient } from "@/ipc/ipc_client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ vi.mock("@/ipc/ipc_client", () => ({
     getInstance: vi.fn(() => ({
       getApp: vi.fn(),
       showItemInFolder: vi.fn(),
+      renameApp: vi.fn(),
     })),
   },
 }));
@@ -44,6 +45,7 @@ describe("AppOutputDestination", () => {
     const mockIpcClient = {
       getApp: mockGetApp,
       showItemInFolder: vi.fn(),
+      renameApp: vi.fn(),
     };
 
     vi.mocked(IpcClient.getInstance).mockReturnValue(
@@ -63,7 +65,7 @@ describe("AppOutputDestination", () => {
     expect(mockGetApp).toHaveBeenCalledWith(1);
   });
 
-  it("should display folder button", async () => {
+  it("should display edit and folder buttons", async () => {
     const mockGetApp = vi.fn().mockResolvedValue({
       id: 1,
       name: "Test App",
@@ -73,6 +75,7 @@ describe("AppOutputDestination", () => {
     const mockIpcClient = {
       getApp: mockGetApp,
       showItemInFolder: vi.fn(),
+      renameApp: vi.fn(),
     };
 
     vi.mocked(IpcClient.getInstance).mockReturnValue(
@@ -86,8 +89,51 @@ describe("AppOutputDestination", () => {
     );
 
     await waitFor(() => {
+      const editButton = screen.getByRole("button", { name: /edit path/i });
       const folderButton = screen.getByRole("button", { name: /open folder/i });
+      expect(editButton).toBeInTheDocument();
       expect(folderButton).toBeInTheDocument();
+    });
+  });
+
+  it("should allow editing the path", async () => {
+    const mockGetApp = vi.fn().mockResolvedValue({
+      id: 1,
+      name: "Test App",
+      path: "/path/to/test/app",
+    });
+
+    const mockRenameApp = vi.fn().mockResolvedValue(undefined);
+
+    const mockIpcClient = {
+      getApp: mockGetApp,
+      showItemInFolder: vi.fn(),
+      renameApp: mockRenameApp,
+    };
+
+    vi.mocked(IpcClient.getInstance).mockReturnValue(
+      mockIpcClient as any,
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AppOutputDestination appId={1} />
+      </QueryClientProvider>
+    );
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText("/path/to/test/app")).toBeInTheDocument();
+    });
+
+    // Click edit button
+    const editButton = screen.getByRole("button", { name: /edit path/i });
+    fireEvent.click(editButton);
+
+    // Check that input is visible
+    await waitFor(() => {
+      const input = screen.getByRole("textbox");
+      expect(input).toBeInTheDocument();
     });
   });
 });

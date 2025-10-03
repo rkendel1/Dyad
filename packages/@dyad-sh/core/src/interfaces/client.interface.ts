@@ -53,6 +53,11 @@ export interface AppApi {
    * Update application settings
    */
   updateAppSettings(appId: number, settings: AppSettings): Promise<AppSettings>;
+
+  /**
+   * Update application path
+   */
+  updateAppPath(appId: number, path: string): Promise<App>;
 }
 
 /**

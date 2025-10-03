@@ -153,6 +153,49 @@ export class AppService {
   }
 
   /**
+   * Update application path
+   * Note: For HTTP API, this only updates the database path.
+   * The full file moving logic is handled by the IPC handler for desktop apps.
+   */
+  async updateAppPath(appId: number, newPath: string): Promise<App> {
+    const app = await db.query.apps.findFirst({
+      where: eq(apps.id, appId),
+    });
+
+    if (!app) {
+      throw new Error(`App with ID ${appId} not found`);
+    }
+
+    // Check for path conflicts
+    const pathConflict = await db.query.apps.findFirst({
+      where: eq(apps.path, newPath),
+    });
+
+    if (pathConflict && pathConflict.id !== appId) {
+      throw new Error(`An app with the path '${newPath}' already exists`);
+    }
+
+    // Update the app path in database
+    await db
+      .update(apps)
+      .set({
+        path: newPath,
+      })
+      .where(eq(apps.id, appId));
+
+    // Return updated app
+    const updatedApp = await db.query.apps.findFirst({
+      where: eq(apps.id, appId),
+    });
+
+    if (!updatedApp) {
+      throw new Error(`Failed to retrieve updated app`);
+    }
+
+    return updatedApp as App;
+  }
+
+  /**
    * Delete an application
    */
   async deleteApp(appId: number): Promise<void> {

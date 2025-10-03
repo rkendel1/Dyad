@@ -69,6 +69,18 @@ class IpcAppApi implements AppApi {
       settings,
     });
   }
+
+  async updateAppPath(appId: number, path: string): Promise<App> {
+    // Use the rename-app IPC method to update the path
+    // This will handle moving files and updating the database
+    const app = await this.ipcRenderer.invoke("get-app", appId);
+    await this.ipcRenderer.invoke("rename-app", {
+      appId,
+      appName: app.name,
+      appPath: path,
+    });
+    return this.ipcRenderer.invoke("get-app", appId);
+  }
 }
 
 /**

@@ -39,4 +39,13 @@ router.put(
   appController.updateAppSettings,
 );
 
+/**
+ * PATCH /api/apps/:id/path - Update app path
+ */
+router.patch(
+  "/:id/path",
+  validateBody(appController.updateAppPathSchema),
+  appController.updateAppPath,
+);
+
 export default router;
