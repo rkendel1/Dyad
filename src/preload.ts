@@ -95,6 +95,7 @@ const validInvokeChannels = [
   "import-app",
   "check-ai-rules",
   "select-app-folder",
+  "select-directory",
   "check-app-name",
   "rename-branch",
   "clear-session-data",

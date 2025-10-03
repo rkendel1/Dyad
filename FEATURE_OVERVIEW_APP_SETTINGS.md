@@ -31,11 +31,16 @@
 ### 4. App Output Destination
 
 - **Location**: Configure tab > App Settings section
-- **Purpose**: Display and access the app's output folder
+- **Purpose**: Display, edit, and visually select the app's output folder
 - **Features**: 
   - Shows the folder path where app files are stored
+  - Edit button to enable path editing
+  - **Directory picker** button to browse and select directories visually (Desktop only)
+  - Manual path input for precise control
   - Open folder button to view in file manager
-  - Read-only display (path set during import)
+  - Save/Cancel buttons when editing
+  - Files are moved to new location on save (Desktop app)
+  - Database update only (Web app)
 
 ### 5. CLI Popout Component
 
@@ -79,8 +84,11 @@
 │ Set custom commands for this app...  │
 │                                      │
 │ Output Destination:             [NEW]│
-│ [/path/to/app/folder] [📁]          │
-│ The folder where app files are...   │
+│ [/path/to/app/folder] [✏️] [📁]     │
+│ (Edit mode):                        │
+│ [/path/to/app/folder] [📂] [✓] [✗]  │
+│ Enter path or browse with folder    │
+│ icon. Files moved to new location.  │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
