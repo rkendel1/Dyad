@@ -16,7 +16,28 @@
 - **Features**: URL validation, clear button, fallback to global/auto-detect
 - **Priority**: App-level > Global > Auto-detected
 
-### 3. CLI Popout Component
+### 3. App-Level Install and Start Commands
+
+- **Location**: Configure tab > App Settings section
+- **Purpose**: Set custom install and start commands for specific apps
+- **Features**: 
+  - Install command input (e.g., "pnpm install")
+  - Start command input (e.g., "pnpm dev")
+  - Both commands must be provided together
+  - Clear button to reset to auto-detection
+  - Fallback to auto-detected commands when not set
+- **Priority**: App-level custom commands > Auto-detected commands
+
+### 4. App Output Destination
+
+- **Location**: Configure tab > App Settings section
+- **Purpose**: Display and access the app's output folder
+- **Features**: 
+  - Shows the folder path where app files are stored
+  - Open folder button to view in file manager
+  - Read-only display (path set during import)
+
+### 5. CLI Popout Component
 
 - **Access**: Click External Link icon (↗) in System Messages header
 - **Features**:
@@ -48,6 +69,18 @@
 │ Preview URL:                         │
 │ [http://localhost:3000] [Save] [X]  │
 │ Override preview URL for this app... │
+│                                      │
+│ Install Command:                [NEW]│
+│ [pnpm install]                      │
+│                                      │
+│ Start Command:                  [NEW]│
+│ [pnpm dev]                          │
+│ [Save] [Clear]                      │
+│ Set custom commands for this app...  │
+│                                      │
+│ Output Destination:             [NEW]│
+│ [/path/to/app/folder] [📁]          │
+│ The folder where app files are...   │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐

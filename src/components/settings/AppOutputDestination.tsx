@@ -1,9 +1,9 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { IpcClient } from "@/ipc/ipc_client";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError } from "@/lib/toast";
 import { useState, useEffect } from "react";
-import { Folder, ExternalLink } from "lucide-react";
+import { Folder } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface AppOutputDestinationProps {
