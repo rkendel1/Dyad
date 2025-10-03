@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import log from "electron-log";
 import { DEFAULT_TEMPLATE_ID } from "@/shared/templates";
 import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
+import { migrateLegacyApiKeys } from "../lib/migrate-api-keys";
 
 const logger = log.scope("settings");
 
@@ -150,7 +151,16 @@ export function readSettings(): UserSettings {
     // Validate and merge with defaults
     const validatedSettings = UserSettingsSchema.parse(combinedSettings);
 
-    return validatedSettings;
+    // Migrate legacy API keys to multi-key format
+    const migratedSettings = migrateLegacyApiKeys(validatedSettings);
+    
+    // If migration happened, save the migrated settings
+    if (migratedSettings !== validatedSettings) {
+      logger.info("Migrated legacy API keys to multi-key format");
+      writeSettings(migratedSettings);
+    }
+
+    return migratedSettings;
   } catch (error) {
     logger.error("Error reading settings:", error);
     return DEFAULT_SETTINGS;

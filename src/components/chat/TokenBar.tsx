@@ -13,13 +13,11 @@ import {
   AlignLeft,
   ExternalLink,
   HelpCircle,
-  Trash2,
 } from "lucide-react";
 import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import { useAtom } from "jotai";
 import { useSettings } from "@/hooks/useSettings";
 import { IpcClient } from "@/ipc/ipc_client";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TokenBarProps {

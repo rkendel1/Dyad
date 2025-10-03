@@ -8,18 +8,9 @@ import {
 } from "@/components/ui/accordion";
 import { AzureConfiguration } from "./AzureConfiguration";
 import { VertexConfiguration } from "./VertexConfiguration";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { UserSettings, ApiKeyWithMetadata } from "@/lib/schemas";
 import { getActiveApiKey, getAllApiKeys, maskApiKey } from "@/lib/api-key-utils";
 import { ApiKeyManager } from "./ApiKeyManager";
-
-// Helper function to mask ENV API keys (move or duplicate if needed elsewhere)
-const maskEnvApiKey = (key: string | undefined): string => {
-  if (!key) return "Not Set";
-  if (key.length < 8) return "****";
-  return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
-};
 
 interface ApiKeyConfigurationProps {
   provider: string;
@@ -29,9 +20,9 @@ interface ApiKeyConfigurationProps {
   envVarName?: string;
   isSaving: boolean;
   saveError: string | null;
-  apiKeyInput: string;
-  onApiKeyInputChange: (value: string) => void;
-  onSaveKey: () => Promise<void>;
+  _apiKeyInput: string; // Legacy - no longer used with multi-key management
+  _onApiKeyInputChange: (value: string) => void; // Legacy - no longer used
+  _onSaveKey: () => Promise<void>; // Legacy - no longer used
   onDeleteKey: () => Promise<void>;
   onSaveMultiKey: (key: ApiKeyWithMetadata) => Promise<void>;
   onDeleteMultiKey: (keyId: string) => Promise<void>;
@@ -46,10 +37,10 @@ export function ApiKeyConfiguration({
   envVars,
   envVarName,
   isSaving,
-  saveError,
-  apiKeyInput,
-  onApiKeyInputChange,
-  onSaveKey,
+  saveError: _saveError, // Legacy - no longer used
+  _apiKeyInput,
+  _onApiKeyInputChange,
+  _onSaveKey,
   onDeleteKey,
   onSaveMultiKey,
   onDeleteMultiKey,

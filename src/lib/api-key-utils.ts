@@ -1,4 +1,4 @@
-import type { UserSettings, ApiKeyWithMetadata, Secret } from "./schemas";
+import type { UserSettings, ApiKeyWithMetadata } from "./schemas";
 
 export interface ActiveKeyInfo {
   value: string;
