@@ -67,6 +67,20 @@ export function registerImportHandlers() {
     return { path: selectedPath, name: folderName };
   });
 
+  // Handler for selecting a directory for output destination
+  handle("select-directory", async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openDirectory"],
+      title: "Select Directory",
+    });
+
+    if (result.canceled) {
+      return { path: null };
+    }
+
+    return { path: result.filePaths[0] };
+  });
+
   // Handler for checking if AI_RULES.md exists
   handle("check-ai-rules", async (_, { path: appPath }: { path: string }) => {
     try {

@@ -1212,6 +1212,12 @@ export class IpcClient {
     return this.ipcRenderer.invoke("select-app-folder");
   }
 
+  public async selectDirectory(): Promise<{
+    path: string | null;
+  }> {
+    return this.ipcRenderer.invoke("select-directory");
+  }
+
   public async checkAiRules(params: {
     path: string;
   }): Promise<{ exists: boolean }> {

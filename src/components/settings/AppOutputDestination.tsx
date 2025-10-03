@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { IpcClient } from "@/ipc/ipc_client";
 import { showError, showSuccess } from "@/lib/toast";
 import { useState, useEffect } from "react";
-import { Folder, Pencil, Check, X } from "lucide-react";
+import { Folder, Pencil, Check, X, FolderOpen } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface AppOutputDestinationProps {
@@ -44,6 +44,17 @@ export function AppOutputDestination({ appId }: AppOutputDestinationProps) {
   const handleEdit = () => {
     setIsEditing(true);
     setEditedPath(appPath);
+  };
+
+  const handleBrowse = async () => {
+    try {
+      const result = await IpcClient.getInstance().selectDirectory();
+      if (result.path) {
+        setEditedPath(result.path);
+      }
+    } catch (error: any) {
+      showError(`Failed to open directory picker: ${error.message}`);
+    }
   };
 
   const handleCancel = () => {
@@ -94,6 +105,15 @@ export function AppOutputDestination({ appId }: AppOutputDestinationProps) {
                 autoFocus
               />
               <Button
+                onClick={handleBrowse}
+                disabled={isSaving}
+                size="sm"
+                variant="outline"
+                title="Browse for directory"
+              >
+                <FolderOpen size={16} />
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={isSaving || !editedPath.trim()}
                 size="sm"
@@ -140,7 +160,7 @@ export function AppOutputDestination({ appId }: AppOutputDestinationProps) {
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {isEditing
-            ? "Enter the new path for your app files. The files will be moved to this location."
+            ? "Enter the path manually or click the folder icon to browse. The files will be moved to this location."
             : "The folder where your app files are stored. Click the edit icon to change the location."}
         </div>
       </div>
