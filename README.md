@@ -48,6 +48,7 @@ For developers who want to run Dyad from source:
 ### Quick Start
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
@@ -55,16 +56,19 @@ For developers who want to run Dyad from source:
 2. **Start Dyad:**
 
    **Interactive Launcher** (recommended):
+
    ```bash
    npm run start:interactive
    ```
 
    This will prompt you to choose:
+
    - **Desktop App** - Full Electron application
    - **Web App** - Next.js web interface on port 5175
    - **Both** - Run both simultaneously
 
    **Direct Start:**
+
    ```bash
    npm start          # Start desktop app
    npm run dev        # Start in development mode

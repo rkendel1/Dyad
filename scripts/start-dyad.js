@@ -29,12 +29,18 @@ function print(message, color = "") {
 
 function printHeader() {
   console.log("");
-  print("════════════════════════════════════════════════════════════════════════", colors.cyan);
+  print(
+    "════════════════════════════════════════════════════════════════════════",
+    colors.cyan,
+  );
   print(
     "                    🚀 Dyad Launcher                   ",
     colors.bright + colors.cyan,
   );
-  print("════════════════════════════════════════════════════════════════════════", colors.cyan);
+  print(
+    "════════════════════════════════════════════════════════════════════════",
+    colors.cyan,
+  );
   console.log("");
 }
 
@@ -69,7 +75,7 @@ function startDesktopApp() {
 
 function setupWebApp() {
   print("Setting up Web App...", colors.blue);
-  
+
   try {
     // Build the core package
     print("Building @dyad-sh/core package...", colors.cyan);
@@ -77,31 +83,34 @@ function setupWebApp() {
       cwd: path.join(__dirname, "..", "packages", "@dyad-sh", "core"),
       stdio: "inherit",
     });
-    
+
     // Install dependencies
     print("Installing dependencies...", colors.cyan);
     execSync("npm install", {
       cwd: path.join(__dirname, "..", "web-app"),
       stdio: "inherit",
     });
-    
+
     // Generate database schema
     print("Generating database schema...", colors.cyan);
     execSync("npm run db:generate", {
       cwd: path.join(__dirname, ".."),
       stdio: "inherit",
     });
-    
+
     // Push database schema
     print("Pushing database schema...", colors.cyan);
     execSync("npm run db:push", {
       cwd: path.join(__dirname, ".."),
       stdio: "inherit",
     });
-    
+
     print("Web App setup complete!", colors.green);
   } catch (error) {
-    print("Warning: Some setup steps failed, continuing anyway...", colors.yellow);
+    print(
+      "Warning: Some setup steps failed, continuing anyway...",
+      colors.yellow,
+    );
     console.error(error.message);
   }
 }
@@ -123,7 +132,7 @@ function startWebApp({ launchBrowser = false } = {}) {
     setTimeout(() => {
       const url = "http://localhost:5175";
       const platform = process.platform;
-      
+
       try {
         if (platform === "darwin") {
           // macOS
@@ -137,7 +146,10 @@ function startWebApp({ launchBrowser = false } = {}) {
         }
         print(`Browser opened at ${url}`, colors.green);
       } catch (error) {
-        print(`Could not auto-open browser. Please navigate to: ${url}`, colors.yellow);
+        print(
+          `Could not auto-open browser. Please navigate to: ${url}`,
+          colors.yellow,
+        );
       }
     }, 6000); // Adjust delay if your dev server is slower/faster
   }

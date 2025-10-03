@@ -31,6 +31,7 @@ A Next.js-based web interface for managing Dyad AI applications.
 1. **Install dependencies:**
 
    From the root of the Dyad repository:
+
    ```bash
    npm install
    ```
@@ -40,12 +41,15 @@ A Next.js-based web interface for managing Dyad AI applications.
 2. **Start the development server:**
 
    **Option 1 - Using the interactive launcher (recommended):**
+
    ```bash
    npm run start:interactive
    ```
+
    Then select option 2 (Web App) or 3 (Both Apps)
 
    **Option 2 - Direct start from web-app directory:**
+
    ```bash
    cd web-app
    npm run dev
