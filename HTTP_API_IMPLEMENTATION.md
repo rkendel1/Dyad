@@ -79,6 +79,7 @@ The Dyad application previously operated exclusively as a desktop application wi
 - `DELETE /api/apps/:id` - Delete application
 - `GET /api/apps/:id/settings` - Get app settings
 - `PUT /api/apps/:id/settings` - Update app settings
+- `PATCH /api/apps/:id/path` - Update app path
 
 **Chat Controller:**
 

@@ -52,25 +52,32 @@ The application already had a robust preview and configuration system:
 - Modified IPC handlers (`app_settings_handlers.ts`) to persist commands
 - Updated IPC client (`ipc_client.ts`) to support new parameters
 
-### 2. Output Destination Display ✨
+### 2. Output Destination Display & Editing ✨
 
-**Purpose**: Show developers where their app files are stored and provide easy access to the folder.
+**Purpose**: Show developers where their app files are stored, provide easy access to the folder, and allow them to update the output path in place.
 
 **Components Created**:
-- `AppOutputDestination.tsx` - UI component for output path display
+- `AppOutputDestination.tsx` - UI component for output path display and editing (Desktop)
 - `AppOutputDestination.test.tsx` - Unit tests
+- `app-output-destination.tsx` - UI component for web app
 
 **Features**:
-- Read-only display of app folder path
-- "Open folder" button to view in file manager
-- Uses existing `showItemInFolder` IPC method
+- Editable display of app folder path
+- Edit button to modify the path
+- "Open folder" button to view in file manager (desktop only)
+- Uses existing `renameApp` IPC method to update path
+- HTTP API endpoint for web app path updates
+- Validation to prevent conflicts
 - Clear, user-friendly interface
 - Helpful description text
 
 **Technical Implementation**:
-- Uses existing `app.path` from database
-- Leverages React Query for data fetching
-- Integrates with existing IPC client methods
+- Desktop: Uses existing `renameApp` IPC method to move files and update database
+- Web: Uses new HTTP API endpoint `PATCH /api/apps/:id/path` to update path
+- Leverages React Query for data fetching and cache invalidation
+- Added `updateAppPath` method to AppApi interface
+- Implemented in both IPC and HTTP clients
+- Service layer handles path conflict validation
 
 ## Files Modified
 
@@ -78,18 +85,25 @@ The application already had a robust preview and configuration system:
 - `src/types/app.types.ts` - Added `installCommand` and `startCommand` to `AppSettings`
 - `src/types/api.types.ts` - Extended `UpdateAppSettingsParams`
 
-### Backend (IPC)
+### Backend (IPC & HTTP API)
 - `src/ipc/handlers/app_settings_handlers.ts` - Added handling for new settings
 - `src/ipc/ipc_client.ts` - Updated client methods
+- `src/api/http/controllers/app.controller.ts` - Added `updateAppPath` endpoint
+- `src/api/http/routes/app.routes.ts` - Added route for path updates
+- `src/api/services/app.service.ts` - Added `updateAppPath` service method
+- `packages/@dyad-sh/core/src/clients/http.client.ts` - Added `updateAppPath` method
+- `packages/@dyad-sh/core/src/clients/ipc.client.ts` - Added `updateAppPath` method
+- `packages/@dyad-sh/core/src/interfaces/client.interface.ts` - Added to AppApi interface
 
 ### Frontend Components
 - `src/components/preview_panel/ConfigurePanel.tsx` - Added new components to UI
 - `src/components/settings/AppCommandInput.tsx` - New component (created)
-- `src/components/settings/AppOutputDestination.tsx` - New component (created)
+- `src/components/settings/AppOutputDestination.tsx` - Updated with edit functionality
+- `web-app/src/components/app-output-destination.tsx` - New component for web app
 
 ### Tests
 - `src/components/settings/AppCommandInput.test.tsx` - New test file
-- `src/components/settings/AppOutputDestination.test.tsx` - New test file
+- `src/components/settings/AppOutputDestination.test.tsx` - Updated with edit tests
 
 ### Documentation
 - `FEATURE_OVERVIEW_APP_SETTINGS.md` - Updated with new features
@@ -121,7 +135,7 @@ The Configure Panel now shows:
 │ [Save] [Clear]                              │
 │                                              │
 │ Output Destination:                     [NEW]│
-│ [/path/to/app/folder] [📁]                  │
+│ [/path/to/app/folder] [✏️] [📁]             │
 └─────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────┐
@@ -141,15 +155,25 @@ The Configure Panel now shows:
 
 ### Output Destination Flow
 1. Component fetches app data via React Query
-2. Displays the app's folder path
-3. User can click folder button to open in file manager
-4. Uses existing IPC `showItemInFolder` method
+2. Displays the app's folder path with edit and open folder buttons
+3. **Desktop App**:
+   - Click edit button to enable inline editing
+   - Enter new path and save
+   - Uses `renameApp` IPC method to move files and update database
+   - Files are physically moved to new location
+4. **Web App**:
+   - Click edit button to enable inline editing
+   - Enter new path and save
+   - Uses HTTP API `PATCH /api/apps/:id/path` to update database
+   - Path is updated in database (file operations not supported in web)
+5. Query cache is invalidated to refresh app data
+6. Validation prevents path conflicts with other apps
 
 ## Testing
 
 ### Unit Tests Added
 - **AppCommandInput**: Tests loading, rendering, and saving commands
-- **AppOutputDestination**: Tests loading and displaying app path
+- **AppOutputDestination**: Tests loading, displaying, and editing app path
 
 ### Manual Testing Checklist
 - [ ] Open Configure tab with an app selected
@@ -157,13 +181,18 @@ The Configure Panel now shows:
 - [ ] Enter custom install and start commands
 - [ ] Save and verify they persist
 - [ ] Clear commands and verify fallback to auto-detect
-- [ ] Click folder icon to open app directory
+- [ ] Click edit icon to modify output destination
+- [ ] Enter new path and save
+- [ ] Verify path is updated and files are moved (desktop)
+- [ ] Click folder icon to open app directory (desktop)
 - [ ] Verify validation (both commands required)
+- [ ] Verify path conflict validation
 
 ## Benefits
 
 1. **Developer Flexibility**: Customize build and start commands per app
 2. **Better Visibility**: See exactly where app files are stored
+3. **In-Place Path Updates**: Change app location without creating copies
 3. **Easy Access**: Quick navigation to app folder from UI
 4. **Validation**: Prevents invalid command configurations
 5. **Seamless Integration**: Works with existing preview and run features

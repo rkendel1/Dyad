@@ -128,10 +128,43 @@ export const updateAppSettings = asyncHandler(
 );
 
 /**
+ * PATCH /api/apps/:id/path
+ * Update app path
+ */
+export const updateAppPath = asyncHandler(
+  async (req: ApiRequest, res: Response) => {
+    const appId = parseInt(req.params.id, 10);
+
+    if (isNaN(appId)) {
+      throw new HttpApiError("Invalid app ID", 400, "INVALID_APP_ID");
+    }
+
+    const { path } = req.body;
+
+    if (!path || typeof path !== "string") {
+      throw new HttpApiError("Invalid path", 400, "INVALID_PATH");
+    }
+
+    const app = await appService.updateAppPath(appId, path);
+
+    const response: ApiResponse = {
+      success: true,
+      data: app,
+    };
+
+    res.json(response);
+  },
+);
+
+/**
  * Validation schemas
  */
 export const updateAppSettingsSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   // Add more fields as needed based on AppSettings type
+});
+
+export const updateAppPathSchema = z.object({
+  path: z.string().min(1, "Path is required"),
 });
