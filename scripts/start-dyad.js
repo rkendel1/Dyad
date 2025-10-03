@@ -12,6 +12,8 @@
 const { spawn } = require("child_process");
 const readline = require("readline");
 const path = require("path");
+// Add this for browser launching (install with: npm install open)
+const open = require("open");
 
 // ANSI color codes for better UX
 const colors = {
@@ -29,12 +31,12 @@ function print(message, color = "") {
 
 function printHeader() {
   console.log("");
-  print("═══════════════════════════════════════════════════════", colors.cyan);
+  print("════════════════════════════════════════════════════════════════════════", colors.cyan);
   print(
     "                    🚀 Dyad Launcher                   ",
     colors.bright + colors.cyan,
   );
-  print("═══════════════════════════════════════════════════════", colors.cyan);
+  print("════════════════════════════════════════════════════════════════════════", colors.cyan);
   console.log("");
 }
 
@@ -67,7 +69,7 @@ function startDesktopApp() {
   return desktopProcess;
 }
 
-function startWebApp() {
+function startWebApp({ launchBrowser = false } = {}) {
   print("Starting Web App...", colors.blue);
   const webProcess = spawn("npm", ["run", "dev"], {
     stdio: "inherit",
@@ -78,6 +80,13 @@ function startWebApp() {
   webProcess.on("error", (error) => {
     console.error("Failed to start Web App:", error.message);
   });
+
+  if (launchBrowser) {
+    // Wait for the dev server to start, then open Chrome
+    setTimeout(() => {
+      open("http://localhost:5175", { app: { name: open.apps.chrome } });
+    }, 6000); // Adjust delay if your dev server is slower/faster
+  }
 
   return webProcess;
 }
@@ -108,12 +117,12 @@ async function main() {
   switch (choice) {
     case "1":
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       print("Starting Desktop App...", colors.bright + colors.green);
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       console.log("");
@@ -122,12 +131,12 @@ async function main() {
 
     case "2":
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       print("Starting Web App...", colors.bright + colors.blue);
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       console.log("");
@@ -137,17 +146,17 @@ async function main() {
         colors.yellow,
       );
       console.log("");
-      processes.push(startWebApp());
+      processes.push(startWebApp({ launchBrowser: true }));
       break;
 
     case "3":
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       print("Starting Both Apps...", colors.bright + colors.yellow);
       print(
-        "═══════════════════════════════════════════════════════",
+        "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
       console.log("");
@@ -155,9 +164,8 @@ async function main() {
       print("Web app will be available at: http://localhost:5175", colors.blue);
       console.log("");
       processes.push(startDesktopApp());
-      // Wait a bit before starting web app to avoid port conflicts
       setTimeout(() => {
-        processes.push(startWebApp());
+        processes.push(startWebApp({ launchBrowser: true }));
       }, 2000);
       break;
 
