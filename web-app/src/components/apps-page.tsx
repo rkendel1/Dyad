@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { dyadClient, type App } from "@/lib/dyad-client";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -17,9 +18,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 
 export function AppsPage() {
+  const router = useRouter();
   const [connectionStatus, setConnectionStatus] = useState<
     "connecting" | "connected" | "disconnected"
   >("connecting");
@@ -66,7 +69,16 @@ export function AppsPage() {
                 Manage your AI applications from the browser
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/templates")}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Browse Templates
+              </Button>
+              <div className="flex items-center gap-2">
               {connectionStatus === "connected" && (
                 <>
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -91,6 +103,7 @@ export function AppsPage() {
                   </span>
                 </>
               )}
+              </div>
             </div>
           </div>
         </div>

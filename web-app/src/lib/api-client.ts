@@ -27,6 +27,17 @@ export interface Message {
   createdAt: string;
 }
 
+export interface Template {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  githubUrl?: string;
+  isOfficial: boolean;
+  isExperimental?: boolean;
+  requiresNeon?: boolean;
+}
+
 export class DyadApiClient {
   private client: AxiosInstance;
 
@@ -304,6 +315,49 @@ export class DyadApiClient {
         err.response?.data?.error?.message ||
           err.message ||
           "Failed to update file"
+      );
+    }
+  }
+
+  // Template operations
+  async getTemplates(): Promise<Template[]> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: { templates: Template[] };
+      }>(`/templates`);
+      if (response.data.success) {
+        return response.data.data.templates;
+      }
+      throw new Error("Failed to fetch templates");
+    } catch (error: unknown) {
+      console.error("Error fetching templates:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch templates"
+      );
+    }
+  }
+
+  async getTemplate(templateId: string): Promise<Template> {
+    try {
+      const response = await this.client.get<{
+        success: boolean;
+        data: Template;
+      }>(`/templates/${templateId}`);
+      if (response.data.success) {
+        return response.data.data;
+      }
+      throw new Error("Failed to fetch template");
+    } catch (error: unknown) {
+      console.error("Error fetching template:", error);
+      const err = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      throw new Error(
+        err.response?.data?.error?.message ||
+          err.message ||
+          "Failed to fetch template"
       );
     }
   }

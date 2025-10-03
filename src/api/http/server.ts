@@ -18,6 +18,7 @@ import chatRoutes, {
   createChatForApp,
 } from "./routes/chat.routes";
 import fileRoutes from "./routes/file.routes";
+import templateRoutes from "./routes/template.routes";
 
 // Middleware
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
@@ -132,6 +133,7 @@ export class HttpApiServer {
     apiRouter.use("/apps", appRoutes);
     apiRouter.use("/chats", chatRoutes);
     apiRouter.use("/apps", fileRoutes);
+    apiRouter.use("/templates", templateRoutes);
 
     // App-specific chat routes
     apiRouter.get("/apps/:appId/chats", listChatsForApp);
