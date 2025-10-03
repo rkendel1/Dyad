@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import log from "electron-log";
 import { DEFAULT_TEMPLATE_ID } from "@/shared/templates";
 import { IS_TEST_BUILD } from "@/ipc/utils/test_utils";
+import { migrateLegacyApiKeys } from "../lib/migrate-api-keys";
 
 const logger = log.scope("settings");
 
@@ -123,6 +124,17 @@ export function readSettings(): UserSettings {
           encryptionType,
         };
       }
+      // Decrypt multiple API keys if present
+      if (combinedSettings.providerSettings[provider].apiKeys) {
+        combinedSettings.providerSettings[provider].apiKeys =
+          combinedSettings.providerSettings[provider].apiKeys.map((key) => ({
+            ...key,
+            secret: {
+              value: decrypt(key.secret),
+              encryptionType: key.secret.encryptionType,
+            },
+          }));
+      }
       // Decrypt Vertex service account key if present
       const v = combinedSettings.providerSettings[
         provider
@@ -139,7 +151,16 @@ export function readSettings(): UserSettings {
     // Validate and merge with defaults
     const validatedSettings = UserSettingsSchema.parse(combinedSettings);
 
-    return validatedSettings;
+    // Migrate legacy API keys to multi-key format
+    const migratedSettings = migrateLegacyApiKeys(validatedSettings);
+    
+    // If migration happened, save the migrated settings
+    if (migratedSettings !== validatedSettings) {
+      logger.info("Migrated legacy API keys to multi-key format");
+      writeSettings(migratedSettings);
+    }
+
+    return migratedSettings;
   } catch (error) {
     logger.error("Error reading settings:", error);
     return DEFAULT_SETTINGS;
@@ -190,6 +211,14 @@ export function writeSettings(settings: Partial<UserSettings>): void {
         newSettings.providerSettings[provider].apiKey = encrypt(
           newSettings.providerSettings[provider].apiKey.value,
         );
+      }
+      // Encrypt multiple API keys if present
+      if (newSettings.providerSettings[provider].apiKeys) {
+        newSettings.providerSettings[provider].apiKeys =
+          newSettings.providerSettings[provider].apiKeys.map((key) => ({
+            ...key,
+            secret: encrypt(key.secret.value),
+          }));
       }
       // Encrypt Vertex service account key if present
       const v = newSettings.providerSettings[provider] as VertexProviderSetting;

@@ -12,11 +12,13 @@ import {
   Bot,
   AlignLeft,
   ExternalLink,
+  HelpCircle,
 } from "lucide-react";
 import { chatInputValueAtom } from "@/atoms/chatAtoms";
 import { useAtom } from "jotai";
 import { useSettings } from "@/hooks/useSettings";
 import { IpcClient } from "@/ipc/ipc_client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TokenBarProps {
   chatId?: number;
@@ -58,6 +60,7 @@ export function TokenBar({ chatId }: TokenBarProps) {
   } = result;
 
   const percentUsed = Math.min((totalTokens / contextWindow) * 100, 100);
+  const isNearLimit = percentUsed > 80;
 
   // Calculate widths for each token type
   const messageHistoryPercent = (messageHistoryTokens / contextWindow) * 100;
@@ -65,6 +68,16 @@ export function TokenBar({ chatId }: TokenBarProps) {
   const mentionedAppsPercent = (mentionedAppsTokens / contextWindow) * 100;
   const systemPromptPercent = (systemPromptTokens / contextWindow) * 100;
   const inputPercent = (inputTokens / contextWindow) * 100;
+
+  const handleClearHistory = async () => {
+    if (!chatId) return;
+    try {
+      await IpcClient.getInstance().deleteMessages(chatId);
+      window.location.reload(); // Refresh to show cleared state
+    } catch (error) {
+      console.error("Error clearing chat history:", error);
+    }
+  };
 
   return (
     <div className="px-4 pb-2 text-xs">
@@ -108,10 +121,31 @@ export function TokenBar({ chatId }: TokenBarProps) {
               </div>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top" className="w-64 p-2">
-            <div className="space-y-1">
-              <div className="font-medium">Token Usage Breakdown</div>
-              <div className="grid grid-cols-[20px_1fr_auto] gap-x-2 items-center">
+          <TooltipContent side="top" className="w-80 p-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">Token Usage Breakdown</div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() =>
+                          IpcClient.getInstance().openExternalUrl(
+                            "https://www.dyad.sh/docs/guides/token-usage",
+                          )
+                        }
+                        className="text-blue-500 hover:text-blue-600"
+                      >
+                        <HelpCircle size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      Learn about token usage
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="grid grid-cols-[20px_1fr_auto] gap-x-2 items-center text-sm">
                 <MessageSquare size={12} className="text-blue-500" />
                 <span>Message History</span>
                 <span>{messageHistoryTokens.toLocaleString()}</span>
@@ -138,10 +172,37 @@ export function TokenBar({ chatId }: TokenBarProps) {
                   <span>{totalTokens.toLocaleString()}</span>
                 </div>
               </div>
+              <div className="pt-2 border-t border-border text-xs text-muted-foreground">
+                <p className="mb-1">
+                  <strong>Note:</strong> Token usage is calculated per chat session, not
+                  cumulatively.
+                </p>
+                <p>
+                  To reduce usage: start a new chat, clear history, minimize codebase
+                  context, or reduce message history.
+                </p>
+              </div>
             </div>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      
+      {/* Warning when approaching token limit */}
+      {isNearLimit && (
+        <Alert className="mt-2 py-2">
+          <AlertDescription className="text-xs">
+            ⚠️ Token usage is high ({Math.round(percentUsed)}%). Consider:{" "}
+            <button
+              onClick={handleClearHistory}
+              className="text-blue-500 hover:underline font-medium"
+            >
+              clearing chat history
+            </button>
+            , starting a new chat, or reducing codebase context.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
       {(!settings?.enableProSmartFilesContextMode ||
         !settings?.enableDyadPro) && (

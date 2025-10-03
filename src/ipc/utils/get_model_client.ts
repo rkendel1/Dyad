@@ -19,6 +19,7 @@ import { FREE_OPENROUTER_MODEL_NAMES } from "../shared/language_model_constants"
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
 import { LanguageModelProvider } from "../ipc_types";
 import { createDyadEngine } from "./llm_engine_provider";
+import { getActiveApiKey } from "../../lib/api-key-utils";
 
 import { LM_STUDIO_BASE_URL } from "./lm_studio_utils";
 import { createOllamaProvider } from "./ollama_provider";
@@ -68,7 +69,16 @@ export async function getModelClient(
 }> {
   const allProviders = await getLanguageModelProviders();
 
-  const dyadApiKey = settings.providerSettings?.auto?.apiKey?.value;
+  // Build envVars for Dyad Pro key
+  const envVars: Record<string, string | undefined> = {};
+  const dyadProvider = allProviders.find((p) => p.id === "auto");
+  if (dyadProvider?.envVarName) {
+    envVars[dyadProvider.envVarName] = getEnvVar(dyadProvider.envVarName);
+  }
+
+  // Get active Dyad API key
+  const dyadActiveKey = getActiveApiKey("auto", settings, envVars, dyadProvider?.envVarName);
+  const dyadApiKey = dyadActiveKey?.value;
 
   // --- Handle specific provider ---
   const providerConfig = allProviders.find((p) => p.id === model.provider);
@@ -215,12 +225,21 @@ function getRegularModelClient(
   modelClient: ModelClient;
   backupModelClients: ModelClient[];
 } {
-  // Get API key for the specific provider
-  const apiKey =
-    settings.providerSettings?.[model.provider]?.apiKey?.value ||
-    (providerConfig.envVarName
-      ? getEnvVar(providerConfig.envVarName)
-      : undefined);
+  // Build envVars object for getActiveApiKey
+  const envVars: Record<string, string | undefined> = {};
+  if (providerConfig.envVarName) {
+    envVars[providerConfig.envVarName] = getEnvVar(providerConfig.envVarName);
+  }
+
+  // Get active API key using the new utility
+  const activeKeyInfo = getActiveApiKey(
+    model.provider,
+    settings,
+    envVars,
+    providerConfig.envVarName,
+  );
+  
+  const apiKey = activeKeyInfo?.value;
 
   const providerId = providerConfig.id;
   // Create client based on provider ID or type

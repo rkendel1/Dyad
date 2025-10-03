@@ -7,6 +7,18 @@ export const SecretSchema = z.object({
 export type Secret = z.infer<typeof SecretSchema>;
 
 /**
+ * Schema for API key with metadata
+ */
+export const ApiKeyWithMetadataSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  secret: SecretSchema,
+  isActive: z.boolean().default(false),
+  createdAt: z.string().optional(),
+});
+export type ApiKeyWithMetadata = z.infer<typeof ApiKeyWithMetadataSchema>;
+
+/**
  * Zod schema for chat summary objects returned by the get-chats IPC
  */
 export const ChatSummarySchema = z.object({
@@ -96,6 +108,8 @@ export type LargeLanguageModel = z.infer<typeof LargeLanguageModelSchema>;
  */
 export const RegularProviderSettingSchema = z.object({
   apiKey: SecretSchema.optional(),
+  // New: support multiple API keys
+  apiKeys: z.array(ApiKeyWithMetadataSchema).optional(),
 });
 
 export const VertexProviderSettingSchema = z.object({
