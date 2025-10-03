@@ -1,54 +1,34 @@
 # Package Manager and Preview URL Settings
 
-This document describes the package manager selection and preview URL override features in Dyad, both at the global and app-specific levels.
+This document describes the package manager settings and preview URL override features in Dyad, both at the global and app-specific levels.
 
 ## Package Manager Selection
 
 ### Overview
 
-Dyad allows you to select your preferred package manager (npm, yarn, pnpm, or bun) from the settings page (global) or per-app in the Configure panel. This gives you control over which package manager Dyad uses for installing dependencies and running scripts in your projects.
+Dyad uses npm as the package manager for installing dependencies and running scripts in your projects. While you can still select npm in settings, this is now the only supported package manager for consistency and simplicity.
 
 ### How It Works
 
-The package manager selection follows this priority order:
-
-1. **App-Level Preference (Highest Priority)**: If you've set a preferred package manager for a specific app in the Configure panel, Dyad will use that package manager for that app.
-
-2. **User-Preferred (Global)**: If no app-level preference is set, and you've set a preferred package manager in Settings > Workflow Settings, Dyad will use that package manager for all projects (as long as it's installed on your system).
-
-3. **Project-Detected**: If no global or app-level preference is set, Dyad will detect which package manager your project uses by checking for lock files:
-   - `pnpm-lock.yaml` → pnpm
-   - `yarn.lock` → yarn
-   - `bun.lockb` → bun
-   - `package-lock.json` → npm
-
-4. **System Default (Fallback)**: If none of the above applies, Dyad falls back to the system's preferred package manager based on availability (priority: pnpm > yarn > bun > npm).
-
-### How to Set Your Preferred Package Manager
-
-#### Global Setting (All Apps)
-
-1. Open **Settings** from the sidebar
-2. Navigate to **Workflow Settings**
-3. Find the **Package Manager** dropdown
-4. Select your preferred package manager (npm, yarn, pnpm, or bun)
-5. The setting is saved automatically
-
-#### App-Level Setting (Specific App)
-
-1. Select an app in the sidebar
-2. Open the **Configure** tab in the preview panel
-3. Scroll to the **App Settings** section
-4. Find the **Package Manager** dropdown
-5. Select your preferred package manager or choose "Auto-detect" to use global/project detection
-6. The setting is saved automatically
+Dyad uses npm for all package management operations:
+- Installing dependencies
+- Running development servers
+- Adding new packages
+- Running build scripts
 
 ### Notes
 
-- The selected package manager must be installed on your system
-- If the selected package manager is not available, Dyad will fall back to the next priority level
-- App-level settings override global settings
-- Setting to "Auto-detect" at the app level will use global or project detection
+- npm is included with Node.js and should be available by default
+- If npm is not available, you'll need to install Node.js
+- The package manager selector has been simplified to show npm only
+
+### Default Ports
+
+Apps use the following default port configuration:
+- **Desktop Apps**: Port range 5174-5274 (starting at 5174)
+- **Web App**: Port 5175
+
+You can customize the port range in Settings > Workflow Settings > Port Range.
 
 ## Preview URL Override
 
@@ -164,12 +144,7 @@ Dyad now includes a CLI popout feature that allows you to interact with your run
 
 ### Package Manager Integration
 
-The package manager preference is integrated into the `getBestPackageManagerForProject` function in `src/ipc/utils/package_manager_utils.ts`. This function now accepts an optional app-level preference parameter and is used throughout Dyad when:
-
-- Installing dependencies
-- Running development servers
-- Adding new packages
-- Running build scripts
+Dyad uses npm exclusively for all package management operations. The `getBestPackageManagerForProject` function in `src/ipc/utils/package_manager_utils.ts` has been simplified to always return npm.
 
 ### Preview URL Integration
 
@@ -186,10 +161,9 @@ App-level settings are stored in the `apps` table with these new columns:
 
 ### Package Manager Not Working
 
-- **Check Installation**: Ensure your preferred package manager is installed and available in your system PATH
-- **Check Version**: Run `npm -v`, `yarn -v`, `pnpm -v`, or `bun -v` in your terminal to verify
-- **Reset Preference**: Try clearing your package manager preference to use auto-detection
-- **Check Priority**: Remember app-level settings override global settings
+- **Check Installation**: Ensure npm is installed (comes with Node.js)
+- **Check Version**: Run `npm -v` in your terminal to verify npm is available
+- **Check Node.js**: If npm is missing, you may need to install or update Node.js
 
 ### Preview URL Not Working
 
