@@ -47,6 +47,17 @@ npm run db:push
 npm start
 ```
 
+**Or use the interactive launcher to choose Desktop, Web, or Both:**
+
+```sh
+npm run start:interactive
+```
+
+This will prompt you to select:
+- Desktop App only (Electron)
+- Web App only (Next.js on port 5175)
+- Both apps simultaneously
+
 ## Setup
 
 If you'd like to contribute a pull request, we highly recommend setting the pre-commit hooks which will run the formatter and linter before each git commit. This is a great way of catching issues early on without waiting to run the GitHub Actions for your pull request.

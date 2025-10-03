@@ -41,6 +41,21 @@ curl http://localhost:3000/api/apps
 
 For complete API documentation, see [docs/HTTP_API.md](./docs/HTTP_API.md).
 
+## 🛠️ Development
+
+For developers who want to run Dyad from source, we provide an interactive launcher:
+
+```bash
+npm run start:interactive
+```
+
+This will prompt you to choose:
+- **Desktop App** - Full Electron application
+- **Web App** - Next.js web interface on port 5175
+- **Both** - Run both simultaneously
+
+For detailed setup and contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## 📦 Download
 
 No sign-up required. Just download and go.
