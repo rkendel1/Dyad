@@ -1607,6 +1607,7 @@ async function cleanUpPort(port: number) {
 
 /**
  * Clean up all ports within the configured port range
+ * Skips port 5175 which is reserved for the web app
  */
 async function cleanUpPortRange() {
   const settings = readSettings();
@@ -1614,6 +1615,10 @@ async function cleanUpPortRange() {
 
   const cleanupPromises = [];
   for (let port = portRange.min; port <= portRange.max; port++) {
+    // Skip port 5175 - reserved for web app
+    if (port === 5175) {
+      continue;
+    }
     cleanupPromises.push(cleanUpPort(port));
   }
 

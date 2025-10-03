@@ -53,8 +53,8 @@ describe("AppCommandInput", () => {
 
   it("should load existing commands", async () => {
     const mockGetAppSettings = vi.fn().mockResolvedValue({
-      installCommand: "pnpm install",
-      startCommand: "pnpm dev",
+      installCommand: "npm install",
+      startCommand: "npm run dev",
       preferredPackageManager: null,
       previewUrl: null,
     });
@@ -74,8 +74,8 @@ describe("AppCommandInput", () => {
       const installInput = screen.getByLabelText("Install Command") as HTMLInputElement;
       const startInput = screen.getByLabelText("Start Command") as HTMLInputElement;
       
-      expect(installInput.value).toBe("pnpm install");
-      expect(startInput.value).toBe("pnpm dev");
+      expect(installInput.value).toBe("npm install");
+      expect(startInput.value).toBe("npm run dev");
     });
   });
 });

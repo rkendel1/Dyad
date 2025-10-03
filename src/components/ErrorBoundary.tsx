@@ -44,7 +44,7 @@ ${error?.stack ? `\n\`\`\`\n${error.stack.slice(0, 1000)}\n\`\`\`` : ""}
 - Platform: ${debugInfo.platform}
 - Architecture: ${debugInfo.architecture}
 - Node Version: ${debugInfo.nodeVersion || "Not available"}
-- PNPM Version: ${debugInfo.pnpmVersion || "Not available"}
+- NPM Version: ${debugInfo.pnpmVersion || "Not available"}
 - Node Path: ${debugInfo.nodePath || "Not available"}
 - Telemetry ID: ${debugInfo.telemetryId || "Not available"}
 

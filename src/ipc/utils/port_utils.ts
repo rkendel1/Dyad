@@ -1,5 +1,8 @@
 import net from "net";
 
+// Port 5175 is reserved for the web app and should never be used for dynamic allocation
+const RESERVED_PORTS = [5175];
+
 export function findAvailablePort(
   minPort: number,
   maxPort: number,
@@ -21,11 +24,20 @@ export function findAvailablePort(
 
       attempts++;
 
-      // Try to find a port that hasn't been tried yet
+      // Try to find a port that hasn't been tried yet and is not reserved
       let port: number;
       do {
         port = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
-      } while (triedPorts.has(port) && triedPorts.size < maxPort - minPort + 1);
+      } while (
+        (triedPorts.has(port) || RESERVED_PORTS.includes(port)) &&
+        triedPorts.size < maxPort - minPort + 1
+      );
+
+      // Skip reserved ports
+      if (RESERVED_PORTS.includes(port)) {
+        tryPort();
+        return;
+      }
 
       triedPorts.add(port);
 
@@ -101,7 +113,11 @@ export async function findAvailablePorts(
         }
         port = Math.floor(Math.random() * (maxPort - minPort + 1)) + minPort;
         attempts++;
-      } while (triedPorts.has(port) || ports.includes(port));
+      } while (
+        triedPorts.has(port) ||
+        ports.includes(port) ||
+        RESERVED_PORTS.includes(port)
+      );
 
       triedPorts.add(port);
 
