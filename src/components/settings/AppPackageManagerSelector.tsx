@@ -18,7 +18,7 @@ export function AppPackageManagerSelector({
   appId,
 }: AppPackageManagerSelectorProps) {
   const [packageManager, setPackageManager] = useState<
-    "npm" | "yarn" | "pnpm" | "bun" | "auto"
+    "npm" | "auto"
   >("auto");
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +39,7 @@ export function AppPackageManagerSelector({
   }, [appId]);
 
   const handlePackageManagerChange = async (
-    value: "npm" | "yarn" | "pnpm" | "bun" | "auto",
+    value: "npm" | "auto",
   ) => {
     try {
       setLoading(true);
@@ -81,15 +81,11 @@ export function AppPackageManagerSelector({
             <SelectContent>
               <SelectItem value="auto">Auto-detect</SelectItem>
               <SelectItem value="npm">npm</SelectItem>
-              <SelectItem value="yarn">yarn</SelectItem>
-              <SelectItem value="pnpm">pnpm</SelectItem>
-              <SelectItem value="bun">bun</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Override the package manager for this app. If set to auto-detect, Dyad
-          will use the global setting or detect based on lock files.
+          Dyad uses npm for package management. Auto-detect will use the global setting.
         </div>
       </div>
     </div>

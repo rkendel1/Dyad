@@ -37,7 +37,7 @@ async function getSystemDebugInfo({
   }
 
   // Get all package manager information
-  let pnpmVersion: string | null = null;
+  let npmVersion: string | null = null;
   let packageManagerInfo: string | null = null;
 
   try {
@@ -45,9 +45,9 @@ async function getSystemDebugInfo({
     const availableManagers = packageManagers.filter((pm) => pm.available);
     const unavailableManagers = packageManagers.filter((pm) => !pm.available);
 
-    // Keep pnpmVersion for backwards compatibility
-    const pnpmManager = packageManagers.find((pm) => pm.name === "pnpm");
-    pnpmVersion = pnpmManager?.version || null;
+    // Get npm version (now the only supported package manager)
+    const npmManager = packageManagers.find((pm) => pm.name === "npm");
+    npmVersion = npmManager?.version || null;
 
     // Create a comprehensive package manager info string
     const availableInfo = availableManagers
@@ -61,11 +61,11 @@ async function getSystemDebugInfo({
   } catch (err) {
     console.error("Failed to get package manager versions:", err);
 
-    // Fallback to old pnpm-only detection
+    // Fallback to npm-only detection
     try {
-      pnpmVersion = await runShellCommand("pnpm --version");
-    } catch (pnpmErr) {
-      console.error("Failed to get pnpm version:", pnpmErr);
+      npmVersion = await runShellCommand("npm --version");
+    } catch (npmErr) {
+      console.error("Failed to get npm version:", npmErr);
     }
   }
 
@@ -128,7 +128,7 @@ async function getSystemDebugInfo({
 
   return {
     nodeVersion,
-    pnpmVersion,
+    pnpmVersion: npmVersion, // Using npmVersion but keeping field name for backwards compatibility
     packageManagerInfo,
     nodePath,
     telemetryId,
