@@ -182,6 +182,8 @@ export interface UpdateAppSettingsParams {
   settings: {
     preferredPackageManager?: string | null;
     previewUrl?: string | null;
+    installCommand?: string | null;
+    startCommand?: string | null;
   };
 }
 

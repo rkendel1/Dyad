@@ -34,6 +34,8 @@ export function registerAppSettingsHandlers() {
               | "bun"
               | null) || null,
           previewUrl: app.previewUrl || null,
+          installCommand: app.installCommand || null,
+          startCommand: app.startCommand || null,
         };
       } catch (error) {
         logger.error("Error getting app settings:", error);
@@ -68,6 +70,12 @@ export function registerAppSettingsHandlers() {
         if (settings.previewUrl !== undefined) {
           updateData.previewUrl = settings.previewUrl;
         }
+        if (settings.installCommand !== undefined) {
+          updateData.installCommand = settings.installCommand;
+        }
+        if (settings.startCommand !== undefined) {
+          updateData.startCommand = settings.startCommand;
+        }
 
         // Update the app
         await db.update(apps).set(updateData).where(eq(apps.id, appId));
@@ -88,6 +96,8 @@ export function registerAppSettingsHandlers() {
               | "bun"
               | null) || null,
           previewUrl: updatedApp?.previewUrl || null,
+          installCommand: updatedApp?.installCommand || null,
+          startCommand: updatedApp?.startCommand || null,
         };
       } catch (error) {
         logger.error("Error updating app settings:", error);
