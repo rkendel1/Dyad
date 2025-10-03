@@ -145,7 +145,7 @@ function startWebApp({ launchBrowser = false } = {}) {
           execSync(`xdg-open "${url}"`);
         }
         print(`Browser opened at ${url}`, colors.green);
-      } catch (error) {
+      } catch {
         print(
           `Could not auto-open browser. Please navigate to: ${url}`,
           colors.yellow,
