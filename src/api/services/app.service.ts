@@ -100,6 +100,8 @@ export class AppService {
       preferredPackageManager:
         (app.preferredPackageManager as "npm" | null) || null,
       previewUrl: app.previewUrl || null,
+      installCommand: app.installCommand || null,
+      startCommand: app.startCommand || null,
     };
   }
 
@@ -139,6 +141,8 @@ export class AppService {
       preferredPackageManager:
         (updatedApp?.preferredPackageManager as "npm" | null) || null,
       previewUrl: updatedApp?.previewUrl || null,
+      installCommand: updatedApp?.installCommand || null,
+      startCommand: updatedApp?.startCommand || null,
     };
   }
 
