@@ -9,11 +9,9 @@
  * - Both
  */
 
-const { spawn } = require("child_process");
+const { spawn, execSync } = require("child_process");
 const readline = require("readline");
 const path = require("path");
-// Add this for browser launching (install with: npm install open)
-const open = require("open");
 
 // ANSI color codes for better UX
 const colors = {
@@ -69,6 +67,45 @@ function startDesktopApp() {
   return desktopProcess;
 }
 
+function setupWebApp() {
+  print("Setting up Web App...", colors.blue);
+  
+  try {
+    // Build the core package
+    print("Building @dyad-sh/core package...", colors.cyan);
+    execSync("npm run build", {
+      cwd: path.join(__dirname, "..", "packages", "@dyad-sh", "core"),
+      stdio: "inherit",
+    });
+    
+    // Install dependencies
+    print("Installing dependencies...", colors.cyan);
+    execSync("npm install", {
+      cwd: path.join(__dirname, "..", "web-app"),
+      stdio: "inherit",
+    });
+    
+    // Generate database schema
+    print("Generating database schema...", colors.cyan);
+    execSync("npm run db:generate", {
+      cwd: path.join(__dirname, ".."),
+      stdio: "inherit",
+    });
+    
+    // Push database schema
+    print("Pushing database schema...", colors.cyan);
+    execSync("npm run db:push", {
+      cwd: path.join(__dirname, ".."),
+      stdio: "inherit",
+    });
+    
+    print("Web App setup complete!", colors.green);
+  } catch (error) {
+    print("Warning: Some setup steps failed, continuing anyway...", colors.yellow);
+    console.error(error.message);
+  }
+}
+
 function startWebApp({ launchBrowser = false } = {}) {
   print("Starting Web App...", colors.blue);
   const webProcess = spawn("npm", ["run", "dev"], {
@@ -82,9 +119,26 @@ function startWebApp({ launchBrowser = false } = {}) {
   });
 
   if (launchBrowser) {
-    // Wait for the dev server to start, then open Chrome
+    // Wait for the dev server to start, then open browser using cross-platform method
     setTimeout(() => {
-      open("http://localhost:5175", { app: { name: open.apps.chrome } });
+      const url = "http://localhost:5175";
+      const platform = process.platform;
+      
+      try {
+        if (platform === "darwin") {
+          // macOS
+          execSync(`open "${url}"`);
+        } else if (platform === "win32") {
+          // Windows
+          execSync(`start "" "${url}"`, { shell: true });
+        } else {
+          // Linux and others
+          execSync(`xdg-open "${url}"`);
+        }
+        print(`Browser opened at ${url}`, colors.green);
+      } catch (error) {
+        print(`Could not auto-open browser. Please navigate to: ${url}`, colors.yellow);
+      }
     }, 6000); // Adjust delay if your dev server is slower/faster
   }
 
@@ -140,6 +194,9 @@ async function main() {
         colors.cyan,
       );
       console.log("");
+      print("Running setup steps...", colors.cyan);
+      setupWebApp();
+      console.log("");
       print("Web app will be available at: http://localhost:5175", colors.blue);
       print(
         "Make sure the Dyad Desktop app is running for the API backend.",
@@ -159,6 +216,9 @@ async function main() {
         "════════════════════════════════════════════════════════════════════════",
         colors.cyan,
       );
+      console.log("");
+      print("Running setup steps...", colors.cyan);
+      setupWebApp();
       console.log("");
       print("Desktop app starting...", colors.green);
       print("Web app will be available at: http://localhost:5175", colors.blue);

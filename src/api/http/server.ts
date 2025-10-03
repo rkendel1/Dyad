@@ -48,7 +48,11 @@ const DEFAULT_CONFIG: HttpServerConfig = {
   host: "localhost",
   cors: {
     enabled: true,
-    origins: ["http://localhost:*", "http://127.0.0.1:*"],
+    origins: [
+      "http://localhost:*",
+      "http://127.0.0.1:*",
+      "http://localhost:5175", // Web app specific port
+    ],
   },
 };
 
@@ -101,6 +105,9 @@ export class HttpApiServer {
             }
           },
           credentials: true,
+          methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+          allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+          exposedHeaders: ["Content-Range", "X-Content-Range"],
         }),
       );
     }
