@@ -100,7 +100,7 @@ export function AppCommandInput({ appId }: AppCommandInputProps) {
             type="text"
             value={installCommand}
             onChange={(e) => setInstallCommand(e.target.value)}
-            placeholder="pnpm install"
+            placeholder="npm install"
             disabled={loading || saving}
             className="flex-1"
           />
@@ -117,7 +117,7 @@ export function AppCommandInput({ appId }: AppCommandInputProps) {
             type="text"
             value={startCommand}
             onChange={(e) => setStartCommand(e.target.value)}
-            placeholder="pnpm dev"
+            placeholder="npm run dev"
             disabled={loading || saving}
             className="flex-1"
           />
@@ -144,8 +144,7 @@ export function AppCommandInput({ appId }: AppCommandInputProps) {
 
       <div className="text-sm text-gray-500 dark:text-gray-400">
         Set custom install and start commands for this app. If not set, Dyad
-        will auto-detect based on your package manager. Both commands must be
-        provided together.
+        will use npm commands. Both commands must be provided together.
       </div>
     </div>
   );

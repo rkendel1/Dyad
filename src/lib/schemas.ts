@@ -243,8 +243,8 @@ export const UserSettingsSchema = z.object({
     })
     .optional(),
 
-  // Package manager preference
-  preferredPackageManager: z.enum(["npm", "yarn", "pnpm", "bun"]).optional(),
+  // Package manager preference (npm only)
+  preferredPackageManager: z.enum(["npm"]).optional(),
 
   // Custom preview URL
   previewUrl: z.string().optional(),

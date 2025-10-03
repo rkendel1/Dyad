@@ -56,10 +56,10 @@ import { generateCommandWithFallbacks } from "../utils/package_manager_utils";
 
 // Default command - will be replaced by dynamic detection
 const DEFAULT_COMMAND =
-  "(pnpm install && pnpm run dev --port 32100) || (yarn install && yarn dev --port 32100) || (bun install && bun run dev --port 32100) || (npm install --legacy-peer-deps && npm run dev -- --port 32100)";
+  "npm install --legacy-peer-deps && npm run dev -- --port 5174";
 
 /**
- * Generate a command with a specific port using dynamic package manager detection
+ * Generate a command with a specific port using npm
  */
 async function getDefaultCommandWithPort(
   port: number,
@@ -67,22 +67,22 @@ async function getDefaultCommandWithPort(
 ): Promise<string> {
   if (appPath) {
     try {
-      // Try to generate smart command based on project and system detection
+      // Use npm commands with the specified port
       const installCmd = await generateCommandWithFallbacks(appPath, "install");
       const devCmd = await generateCommandWithFallbacks(appPath, "dev", {
         port,
       });
-      return `(${installCmd}) && (${devCmd})`;
+      return `${installCmd} && ${devCmd}`;
     } catch (error) {
       logger.warn(
-        "Failed to detect package manager, using fallback command:",
+        "Failed to generate npm command, using fallback command:",
         error,
       );
     }
   }
 
-  // Fallback to the expanded default command
-  return `(pnpm install && pnpm run dev --port ${port}) || (yarn install && yarn dev --port ${port}) || (bun install && bun run dev --port ${port}) || (npm install --legacy-peer-deps && npm run dev -- --port ${port})`;
+  // Fallback to npm command with specified port
+  return `npm install --legacy-peer-deps && npm run dev -- --port ${port}`;
 }
 async function copyDir(
   source: string,
@@ -426,11 +426,7 @@ async function executeAppInDocker({
   if (!fs.existsSync(dockerfilePath)) {
     const dockerfileContent = `FROM node:22-alpine
 
-# Install multiple package managers for compatibility
-RUN npm install -g pnpm@latest-10 && \\
-    npm install -g yarn@latest && \\
-    # Enable corepack for additional package manager support
-    corepack enable
+# npm is already included with Node.js
 `;
 
     try {
@@ -483,10 +479,10 @@ RUN npm install -g pnpm@latest-10 && \\
       logger.warn(
         `Failed to find available port in range ${portRange.min}-${portRange.max}, using default: ${error}`,
       );
-      dynamicPort = 32100; // Fallback to default
+      dynamicPort = 5174; // Fallback to default
     }
   } else {
-    dynamicPort = 32100; // Use default for custom commands
+    dynamicPort = 5174; // Use default for custom commands
   }
 
   const process = spawn(
@@ -504,10 +500,6 @@ RUN npm install -g pnpm@latest-10 && \\
       `dyad-cache-${appId}:/app/.cache`,
       "-e",
       "NPM_CONFIG_CACHE=/app/.cache",
-      "-e",
-      "PNPM_STORE_PATH=/app/.cache/.pnpm-store",
-      "-e",
-      "YARN_CACHE_FOLDER=/app/.cache/.yarn-cache",
       "-e",
       "NODE_OPTIONS=--max-old-space-size=4096",
       "-w",
@@ -1618,7 +1610,7 @@ async function cleanUpPort(port: number) {
  */
 async function cleanUpPortRange() {
   const settings = readSettings();
-  const portRange = settings.portRange || { min: 32100, max: 32200 };
+  const portRange = settings.portRange || { min: 5174, max: 5274 };
 
   const cleanupPromises = [];
   for (let port = portRange.min; port <= portRange.max; port++) {
@@ -1633,5 +1625,5 @@ async function cleanUpPortRange() {
  */
 function getPortRange(): { min: number; max: number } {
   const settings = readSettings();
-  return settings.portRange || { min: 32100, max: 32200 };
+  return settings.portRange || { min: 5174, max: 5274 };
 }

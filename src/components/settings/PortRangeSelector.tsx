@@ -15,8 +15,8 @@ export function PortRangeSelector() {
         const currentSettings = await ipcClient.getUserSettings();
         setSettings(currentSettings);
         const portRange = currentSettings.portRange || {
-          min: 32100,
-          max: 32200,
+          min: 5174,
+          max: 5274,
         };
         setMinPort(portRange.min.toString());
         setMaxPort(portRange.max.toString());
@@ -72,8 +72,8 @@ export function PortRangeSelector() {
   };
 
   const resetToDefault = () => {
-    setMinPort("32100");
-    setMaxPort("32200");
+    setMinPort("5174");
+    setMaxPort("5274");
     setError("");
   };
 
@@ -143,11 +143,10 @@ export function PortRangeSelector() {
         )}
 
         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Current range: {settings.portRange?.min || 32100} -{" "}
-          {settings.portRange?.max || 32200}
+          Current range: {settings.portRange?.min || 5174} -{" "}
+          {settings.portRange?.max || 5274}
           <br />
-          Apps can now use any available port in this range instead of being
-          limited to port 32100.
+          Apps can now use any available port in this range (default: 5174-5274).
         </div>
       </div>
     </div>

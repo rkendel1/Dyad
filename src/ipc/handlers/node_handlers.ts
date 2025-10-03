@@ -17,23 +17,11 @@ export function registerNodeHandlers() {
       arch(),
     );
     // Run checks in parallel
-    const [nodeVersion, pnpmVersion] = await Promise.all([
+    const [nodeVersion, npmVersion] = await Promise.all([
       runShellCommand("node --version"),
-      // First, check if pnpm is installed.
-      // If not, try to install it using corepack (preferred method).
-      // As a fallback, try npx to run pnpm without global installation.
-      // If all fail, try npm install -g as last resort.
-      runShellCommand(
-        "pnpm --version || (corepack enable pnpm && pnpm --version) || (npx -y pnpm@latest-10 --version) || (npm install -g pnpm@latest-10 && pnpm --version)",
-      ).catch(async (error) => {
-        logger.warn("Failed to get pnpm version using primary methods:", error);
-        // Last resort: try to use npx without -y flag
-        try {
-          return await runShellCommand("npx pnpm@latest-10 --version");
-        } catch (npxError) {
-          logger.error("All attempts to get pnpm version failed:", npxError);
-          return "Not available";
-        }
+      runShellCommand("npm --version").catch(async (error) => {
+        logger.warn("Failed to get npm version:", error);
+        return "Not available";
       }),
     ]);
     // Default to mac download url.
@@ -49,7 +37,7 @@ export function registerNodeHandlers() {
           "https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi";
       }
     }
-    return { nodeVersion, pnpmVersion, nodeDownloadUrl };
+    return { nodeVersion, pnpmVersion: npmVersion, nodeDownloadUrl };
   });
 
   ipcMain.handle("reload-env-path", async (): Promise<void> => {

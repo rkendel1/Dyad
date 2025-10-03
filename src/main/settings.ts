@@ -35,8 +35,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   releaseChannel: "stable",
   selectedTemplateId: DEFAULT_TEMPLATE_ID,
   portRange: {
-    min: 32100,
-    max: 32200,
+    min: 5174,
+    max: 5274,
   },
 };
 
