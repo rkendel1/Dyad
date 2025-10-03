@@ -140,7 +140,7 @@ This feature leverages:
 ## Future Enhancements
 
 Potential improvements:
-1. Directory browser/picker UI for path selection
+1. ~~Directory browser/picker UI for path selection~~ ✅ **IMPLEMENTED - See DIRECTORY_PICKER_FEATURE.md**
 2. Path suggestions based on common project locations
 3. Batch path updates for multiple apps
 4. File system watcher to detect external moves
